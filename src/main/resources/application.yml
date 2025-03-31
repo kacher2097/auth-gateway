@@ -1,0 +1,58 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  data:
+    mongodb:
+      uri: mongodb://localhost:27018/authen-hub
+      auto-index-creation: true
+      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
+  rsocket:
+    server:
+      mapping-path: /rsocket
+      transport: websocket
+      port: 7000
+
+server:
+  port: 8118
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 1024
+  servlet:
+    context-path: /api
+
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    org.springframework.rsocket: DEBUG
+    com.mangahub: DEBUG
+    org.springframework.security: DEBUG
+
+cors:
+  allowed-origins: http://localhost:5173
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  allowed-headers: Authorization,Content-Type
+  exposed-headers: "*"
+  allow-credentials: true
+  max-age: 3600
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 604800000 # 7 days
+
+social:
+  google:
+    user-info-url: https://www.googleapis.com/oauth2/v3/userinfo
+    client-id: your-google-client-id
+    client-secret: your-google-client-secret
+  facebook:
+    user-info-url: https://graph.facebook.com/v12.0/me
+    client-id: your-facebook-client-id
+    client-secret: your-facebook-client-secret
+
+# Admin account default
+admin:
+  username: admin
+  email: admin@mangahub.com
+  password: Admin@123
+  fullName: Administrator
