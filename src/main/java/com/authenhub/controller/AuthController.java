@@ -42,8 +42,8 @@ public class AuthController {
         return ResponseEntity.ok(authService.socialLogin(request));
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<AuthResponse.UserInfo> getCurrentUser(@RequestAttribute("user") User user) {
-        return ResponseEntity.ok(AuthResponse.UserInfo.fromUser(user));
-    }
+//    @GetMapping("/me")
+//    public ResponseEntity<AuthResponse.UserInfo> getCurrentUser(@RequestHeader("Authorization") String token) {
+//        return ResponseEntity.ok(authService.socialLogin());
+//    }
 } 

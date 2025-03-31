@@ -3,7 +3,7 @@ spring:
     allow-bean-definition-overriding: true
   data:
     mongodb:
-      uri: mongodb://localhost:27017/authen-hub
+      uri: mongodb://localhost:27018/authen-hub
       auto-index-creation: true
       field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
   rsocket:
@@ -18,8 +18,8 @@ server:
     enabled: true
     mime-types: application/json,application/xml,text/html,text/xml,text/plain
     min-response-size: 1024
-  servlet:
-    context-path: /api
+#  servlet:
+#    context-path: /api
 
 logging:
   level:
