@@ -26,6 +26,7 @@ public class User implements UserDetails {
     private Date lastLogin;
     private Date createdAt;
     private Date updatedAt;
+    private String provider;
 
     public enum Role {
         ADMIN,

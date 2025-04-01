@@ -113,4 +113,13 @@ public class AuthService {
                 .user(AuthResponse.UserInfo.fromUser(user))
                 .build();
     }
+
+    public AuthResponse.UserInfo getCurrentUser(String token) {
+        // Lấy username từ token
+        String jwt = token.substring(7); // Bỏ "Bearer " ở đầu
+        String username = jwtService.extractUsername(jwt);
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+        return AuthResponse.UserInfo.fromUser(user);
+    }
 } 

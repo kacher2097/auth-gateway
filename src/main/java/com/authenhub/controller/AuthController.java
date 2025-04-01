@@ -5,6 +5,7 @@ import com.authenhub.dto.AuthResponse;
 import com.authenhub.dto.RegisterRequest;
 import com.authenhub.dto.SocialLoginRequest;
 import com.authenhub.entity.User;
+import com.authenhub.filter.JwtService;
 import com.authenhub.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
     private final AuthService authService;
 
     @PostMapping("/register")
@@ -42,8 +44,8 @@ public class AuthController {
         return ResponseEntity.ok(authService.socialLogin(request));
     }
 
-//    @GetMapping("/me")
-//    public ResponseEntity<AuthResponse.UserInfo> getCurrentUser(@RequestHeader("Authorization") String token) {
-//        return ResponseEntity.ok(authService.socialLogin());
-//    }
+    @GetMapping("/me")
+    public ResponseEntity<AuthResponse.UserInfo> getCurrentUser(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(authService.getCurrentUser(token));
+    }
 } 
