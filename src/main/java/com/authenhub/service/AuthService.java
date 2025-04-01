@@ -58,7 +58,7 @@ public class AuthService {
 
     public AuthResponse login(AuthRequest request) {
         // Xác thực thông tin đăng nhập
-        authenticationManager.authenticate(
+        var authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
                         request.getPassword()
