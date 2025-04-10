@@ -28,6 +28,11 @@ public class User implements UserDetails {
     private Date updatedAt;
     private String provider;
 
+//    @Column(name = "social_provider")
+    private String socialProvider;
+//    @Column(name = "social_id")
+    private String socialId;
+
     public enum Role {
         ADMIN,
         USER

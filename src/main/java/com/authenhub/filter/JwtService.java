@@ -6,12 +6,16 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import com.authenhub.entity.User;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -37,9 +41,28 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
+    public String extractRole(String token) {
+        Claims claims = extractAllClaims(token);
+        @SuppressWarnings("unchecked")
+        List<String> roles = (List<String>) claims.get("roles");
+        if (roles != null && !roles.isEmpty()) {
+            // Return the first role (assuming a user has only one role)
+            return roles.get(0);
+        }
+        return null;
+    }
+
+    public boolean hasRole(String token, String role) {
+        Claims claims = extractAllClaims(token);
+        @SuppressWarnings("unchecked")
+        List<String> roles = (List<String>) claims.get("roles");
+        return roles != null && roles.contains(role);
+    }
+
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
+        return Jwts.parserBuilder()
                 .setSigningKey(getSignKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
@@ -50,6 +73,28 @@ public class JwtService {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+
+        // Add user roles to the token
+        claims.put("roles", userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList());
+
+        // Add additional user info if available
+        if (userDetails instanceof User) {
+            User user = (User) userDetails;
+            claims.put("userId", user.getId());
+            claims.put("email", user.getEmail());
+            claims.put("fullName", user.getFullName());
+
+            if (user.getAvatar() != null) {
+                claims.put("avatar", user.getAvatar());
+            }
+
+            if (user.getSocialProvider() != null) {
+                claims.put("socialProvider", user.getSocialProvider());
+            }
+        }
+
         return createToken(claims, userDetails);
     }
 
@@ -63,6 +108,15 @@ public class JwtService {
                 .compact();
     }
 
+//    public String generateRefreshToken(User user) {
+//        return Jwts.builder()
+//                .setSubject(user.getEmail())
+//                .setIssuedAt(new Date())
+//                .setExpiration(new Date(System.currentTimeMillis() + 2592000000L)) // 30 days
+//                .signWith(getSigningKey())
+//                .compact();
+//    }
+
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
@@ -72,4 +126,4 @@ public class JwtService {
         byte[] keyBytes = secretKey.getBytes();
         return Keys.hmacShaKeyFor(keyBytes);
     }
-} 
+}
