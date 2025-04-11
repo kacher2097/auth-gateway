@@ -27,13 +27,17 @@ public class AdminController {
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<ApiResponse> getAllUsers() {
         List<User> users = userRepository.findAll();
 
         // Remove sensitive information
         users.forEach(user -> user.setPassword(null));
 
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Users retrieved successfully")
+                .data(users)
+                .build());
     }
 
     @GetMapping("/users/{id}")
