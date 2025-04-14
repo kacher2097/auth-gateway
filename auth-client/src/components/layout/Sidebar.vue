@@ -153,25 +153,28 @@
             <!-- Dashboard Submenu -->
             <div
               v-show="!isCollapsed && expandedMenus.dashboard"
-              class="pl-12 space-y-1 overflow-hidden transition-all duration-300"
+              class="pl-12 space-y-1 overflow-hidden transition-all duration-500"
               :style="{
-                maxHeight: !isCollapsed && expandedMenus.dashboard ? '500px' : '0px',
-                opacity: !isCollapsed && expandedMenus.dashboard ? '1' : '0'
+                maxHeight: !isCollapsed && expandedMenus.dashboard ? '500px' : '0px'
               }">
-              <router-link
-                to="/admin/overview"
-                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
-                :class="{ 'text-white': $route.path === '/admin/overview' }"
-              >
-                Overview
-              </router-link>
-              <router-link
-                to="/admin/statistics"
-                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
-                :class="{ 'text-white': $route.path === '/admin/statistics' }"
-              >
-                Statistics
-              </router-link>
+              <SubmenuItem :index="0" :visible="!isCollapsed && expandedMenus.dashboard">
+                <router-link
+                  to="/admin/overview"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/overview' }"
+                >
+                  Overview
+                </router-link>
+              </SubmenuItem>
+              <SubmenuItem :index="1" :visible="!isCollapsed && expandedMenus.dashboard">
+                <router-link
+                  to="/admin/statistics"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/statistics' }"
+                >
+                  Statistics
+                </router-link>
+              </SubmenuItem>
             </div>
           </div>
 
@@ -234,32 +237,37 @@
             <!-- User Management Submenu -->
             <div
               v-show="!isCollapsed && expandedMenus.users"
-              class="pl-12 space-y-1 overflow-hidden transition-all duration-300"
+              class="pl-12 space-y-1 overflow-hidden transition-all duration-500"
               :style="{
-                maxHeight: !isCollapsed && expandedMenus.users ? '500px' : '0px',
-                opacity: !isCollapsed && expandedMenus.users ? '1' : '0'
+                maxHeight: !isCollapsed && expandedMenus.users ? '500px' : '0px'
               }">
-              <router-link
-                to="/admin/users/list"
-                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
-                :class="{ 'text-white': $route.path === '/admin/users/list' }"
-              >
-                All Users
-              </router-link>
-              <router-link
-                to="/admin/users/roles"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
-                :class="{ 'text-white': $route.path === '/admin/users/roles' }"
-              >
-                Roles & Permissions
-              </router-link>
-              <router-link
-                to="/admin/users/invites"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
-                :class="{ 'text-white': $route.path === '/admin/users/invites' }"
-              >
-                Invitations
-              </router-link>
+              <SubmenuItem :index="0" :visible="!isCollapsed && expandedMenus.users">
+                <router-link
+                  to="/admin/users/list"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/users/list' }"
+                >
+                  All Users
+                </router-link>
+              </SubmenuItem>
+              <SubmenuItem :index="1" :visible="!isCollapsed && expandedMenus.users">
+                <router-link
+                  to="/admin/users/roles"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/users/roles' }"
+                >
+                  Roles & Permissions
+                </router-link>
+              </SubmenuItem>
+              <SubmenuItem :index="2" :visible="!isCollapsed && expandedMenus.users">
+                <router-link
+                  to="/admin/users/invites"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/users/invites' }"
+                >
+                  Invitations
+                </router-link>
+              </SubmenuItem>
             </div>
           </div>
 
@@ -324,32 +332,37 @@
             <!-- Analytics Submenu -->
             <div
               v-show="!isCollapsed && expandedMenus.analytics"
-              class="pl-12 space-y-1 overflow-hidden transition-all duration-300"
+              class="pl-12 space-y-1 overflow-hidden transition-all duration-500"
               :style="{
-                maxHeight: !isCollapsed && expandedMenus.analytics ? '500px' : '0px',
-                opacity: !isCollapsed && expandedMenus.analytics ? '1' : '0'
+                maxHeight: !isCollapsed && expandedMenus.analytics ? '500px' : '0px'
               }">
-              <router-link
-                to="/admin/analytics/traffic"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
-                :class="{ 'text-white': $route.path === '/admin/analytics/traffic' }"
-              >
-                Traffic
-              </router-link>
-              <router-link
-                to="/admin/analytics/users"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
-                :class="{ 'text-white': $route.path === '/admin/analytics/users' }"
-              >
-                User Activity
-              </router-link>
-              <router-link
-                to="/admin/analytics/reports"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
-                :class="{ 'text-white': $route.path === '/admin/analytics/reports' }"
-              >
-                Reports
-              </router-link>
+              <SubmenuItem :index="0" :visible="!isCollapsed && expandedMenus.analytics">
+                <router-link
+                  to="/admin/analytics/traffic"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/analytics/traffic' }"
+                >
+                  Traffic
+                </router-link>
+              </SubmenuItem>
+              <SubmenuItem :index="1" :visible="!isCollapsed && expandedMenus.analytics">
+                <router-link
+                  to="/admin/analytics/users"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/analytics/users' }"
+                >
+                  User Activity
+                </router-link>
+              </SubmenuItem>
+              <SubmenuItem :index="2" :visible="!isCollapsed && expandedMenus.analytics">
+                <router-link
+                  to="/admin/analytics/reports"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/analytics/reports' }"
+                >
+                  Reports
+                </router-link>
+              </SubmenuItem>
             </div>
           </div>
 
@@ -420,39 +433,46 @@
             <!-- Settings Submenu -->
             <div
               v-show="!isCollapsed && expandedMenus.settings"
-              class="pl-12 space-y-1 overflow-hidden transition-all duration-300"
+              class="pl-12 space-y-1 overflow-hidden transition-all duration-500"
               :style="{
-                maxHeight: !isCollapsed && expandedMenus.settings ? '500px' : '0px',
-                opacity: !isCollapsed && expandedMenus.settings ? '1' : '0'
+                maxHeight: !isCollapsed && expandedMenus.settings ? '500px' : '0px'
               }">
-              <router-link
-                to="/admin/settings/general"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
-                :class="{ 'text-white': $route.path === '/admin/settings/general' }"
-              >
-                General
-              </router-link>
-              <router-link
-                to="/admin/settings/security"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
-                :class="{ 'text-white': $route.path === '/admin/settings/security' }"
-              >
-                Security
-              </router-link>
-              <router-link
-                to="/admin/settings/appearance"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
-                :class="{ 'text-white': $route.path === '/admin/settings/appearance' }"
-              >
-                Appearance
-              </router-link>
-              <router-link
-                to="/admin/settings/notifications"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
-                :class="{ 'text-white': $route.path === '/admin/settings/notifications' }"
-              >
-                Notifications
-              </router-link>
+              <SubmenuItem :index="0" :visible="!isCollapsed && expandedMenus.settings">
+                <router-link
+                  to="/admin/settings/general"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/settings/general' }"
+                >
+                  General
+                </router-link>
+              </SubmenuItem>
+              <SubmenuItem :index="1" :visible="!isCollapsed && expandedMenus.settings">
+                <router-link
+                  to="/admin/settings/security"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/settings/security' }"
+                >
+                  Security
+                </router-link>
+              </SubmenuItem>
+              <SubmenuItem :index="2" :visible="!isCollapsed && expandedMenus.settings">
+                <router-link
+                  to="/admin/settings/appearance"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/settings/appearance' }"
+                >
+                  Appearance
+                </router-link>
+              </SubmenuItem>
+              <SubmenuItem :index="3" :visible="!isCollapsed && expandedMenus.settings">
+                <router-link
+                  to="/admin/settings/notifications"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/settings/notifications' }"
+                >
+                  Notifications
+                </router-link>
+              </SubmenuItem>
             </div>
           </div>
 
@@ -517,32 +537,37 @@
             <!-- Proxy Management Submenu -->
             <div
               v-show="!isCollapsed && expandedMenus.proxies"
-              class="pl-12 space-y-1 overflow-hidden transition-all duration-300"
+              class="pl-12 space-y-1 overflow-hidden transition-all duration-500"
               :style="{
-                maxHeight: !isCollapsed && expandedMenus.proxies ? '500px' : '0px',
-                opacity: !isCollapsed && expandedMenus.proxies ? '1' : '0'
+                maxHeight: !isCollapsed && expandedMenus.proxies ? '500px' : '0px'
               }">
-              <router-link
-                to="/admin/proxies"
-                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
-                :class="{ 'text-white': $route.path === '/admin/proxies' }"
-              >
-                All Proxies
-              </router-link>
-              <router-link
-                to="/admin/proxies/new"
-                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
-                :class="{ 'text-white': $route.path === '/admin/proxies/new' }"
-              >
-                Add New Proxy
-              </router-link>
-              <router-link
-                to="/admin/proxies/import"
-                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
-                :class="{ 'text-white': $route.path === '/admin/proxies/import' }"
-              >
-                Import Proxies
-              </router-link>
+              <SubmenuItem :index="0" :visible="!isCollapsed && expandedMenus.proxies">
+                <router-link
+                  to="/admin/proxies"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/proxies' }"
+                >
+                  All Proxies
+                </router-link>
+              </SubmenuItem>
+              <SubmenuItem :index="1" :visible="!isCollapsed && expandedMenus.proxies">
+                <router-link
+                  to="/admin/proxies/new"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/proxies/new' }"
+                >
+                  Add New Proxy
+                </router-link>
+              </SubmenuItem>
+              <SubmenuItem :index="2" :visible="!isCollapsed && expandedMenus.proxies">
+                <router-link
+                  to="/admin/proxies/import"
+                  class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                  :class="{ 'text-white': $route.path === '/admin/proxies/import' }"
+                >
+                  Import Proxies
+                </router-link>
+              </SubmenuItem>
             </div>
           </div>
           </nav>
@@ -669,6 +694,7 @@
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import SubmenuItem from './SubmenuItem.vue'
 
 // Props
 const props = defineProps({
