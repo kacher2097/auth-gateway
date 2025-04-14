@@ -1,18 +1,30 @@
 <template>
   <div class="flex h-screen overflow-hidden bg-gray-50">
-    <Sidebar ref="sidebar" />
+    <Sidebar ref="sidebar" :is-mobile-open="isMobileMenuOpen" @close-mobile="isMobileMenuOpen = false" />
 
-    <div class="flex-1 overflow-auto transition-all duration-300" :class="sidebarClass">
+    <!-- Mobile backdrop when sidebar is open -->
+    <div
+      v-if="isMobileMenuOpen"
+      class="fixed inset-0 bg-gray-600 bg-opacity-75 z-10 lg:hidden"
+      @click="isMobileMenuOpen = false"
+    ></div>
+
+    <div class="flex-1 overflow-auto transition-all duration-300 w-full" :class="sidebarClass">
       <header class="bg-white shadow-sm sticky top-0 z-10">
         <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 class="text-2xl font-bold text-gray-900 flex items-center">
-            <span class="inline-flex items-center justify-center p-2 bg-blue-600 rounded-md text-white mr-3">
+          <div class="flex items-center">
+            <button
+              @click="toggleMobileMenu"
+              class="inline-flex items-center justify-center p-2 bg-blue-600 rounded-md text-white mr-3 lg:hidden hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
               </svg>
-            </span>
-            {{ title }}
-          </h1>
+            </button>
+            <h1 class="text-2xl font-bold text-gray-900">
+              {{ title }}
+            </h1>
+          </div>
           <div class="flex items-center space-x-4">
             <slot name="actions"></slot>
           </div>
@@ -28,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import Sidebar from './Sidebar.vue'
 
 defineProps({
@@ -39,10 +51,23 @@ defineProps({
 })
 
 const sidebar = ref(null)
+const isMobileMenuOpen = ref(false)
+
 const sidebarClass = computed(() => {
   if (!sidebar.value) return ''
-  return sidebar.value.isCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+  return sidebar.value.isCollapsed ? 'lg:ml-20' : 'lg:ml-72 xl:ml-72 2xl:ml-72'
 })
+
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
+
+// Add event listener for window resize to close mobile menu on larger screens
+const handleResize = () => {
+  if (window.innerWidth >= 1024 && isMobileMenuOpen.value) {
+    isMobileMenuOpen.value = false
+  }
+}
 
 // Watch for sidebar collapse state changes
 onMounted(() => {
@@ -51,5 +76,12 @@ onMounted(() => {
     // This is a hack to force Vue to re-evaluate the computed property
     sidebar.value = { ...sidebar.value }
   }, 0)
+
+  window.addEventListener('resize', handleResize)
+})
+
+// Clean up event listener
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>

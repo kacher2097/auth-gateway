@@ -1,5 +1,6 @@
 package com.authenhub.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,9 +12,9 @@ import jakarta.annotation.PostConstruct;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 
-    @Autowired
     private JavaMailSender mailSender;
 
     @PostConstruct
@@ -46,8 +47,6 @@ public class EmailService {
             log.info("Password reset email sent to: {}", to);
         } catch (Exception e) {
             log.error("Failed to send password reset email to: {}", to, e);
-            // Don't throw exception, just log it - this allows the password reset flow to continue
-            // even if email sending fails
         }
     }
 }

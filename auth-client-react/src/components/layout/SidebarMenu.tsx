@@ -17,6 +17,10 @@ import {
   EyeOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
+  GlobalOutlined,
+  ApiOutlined,
+  PlusOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { MenuProps } from 'antd';
@@ -31,10 +35,10 @@ interface SidebarMenuProps {
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapse }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Track expanded submenus
   const [openKeys, setOpenKeys] = useState<string[]>([]);
-  
+
   // Set initial open keys based on current path
   useEffect(() => {
     if (!collapsed) {
@@ -45,19 +49,19 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapse }) => {
       }
     }
   }, [location.pathname, collapsed]);
-  
+
   // Handle submenu open/close
   const onOpenChange = (keys: string[]) => {
     setOpenKeys(keys);
   };
-  
+
   // Reset open keys when sidebar collapses
   useEffect(() => {
     if (collapsed) {
       setOpenKeys([]);
     }
   }, [collapsed]);
-  
+
   // Create menu items
   const getMenuItems = (): MenuItem[] => {
     const items: MenuItem[] = [
@@ -126,6 +130,28 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapse }) => {
         ],
       },
       {
+        key: 'proxies',
+        icon: <GlobalOutlined />,
+        label: 'Proxy Management',
+        children: [
+          {
+            key: 'proxyList',
+            label: <Link to="/admin/proxies/list">All Proxies</Link>,
+            icon: <ApiOutlined />,
+          },
+          {
+            key: 'newProxy',
+            label: <Link to="/admin/proxies/new">Add New Proxy</Link>,
+            icon: <PlusOutlined />,
+          },
+          {
+            key: 'importProxies',
+            label: <Link to="/admin/proxies/import">Import Proxies</Link>,
+            icon: <UploadOutlined />,
+          },
+        ],
+      },
+      {
         key: 'settings',
         icon: <SettingOutlined />,
         label: 'Settings',
@@ -153,16 +179,16 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapse }) => {
         ],
       },
     ];
-    
+
     return items;
   };
-  
+
   // Get selected keys based on current path
   const getSelectedKeys = (): string[] => {
     const pathParts = location.pathname.split('/');
     if (pathParts.length > 2) {
       const lastPart = pathParts[pathParts.length - 1];
-      
+
       // Map path to menu key
       const keyMap: Record<string, string> = {
         'overview': 'overview',
@@ -179,20 +205,20 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapse }) => {
         'appearance': 'appearance',
         'notifications': 'notifications',
       };
-      
+
       const key = keyMap[lastPart];
       return key ? [key] : [];
     }
-    
+
     return [];
   };
 
   return (
     <>
       {/* Collapse toggle button */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
         padding: '8px 0',
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
       }}>
@@ -203,7 +229,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapse }) => {
           style={{ color: 'rgba(255, 255, 255, 0.65)' }}
         />
       </div>
-      
+
       {/* Main menu */}
       <Menu
         theme="dark"
@@ -214,14 +240,14 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onCollapse }) => {
         items={getMenuItems()}
         style={{ borderRight: 0 }}
       />
-      
+
       {/* Quick actions - only visible when expanded */}
       {!collapsed && (
         <div style={{ padding: '16px' }}>
           <Divider style={{ margin: '8px 0', borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: '1fr 1fr', 
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
             gap: '8px',
             marginBottom: '16px',
           }}>

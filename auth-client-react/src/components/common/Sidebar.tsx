@@ -239,7 +239,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'}`,
       }}>
         <img
-          src="/logo.png"
+          src="../public/logo.png"
           alt="Logo"
           style={{ height: '32px', width: '32px' }}
         />

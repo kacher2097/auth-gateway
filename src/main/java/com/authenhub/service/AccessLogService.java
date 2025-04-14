@@ -33,7 +33,7 @@ public class AccessLogService {
             accessLog.setMethod(request.getMethod());
             accessLog.setStatusCode(statusCode);
             accessLog.setTimestamp(LocalDateTime.now());
-            accessLog.setSessionId(request.getSession().getId());
+//            accessLog.setSessionId(request.getSession().getId());
             accessLog.setReferrer(request.getHeader("Referer"));
             accessLog.setResponseTimeMs(System.currentTimeMillis() - startTime);
             

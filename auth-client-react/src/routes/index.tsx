@@ -55,6 +55,11 @@ const Traffic = lazy(() => import('../pages/admin/analytics/Traffic'));
 const UserActivity = lazy(() => import('../pages/admin/analytics/UserActivity'));
 const Reports = lazy(() => import('../pages/admin/analytics/Reports'));
 const NewReport = lazy(() => import('../pages/admin/analytics/NewReport'));
+
+// Proxy management pages
+const ProxyList = lazy(() => import('../pages/admin/proxies/ProxyList'));
+const NewProxy = lazy(() => import('../pages/admin/proxies/NewProxy'));
+const ProxyImport = lazy(() => import('../pages/admin/proxies/ProxyImport'));
 const General = lazy(() => import('../pages/admin/settings/General'));
 const Security = lazy(() => import('../pages/admin/settings/Security'));
 const Appearance = lazy(() => import('../pages/admin/settings/Appearance'));
@@ -110,6 +115,12 @@ const AppRoutes: React.FC = () => {
               <Route path="analytics/users" element={<UserActivity />} />
               <Route path="analytics/reports" element={<Reports />} />
               <Route path="analytics/reports/new" element={<NewReport />} />
+
+              {/* Proxies */}
+              <Route path="proxies" element={<Navigate to="/admin/proxies/list" replace />} />
+              <Route path="proxies/list" element={<ProxyList />} />
+              <Route path="proxies/new" element={<NewProxy />} />
+              <Route path="proxies/import" element={<ProxyImport />} />
 
               {/* Settings */}
               <Route path="settings" element={<Navigate to="/admin/settings/general" replace />} />

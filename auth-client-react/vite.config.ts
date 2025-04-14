@@ -18,6 +18,17 @@ export default defineConfig(({ command, mode }) => {
       port: 5174,
       open: true,
       cors: true,
+      // Cấu hình HMR
+      hmr: {
+        overlay: true,
+        // Thời gian chờ kết nối lại (ms)
+        timeout: 1000,
+      },
+      // Tự động reload khi file thay đổi
+      watch: {
+        usePolling: true,
+        interval: 1000,
+      },
       proxy: {
         // Proxy API requests to backend during development
         '/api': {
@@ -57,6 +68,8 @@ export default defineConfig(({ command, mode }) => {
     // Optimize dependencies pre-bundling
     optimizeDeps: {
       include: ['react', 'react-dom', 'react-router-dom', 'antd', '@ant-design/icons', 'axios'],
+      // Tối ưu force update khi dependencies thay đổi
+      force: true
     },
   }
 })

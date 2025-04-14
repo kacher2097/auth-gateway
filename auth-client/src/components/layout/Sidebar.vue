@@ -9,10 +9,10 @@
 
     <!-- Sidebar -->
     <div
-      class="fixed inset-y-0 left-0 flex flex-col z-30 transition-all duration-300 ease-in-out transform"
+      class="fixed inset-y-0 left-0 flex flex-col z-30 transition-all duration-300 ease-in-out transform bg-gray-900"
       :class="[
         isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-        isCollapsed ? 'w-20' : 'w-64'
+        isCollapsed ? 'w-20' : 'w-72 max-w-[320px] xl:max-w-[320px] 2xl:max-w-[320px]'
       ]"
     >
       <!-- Sidebar header -->
@@ -121,10 +121,10 @@
                   />
                 </svg>
               </div>
-              <div v-if="!isCollapsed" class="ml-3 flex-1 flex items-center justify-between">
-                <span class="truncate">Dashboard</span>
+              <div v-if="!isCollapsed" class="ml-3 flex-1 flex items-center justify-between min-w-0">
+                <span class="truncate text-ellipsis overflow-hidden">Dashboard</span>
                 <button
-                  @click.prevent="expandedMenus.dashboard = !expandedMenus.dashboard"
+                  @click.prevent="toggleSubmenu('dashboard')"
                   class="ml-2 p-1 rounded-md hover:bg-gray-700 focus:outline-none"
                 >
                   <svg
@@ -151,17 +151,23 @@
             </router-link>
 
             <!-- Dashboard Submenu -->
-            <div v-if="!isCollapsed && expandedMenus.dashboard" class="pl-12 space-y-1 overflow-hidden transition-all duration-300 max-h-40">
+            <div
+              v-show="!isCollapsed && expandedMenus.dashboard"
+              class="pl-12 space-y-1 overflow-hidden transition-all duration-300"
+              :style="{
+                maxHeight: !isCollapsed && expandedMenus.dashboard ? '500px' : '0px',
+                opacity: !isCollapsed && expandedMenus.dashboard ? '1' : '0'
+              }">
               <router-link
                 to="/admin/overview"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
+                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
                 :class="{ 'text-white': $route.path === '/admin/overview' }"
               >
                 Overview
               </router-link>
               <router-link
                 to="/admin/statistics"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
+                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
                 :class="{ 'text-white': $route.path === '/admin/statistics' }"
               >
                 Statistics
@@ -196,10 +202,10 @@
                   />
                 </svg>
               </div>
-              <div v-if="!isCollapsed" class="ml-3 flex-1 flex items-center justify-between">
-                <span class="truncate">Users</span>
+              <div v-if="!isCollapsed" class="ml-3 flex-1 flex items-center justify-between min-w-0">
+                <span class="truncate text-ellipsis overflow-hidden">Users</span>
                 <button
-                  @click.prevent="expandedMenus.users = !expandedMenus.users"
+                  @click.prevent="toggleSubmenu('users')"
                   class="ml-2 p-1 rounded-md hover:bg-gray-700 focus:outline-none"
                 >
                   <svg
@@ -226,10 +232,16 @@
             </router-link>
 
             <!-- User Management Submenu -->
-            <div v-if="!isCollapsed && expandedMenus.users" class="pl-12 space-y-1 overflow-hidden transition-all duration-300 max-h-40">
+            <div
+              v-show="!isCollapsed && expandedMenus.users"
+              class="pl-12 space-y-1 overflow-hidden transition-all duration-300"
+              :style="{
+                maxHeight: !isCollapsed && expandedMenus.users ? '500px' : '0px',
+                opacity: !isCollapsed && expandedMenus.users ? '1' : '0'
+              }">
               <router-link
                 to="/admin/users/list"
-                class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
+                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
                 :class="{ 'text-white': $route.path === '/admin/users/list' }"
               >
                 All Users
@@ -280,10 +292,10 @@
                   />
                 </svg>
               </div>
-              <div v-if="!isCollapsed" class="ml-3 flex-1 flex items-center justify-between">
-                <span class="truncate">Analytics</span>
+              <div v-if="!isCollapsed" class="ml-3 flex-1 flex items-center justify-between min-w-0">
+                <span class="truncate text-ellipsis overflow-hidden">Analytics</span>
                 <button
-                  @click.prevent="expandedMenus.analytics = !expandedMenus.analytics"
+                  @click.prevent="toggleSubmenu('analytics')"
                   class="ml-2 p-1 rounded-md hover:bg-gray-700 focus:outline-none"
                 >
                   <svg
@@ -310,7 +322,13 @@
             </router-link>
 
             <!-- Analytics Submenu -->
-            <div v-if="!isCollapsed && expandedMenus.analytics" class="pl-12 space-y-1 overflow-hidden transition-all duration-300 max-h-40">
+            <div
+              v-show="!isCollapsed && expandedMenus.analytics"
+              class="pl-12 space-y-1 overflow-hidden transition-all duration-300"
+              :style="{
+                maxHeight: !isCollapsed && expandedMenus.analytics ? '500px' : '0px',
+                opacity: !isCollapsed && expandedMenus.analytics ? '1' : '0'
+              }">
               <router-link
                 to="/admin/analytics/traffic"
                 class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
@@ -370,10 +388,10 @@
                   />
                 </svg>
               </div>
-              <div v-if="!isCollapsed" class="ml-3 flex-1 flex items-center justify-between">
-                <span class="truncate">Settings</span>
+              <div v-if="!isCollapsed" class="ml-3 flex-1 flex items-center justify-between min-w-0">
+                <span class="truncate text-ellipsis overflow-hidden">Settings</span>
                 <button
-                  @click.prevent="expandedMenus.settings = !expandedMenus.settings"
+                  @click.prevent="toggleSubmenu('settings')"
                   class="ml-2 p-1 rounded-md hover:bg-gray-700 focus:outline-none"
                 >
                   <svg
@@ -400,7 +418,13 @@
             </router-link>
 
             <!-- Settings Submenu -->
-            <div v-if="!isCollapsed && expandedMenus.settings" class="pl-12 space-y-1 overflow-hidden transition-all duration-300 max-h-40">
+            <div
+              v-show="!isCollapsed && expandedMenus.settings"
+              class="pl-12 space-y-1 overflow-hidden transition-all duration-300"
+              :style="{
+                maxHeight: !isCollapsed && expandedMenus.settings ? '500px' : '0px',
+                opacity: !isCollapsed && expandedMenus.settings ? '1' : '0'
+              }">
               <router-link
                 to="/admin/settings/general"
                 class="block px-3 py-1.5 text-sm text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200"
@@ -431,6 +455,96 @@
               </router-link>
             </div>
           </div>
+
+          <div v-if="!isCollapsed" class="my-1.5 border-t border-gray-800"></div>
+
+          <!-- Proxy Management Menu Group -->
+          <div class="space-y-1">
+            <!-- Proxy Management Main Link -->
+            <router-link
+              to="/admin/proxies"
+              class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-md mb-1 transition-all duration-200"
+              :class="[$route.path.includes('/admin/proxies') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800']"
+              v-slot="{ isActive }"
+            >
+            <div class="flex items-center w-full">
+              <div class="flex-shrink-0 w-10 flex justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  :class="[isActive ? 'text-white' : 'text-gray-400 group-hover:text-white']"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div v-if="!isCollapsed" class="ml-3 flex-1 flex items-center justify-between min-w-0">
+                <span class="truncate text-ellipsis overflow-hidden">Proxy Management</span>
+                <button
+                  @click.prevent="toggleSubmenu('proxies')"
+                  class="ml-2 p-1 rounded-md hover:bg-gray-700 focus:outline-none"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 transition-transform duration-200"
+                    :class="{ 'rotate-180': expandedMenus.proxies }"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Tooltip for collapsed state -->
+              <div
+                v-if="isCollapsed"
+                class="absolute left-full ml-6 px-3 py-1 bg-gray-900 text-white text-sm rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+              >
+                Proxy Management
+              </div>
+            </div>
+            </router-link>
+
+            <!-- Proxy Management Submenu -->
+            <div
+              v-show="!isCollapsed && expandedMenus.proxies"
+              class="pl-12 space-y-1 overflow-hidden transition-all duration-300"
+              :style="{
+                maxHeight: !isCollapsed && expandedMenus.proxies ? '500px' : '0px',
+                opacity: !isCollapsed && expandedMenus.proxies ? '1' : '0'
+              }">
+              <router-link
+                to="/admin/proxies"
+                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                :class="{ 'text-white': $route.path === '/admin/proxies' }"
+              >
+                All Proxies
+              </router-link>
+              <router-link
+                to="/admin/proxies/new"
+                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                :class="{ 'text-white': $route.path === '/admin/proxies/new' }"
+              >
+                Add New Proxy
+              </router-link>
+              <router-link
+                to="/admin/proxies/import"
+                class="block px-3 py-1.5 text-xs text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-all duration-200 truncate"
+                :class="{ 'text-white': $route.path === '/admin/proxies/import' }"
+              >
+                Import Proxies
+              </router-link>
+            </div>
+          </div>
           </nav>
         </div>
       </div>
@@ -440,25 +554,45 @@
         <div class="mb-2 text-gray-400">
           <p class="text-xs uppercase font-semibold tracking-wider">Quick Actions</p>
         </div>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-3 gap-1">
           <button
-            class="flex flex-col items-center justify-center p-3 bg-gray-800 rounded-md hover:bg-gray-700 transition-colors duration-200"
+            class="flex flex-col items-center justify-center p-2 border-gray-300 rounded-md hover:bg-gray-700 transition-colors duration-200"
             @click="$router.push('/admin/users/new')"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
-            <span class="text-xs text-gray-300">New User</span>
+            <span class="text-[10px] text-gray-300 truncate">New User</span>
           </button>
 
           <button
-            class="flex flex-col items-center justify-center p-3 bg-gray-800 rounded-md hover:bg-gray-700 transition-colors duration-200"
+            class="flex flex-col items-center justify-center p-2 border-gray-300 rounded-md hover:bg-gray-700 transition-colors duration-200"
+            @click="$router.push('/admin/proxies/new')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-[10px] text-gray-300 truncate">New Proxy</span>
+          </button>
+
+          <button
+            class="flex flex-col items-center justify-center p-2 border-gray-300 rounded-md hover:bg-gray-700 transition-colors duration-200"
             @click="$router.push('/admin/analytics/reports/new')"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span class="text-xs text-gray-300">New Report</span>
+            <span class="text-[10px] text-gray-300 truncate">New Report</span>
+          </button>
+
+          <button
+            class="flex flex-col items-center justify-center p-2 border-gray-300 rounded-md hover:bg-gray-700 transition-colors duration-200"
+            @click="$router.push('/admin/proxies/import')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+            </svg>
+            <span class="text-[10px] text-gray-300 truncate">Import Proxies</span>
           </button>
         </div>
       </div>
@@ -499,8 +633,8 @@
       </div>
     </div>
 
-    <!-- Mobile toggle button -->
-    <div class="lg:hidden fixed top-0 left-0 p-4 z-10">
+    <!-- Mobile toggle button - hidden since we're using the button in AdminLayout -->
+    <div class="hidden">
       <button
         @click="openMobileSidebar"
         class="p-2 rounded-md bg-gray-800 text-white shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
@@ -536,19 +670,76 @@ import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+// Props
+const props = defineProps({
+  isMobileOpen: {
+    type: Boolean,
+    default: false
+  }
+})
+
+// Emits
+const emit = defineEmits(['closeMobile'])
+
 const authStore = useAuthStore()
 const route = useRoute()
 
 // State
 const isCollapsed = ref(false)
-const isMobileOpen = ref(false)
+const isMobileOpen = computed({
+  get: () => props.isMobileOpen,
+  set: (value) => {
+    if (!value) {
+      emit('closeMobile')
+    }
+  }
+})
 
 // Track expanded submenus
 const expandedMenus = ref({
-  dashboard: computed(() => route.path.startsWith('/admin') && !route.path.includes('/admin/users') && !route.path.includes('/admin/analytics') && !route.path.includes('/admin/settings')),
-  users: computed(() => route.path.includes('/admin/users')),
-  analytics: computed(() => route.path.includes('/admin/analytics')),
-  settings: computed(() => route.path.includes('/admin/settings'))
+  dashboard: false,
+  users: false,
+  analytics: false,
+  settings: false,
+  proxies: false
+})
+
+// Initialize expanded menus based on current route
+function initExpandedMenus() {
+  if (route.path.startsWith('/admin/users')) {
+    expandedMenus.value.users = true
+  } else if (route.path.startsWith('/admin/analytics')) {
+    expandedMenus.value.analytics = true
+  } else if (route.path.startsWith('/admin/settings')) {
+    expandedMenus.value.settings = true
+  } else if (route.path.startsWith('/admin/proxies')) {
+    expandedMenus.value.proxies = true
+  } else if (route.path.startsWith('/admin') &&
+    !route.path.includes('/admin/users') &&
+    !route.path.includes('/admin/analytics') &&
+    !route.path.includes('/admin/settings') &&
+    !route.path.includes('/admin/proxies')) {
+    expandedMenus.value.dashboard = true
+  }
+}
+
+// Toggle submenu
+function toggleSubmenu(menu) {
+  expandedMenus.value[menu] = !expandedMenus.value[menu]
+}
+
+// Watch route changes to update expanded menus
+watch(() => route.path, (newPath) => {
+  // Only auto-expand menus if they're not already expanded
+  if (newPath.startsWith('/admin/users') && !expandedMenus.value.users) {
+    expandedMenus.value.users = true
+  } else if (newPath.startsWith('/admin/analytics') && !expandedMenus.value.analytics) {
+    expandedMenus.value.analytics = true
+  } else if (newPath.startsWith('/admin/settings') && !expandedMenus.value.settings) {
+    expandedMenus.value.settings = true
+  } else if (newPath.startsWith('/admin/proxies') && !expandedMenus.value.proxies) {
+    expandedMenus.value.proxies = true
+  }
 })
 
 // Expose isCollapsed to parent components
@@ -574,6 +765,7 @@ function openMobileSidebar() {
 
 function closeMobileSidebar() {
   isMobileOpen.value = false
+  emit('closeMobile')
 }
 
 // Close mobile sidebar on route change
@@ -594,6 +786,9 @@ onMounted(() => {
   if (savedState !== null) {
     isCollapsed.value = savedState === 'true'
   }
+
+  // Initialize expanded menus based on current route
+  initExpandedMenus()
 
   window.addEventListener('resize', handleResize)
 })

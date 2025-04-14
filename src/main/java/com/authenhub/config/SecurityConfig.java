@@ -59,8 +59,10 @@ public class SecurityConfig {
                         requests -> requests
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/public/**").permitAll()
-                                .requestMatchers("/admin/**")
-                                .hasRole("ADMIN")
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/proxies/active").permitAll()
+                                .requestMatchers("/api/proxies").authenticated()
+                                .requestMatchers("/api/proxies/**").authenticated()
                                 .anyRequest()
                                 .authenticated()
                 )
@@ -141,4 +143,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-} 
+}

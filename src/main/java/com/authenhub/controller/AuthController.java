@@ -1,17 +1,15 @@
 package com.authenhub.controller;
 
 import com.authenhub.dto.*;
-import com.authenhub.exception.AuthException;
-
-import java.util.HashMap;
-import java.util.Map;
-import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")

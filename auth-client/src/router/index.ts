@@ -12,6 +12,9 @@ import Analytics from '@/views/admin/Analytics.vue'
 import Settings from '@/views/admin/Settings.vue'
 import NotFound from '@/views/NotFound.vue'
 import OAuthCallback from '@/views/OAuthCallback.vue'
+import ProxyList from '@/views/ProxyList.vue'
+import NewProxy from '@/views/NewProxy.vue'
+import ProxyImport from '@/views/ProxyImport.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -163,6 +166,24 @@ const routes: RouteRecordRaw[] = [
     name: 'admin-settings-notifications',
     component: Settings,
     meta: { title: 'Notification Settings', requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/proxies',
+    name: 'admin-proxies',
+    component: ProxyList,
+    meta: { title: 'Proxy Management', requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/proxies/new',
+    name: 'admin-proxies-new',
+    component: NewProxy,
+    meta: { title: 'Add New Proxy', requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/proxies/import',
+    name: 'admin-proxies-import',
+    component: ProxyImport,
+    meta: { title: 'Import Proxies', requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/:pathMatch(.*)*',

@@ -10,9 +10,19 @@ const { useBreakpoint } = Grid;
 
 interface AdminLayoutProps {
   title?: string;
+  children: React.ReactNode;
+  showBreadcrumb?: boolean;
+  breadcrumbItems?: { title: React.ReactNode; href?: string }[];
+  sidebarTheme?: 'dark' | 'light';
 }
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ title }) => {
+const AdminLayout: React.FC<AdminLayoutProps> = ({
+  title,
+  children,
+  showBreadcrumb = true,
+  breadcrumbItems,
+  sidebarTheme = 'dark'
+}) => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);

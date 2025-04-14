@@ -12,13 +12,11 @@ const SidebarFooter: React.FC<SidebarFooterProps> = ({ collapsed }) => {
   const { user } = useAuth();
 
   return (
-    <div style={{ 
-      position: 'absolute', 
-      bottom: 0, 
-      width: '100%',
-      padding: collapsed ? '16px 0' : '16px',
-      borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    <div style={{
+        width: '100%',
+        padding: collapsed ? '16px 0' : '16px',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
     }}>
       <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
         <Avatar 

@@ -29,23 +29,32 @@ const Sidebar: React.FC<SidebarProps> = ({
       theme="dark"
       className="site-layout-background"
       style={{
-        overflow: 'auto',
+        overflow: 'hidden',
         height: '100vh',
         position: 'fixed',
         left: 0,
         top: 0,
         bottom: 0,
         zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       {/* Logo and title */}
       <SidebarHeader collapsed={collapsed} />
 
-      {/* Menu and quick actions */}
-      <SidebarMenu collapsed={collapsed} onCollapse={onCollapse} />
+      {/* Menu and quick actions - will scroll if content is too long */}
+      <div style={{ 
+        flex: 1,
+        overflow: 'auto',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <SidebarMenu collapsed={collapsed} onCollapse={onCollapse} />
+      </div>
 
-      {/* User profile */}
-      <SidebarFooter collapsed={collapsed} />
+        {/* User profile - always at bottom */}
+        <SidebarFooter collapsed={collapsed} />
     </Sider>
   );
 };
