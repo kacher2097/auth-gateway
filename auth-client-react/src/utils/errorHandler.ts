@@ -28,28 +28,44 @@ export const handleApiError = (error: any): ApiError => {
 
     // Handle structured error responses
     if (data && typeof data === 'object') {
-      const message = data.message || 'Đã xảy ra lỗi';
+      const message = data.message || 'An error occurred';
       const fieldErrors = data.fieldErrors || data.errors || null;
       const errorCode = data.errorCode || data.code || null;
 
-      return new ApiError(message, status, data, fieldErrors, errorCode);
+      // Provide more specific messages based on status codes
+      let userFriendlyMessage = message;
+      if (status === 500) {
+        userFriendlyMessage = 'The server encountered an error. Please try again later.';
+      } else if (status === 404) {
+        userFriendlyMessage = 'The requested resource was not found.';
+      } else if (status === 403) {
+        userFriendlyMessage = 'You do not have permission to access this resource.';
+      } else if (status === 401) {
+        userFriendlyMessage = 'Your session has expired. Please log in again.';
+      } else if (status === 400 && errorCode === 'DATABASE_ERROR') {
+        userFriendlyMessage = 'There was a problem retrieving data. Please try again later.';
+      } else if (status === 400 && errorCode === 'NULL_POINTER_ERROR') {
+        userFriendlyMessage = 'There was a problem processing your request. Please try again later.';
+      }
+
+      return new ApiError(userFriendlyMessage, status, data, fieldErrors, errorCode);
     }
 
     return new ApiError(
-      'Đã xảy ra lỗi khi gửi yêu cầu',
+      'An error occurred while processing your request',
       status,
       data
     );
   } else if (error.request) {
     // The request was made but no response was received
     return new ApiError(
-      'Không nhận được phản hồi từ máy chủ',
+      'No response received from the server. Please check your internet connection and try again.',
       0
     );
   } else {
     // Something happened in setting up the request that triggered an Error
     return new ApiError(
-      error.message || 'Đã xảy ra lỗi khi thiết lập yêu cầu',
+      error.message || 'An error occurred while setting up the request',
       0
     );
   }

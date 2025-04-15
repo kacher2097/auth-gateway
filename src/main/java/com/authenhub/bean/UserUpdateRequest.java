@@ -1,4 +1,4 @@
-package com.authenhub.dto;
+package com.authenhub.bean;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;

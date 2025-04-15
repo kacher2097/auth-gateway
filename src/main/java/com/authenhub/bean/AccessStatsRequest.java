@@ -1,4 +1,4 @@
-package com.authenhub.dto;
+package com.authenhub.bean;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;

@@ -1,6 +1,6 @@
 package com.authenhub.service;
 
-import com.authenhub.dto.UserUpdateRequest;
+import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.entity.User;
 import com.authenhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

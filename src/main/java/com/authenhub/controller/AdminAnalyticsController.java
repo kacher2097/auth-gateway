@@ -1,6 +1,6 @@
 package com.authenhub.controller;
 
-import com.authenhub.dto.AccessStatsRequest;
+import com.authenhub.bean.AccessStatsRequest;
 import com.authenhub.dto.ApiResponse;
 import com.authenhub.service.AccessLogService;
 import lombok.RequiredArgsConstructor;

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Select, Button, Table, Breadcrumb, Typography, DatePicker } from 'antd';
+import { Card, Row, Col, Statistic, Select, Button, Table, Breadcrumb, Typography, DatePicker, message } from 'antd';
 import { ReloadOutlined, EyeOutlined, DesktopOutlined, MobileOutlined, GlobalOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import api from '../../../services/api.service';
 import { ApiResponse } from '@/types/auth.types.ts';
 import dayjs from 'dayjs';
+import ErrorDisplay from '../../../components/common/ErrorDisplay';
+import { extractApiData } from '../../../utils/apiHelpers';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -29,6 +31,7 @@ const Traffic: React.FC = () => {
     dayjs()
   ]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     totalVisits: 0,
     browserStats: [],
@@ -49,6 +52,7 @@ const Traffic: React.FC = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
+      setError(null);
 
       // Calculate date range
       const startDate = dateRange[0].toISOString();
@@ -60,19 +64,38 @@ const Traffic: React.FC = () => {
         endDate
       });
 
-      setAnalyticsData(response.data.data || {
+      // Use the utility function to safely extract data
+      const emptyAnalyticsData = {
+        totalVisits: 0,
+        browserStats: [],
+        topEndpoints: [],
+        topUsers: [],
+        deviceStats: []
+      };
+
+      const data = extractApiData(response, emptyAnalyticsData);
+      setAnalyticsData(data);
+
+      // Show a warning if no data was returned
+      if (data.totalVisits === 0 && data.browserStats.length === 0) {
+        message.warning('No analytics data available for the selected period');
+      }
+
+      // Fetch dashboard data for user counts
+      await fetchDashboardData();
+
+    } catch (error: any) {
+      console.error('Error fetching analytics:', error);
+      setError(error.message || 'Failed to load analytics data');
+
+      // Set default empty data to prevent UI errors
+      setAnalyticsData({
         totalVisits: 0,
         browserStats: [],
         topEndpoints: [],
         topUsers: [],
         deviceStats: []
       });
-
-      // Fetch dashboard data for user counts
-      await fetchDashboardData();
-
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
     } finally {
       setLoading(false);
     }
@@ -82,12 +105,22 @@ const Traffic: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       const response = await api.get<ApiResponse<DashboardData>>('/admin/dashboard');
-      setDashboardData(response.data.data || {
+
+      // Use the utility function to safely extract data
+      const emptyDashboardData = {
+        totalUsers: 0,
+        adminUsers: 0
+      };
+
+      setDashboardData(extractApiData(response, emptyDashboardData));
+    } catch (error: any) {
+      console.error('Error fetching dashboard data:', error);
+      // Don't show error message for this secondary data
+      // Just set default values
+      setDashboardData({
         totalUsers: 0,
         adminUsers: 0
       });
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
     }
   };
 
@@ -191,6 +224,12 @@ const Traffic: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      <ErrorDisplay
+        error={error}
+        onClear={() => setError(null)}
+        onRetry={fetchAnalytics}
+      />
 
       {/* Stats Cards */}
       <Row gutter={[16, 16]}>

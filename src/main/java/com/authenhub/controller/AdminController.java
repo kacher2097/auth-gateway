@@ -1,7 +1,7 @@
 package com.authenhub.controller;
 
 import com.authenhub.dto.ApiResponse;
-import com.authenhub.dto.UserUpdateRequest;
+import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.UserRepository;

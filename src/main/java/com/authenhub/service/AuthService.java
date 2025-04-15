@@ -1,5 +1,11 @@
 package com.authenhub.service;
 
+import com.authenhub.bean.ChangePasswordRequest;
+import com.authenhub.bean.ForgotPasswordRequest;
+import com.authenhub.bean.OAuth2CallbackRequest;
+import com.authenhub.bean.RegisterRequest;
+import com.authenhub.bean.ResetPasswordRequest;
+import com.authenhub.bean.SocialLoginRequest;
 import com.authenhub.dto.*;
 import com.authenhub.entity.PasswordResetToken;
 import com.authenhub.exception.*;

@@ -20,12 +20,45 @@ class ErrorBoundary extends React.Component<
     return { hasError: true };
   }
 
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // You can log the error to an error reporting service here
+    console.error('Error caught by ErrorBoundary:', error, errorInfo);
+  }
+
   render(): React.ReactNode {
     if (this.state.hasError) {
       return (
-        <div className="error-boundary">
-          <h1>Something went wrong.</h1>
-          <button onClick={() => window.location.reload()}>Reload page</button>
+        <div className="error-boundary" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          padding: '20px',
+          textAlign: 'center',
+          backgroundColor: '#f8f9fa'
+        }}>
+          <h1 style={{ color: '#343a40', marginBottom: '20px' }}>Oops! Something went wrong</h1>
+          <p style={{ color: '#6c757d', marginBottom: '30px', maxWidth: '500px' }}>
+            We're sorry, but we couldn't load this page. This could be due to a temporary issue or a network problem.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '16px'
+            }}
+          >
+            Reload page
+          </button>
+          <p style={{ marginTop: '20px', fontSize: '14px', color: '#6c757d' }}>
+            If the problem persists, please contact support.
+          </p>
         </div>
       );
     }
