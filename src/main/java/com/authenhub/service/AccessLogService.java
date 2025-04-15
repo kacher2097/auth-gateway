@@ -1,14 +1,12 @@
 package com.authenhub.service;
 
-import com.authenhub.dto.AccessLogAggregationDto;
 import com.authenhub.entity.AccessLog;
 import com.authenhub.repository.AccessLogRepository;
+import com.authenhub.utils.TimestampUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
@@ -18,13 +16,11 @@ import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.sql.Timestamp;
-import com.authenhub.utils.TimestampUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,49 +66,49 @@ public class AccessLogService {
         }
     }
 
-    public Map<String, Object> getAccessStats(LocalDateTime start, LocalDateTime end) {
-        try {
-
-            log.info("Getting access stats for date range: {} to {}", start, end);
-            Map<String, Object> stats = new HashMap<>();
-
-            // If no date range provided, default to last 30 days
-            if (start == null) {
-                end = LocalDateTime.now();
-                start = end.minus(30, ChronoUnit.DAYS);
-            }
-
-            // Get total visits
-            long totalVisits = accessLogRepository.countByDateRange(start, end);
-            stats.put("totalVisits", totalVisits);
-
-            // Get daily visits
-            List<AccessLogAggregationDto.DailyCount> dailyVisits = accessLogRepository.countByDay(start, end);
-            stats.put("dailyVisits", dailyVisits);
-
-            // Get browser stats
-            List<AccessLogAggregationDto.BrowserCount> browserStats = accessLogRepository.countByBrowser(start, end);
-            stats.put("browserStats", browserStats);
-
-            // Get device type stats
-            List<AccessLogAggregationDto.DeviceTypeCount> deviceStats = accessLogRepository.countByDeviceType(start, end);
-            stats.put("deviceStats", deviceStats);
-
-            // Get top endpoints
-            List<AccessLogAggregationDto.EndpointStats> topEndpoints = accessLogRepository.getTopEndpoints(start, end);
-            stats.put("topEndpoints", topEndpoints);
-
-            // Get top users
-            List<AccessLogAggregationDto.UserStats> topUsers = accessLogRepository.getTopUsers(start, end);
-            stats.put("topUsers", topUsers);
-
-            return stats;
-        } catch (Exception e) {
-            log.error("Error getting access stats", e);
-            return Collections.emptyMap();
-        }
-
-    }
+//    public Map<String, Object> getAccessStats(LocalDateTime start, LocalDateTime end) {
+//        try {
+//
+//            log.info("Getting access stats for date range: {} to {}", start, end);
+//            Map<String, Object> stats = new HashMap<>();
+//
+//            // If no date range provided, default to last 30 days
+//            if (start == null) {
+//                end = LocalDateTime.now();
+//                start = end.minus(30, ChronoUnit.DAYS);
+//            }
+//
+//            // Get total visits
+//            long totalVisits = accessLogRepository.countByDateRange(start, end);
+//            stats.put("totalVisits", totalVisits);
+//
+//            // Get daily visits
+//            List<AccessLogAggregationDto.DailyCount> dailyVisits = accessLogRepository.countByDay(start, end);
+//            stats.put("dailyVisits", dailyVisits);
+//
+//            // Get browser stats
+//            List<AccessLogAggregationDto.BrowserCount> browserStats = accessLogRepository.countByBrowser(start, end);
+//            stats.put("browserStats", browserStats);
+//
+//            // Get device type stats
+//            List<AccessLogAggregationDto.DeviceTypeCount> deviceStats = accessLogRepository.countByDeviceType(start, end);
+//            stats.put("deviceStats", deviceStats);
+//
+//            // Get top endpoints
+//            List<AccessLogAggregationDto.EndpointStats> topEndpoints = accessLogRepository.getTopEndpoints(start, end);
+//            stats.put("topEndpoints", topEndpoints);
+//
+//            // Get top users
+//            List<AccessLogAggregationDto.UserStats> topUsers = accessLogRepository.getTopUsers(start, end);
+//            stats.put("topUsers", topUsers);
+//
+//            return stats;
+//        } catch (Exception e) {
+//            log.error("Error getting access stats", e);
+//            return Collections.emptyMap();
+//        }
+//
+//    }
 
     public Map<String, Object> getAccessStats(Timestamp start, Timestamp end) {
         Map<String, Object> stats = new HashMap<>();
@@ -252,7 +248,7 @@ public class AccessLogService {
      * Count access logs by day
      *
      * @param start the start date
-     * @param end the end date
+     * @param end   the end date
      * @return the list of daily counts
      */
     public List<Map<String, Object>> countByDay(Timestamp start, Timestamp end) {
@@ -296,7 +292,7 @@ public class AccessLogService {
      * Count access logs by browser
      *
      * @param start the start date
-     * @param end the end date
+     * @param end   the end date
      * @return the list of browser counts
      */
     public List<Map<String, Object>> countByBrowser(Timestamp start, Timestamp end) {
@@ -333,7 +329,7 @@ public class AccessLogService {
      * Count access logs by device type
      *
      * @param start the start date
-     * @param end the end date
+     * @param end   the end date
      * @return the list of device type counts
      */
     public List<Map<String, Object>> countByDeviceType(Timestamp start, Timestamp end) {
@@ -373,7 +369,7 @@ public class AccessLogService {
      * Get top endpoints
      *
      * @param start the start date
-     * @param end the end date
+     * @param end   the end date
      * @return the list of top endpoints
      */
     public List<Map<String, Object>> getTopEndpoints(Timestamp start, Timestamp end) {
@@ -419,7 +415,7 @@ public class AccessLogService {
      * Get top users
      *
      * @param start the start date
-     * @param end the end date
+     * @param end   the end date
      * @return the list of top users
      */
     public List<Map<String, Object>> getTopUsers(Timestamp start, Timestamp end) {
