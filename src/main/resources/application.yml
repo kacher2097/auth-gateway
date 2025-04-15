@@ -1,4 +1,23 @@
 spring:
+  servlet:
+    multipart: { max-file-size: 11MB, max-request-size: 11MB }
+  jackson: { date-format: 'yyyy-MM-dd HH:mm:ss', time-zone: Asia/Ho_Chi_Minh }
+  ai:
+    ollama:
+      chat:
+        options: { model: llama3.1 }
+    groq:
+      api-key: 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
+      base-url: https://api.groq.com/openai
+      chat:
+        model: deepseek-r1-distill-llama-70b
+        temperature: 0.7
+        max-tokens: 4000
+        top-p: 0.9
+        presence-penalty: 0.0
+        frequency-penalty: 0.0
+        stop-sequences: [ ]
+
   main:
     allow-bean-definition-overriding: true
   data:
@@ -16,8 +35,8 @@ spring:
       client:
         registration:
           google:
-            client-id: 212sd1f231s4d32f1a5s64d56asdasd
-            client-secret: 3902480293kmnsdmlksdjfkldsjnklfjmsadc234555
+            clientSecret: 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
+            clientId: 871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
@@ -49,6 +68,8 @@ spring:
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
+
+spring.autoconfigure.exclude: [org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration]
 
 server:
   port: 8118

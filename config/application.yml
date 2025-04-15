@@ -1,0 +1,41 @@
+spring:
+  application: {name: crawldata}
+  servlet:
+    multipart: {max-file-size: 11MB, max-request-size: 11MB}
+  jackson: {date-format: 'yyyy-MM-dd HH:mm:ss', time-zone: Asia/Ho_Chi_Minh}
+  main: {allow-circular-references: true}
+  ai:
+    ollama:
+      chat:
+        options: {model: llama3.1}
+    groq:
+      api-key: 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
+      base-url: https://api.groq.com/openai
+      chat:
+        model: deepseek-r1-distill-llama-70b
+        temperature: 0.7
+        max-tokens: 4000
+        top-p: 0.9
+        presence-penalty: 0.0
+        frequency-penalty: 0.0
+        stop-sequences: []
+spring.autoconfigure.exclude: [org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration]
+
+logging: {config: 'file:${workdir:.}/config/logback.xml'}
+
+wordpress: {url: 'https://blog.tuan4tech.info', username: crawlbot, password: eD7ZW#^Q&h2*gAlrbi@%&7v%}
+
+rest:
+  connection: {timeout: 60000}
+  socket: {timeout: 60000}
+
+pool: {max: 10}
+
+google:
+  token: tokens
+  credentials: ${workdir:.}/config/google-credentials.json
+  spreadsheet: {id: null}
+  spreadsheetId: 1WnyoczJEvV99NMnAcNG16eO8MlIhgoWqEHwadGIMBp8
+  clientSecret: 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
+  clientId: 871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com
+

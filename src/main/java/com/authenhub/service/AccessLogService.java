@@ -5,13 +5,13 @@ import com.authenhub.repository.AccessLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.DateOperators;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
@@ -252,15 +252,12 @@ public class AccessLogService {
      * @return the list of browser counts
      */
     public List<Map<String, Object>> countByBrowser(Timestamp start, Timestamp end) {
-        // Create match operation
-        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
 
-        // Create group operation
+        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
         GroupOperation groupOperation = Aggregation.group("browser")
                 .count().as("count");
 
-        // Create sort operation
-        SortOperation sortOperation = Aggregation.sort(org.springframework.data.domain.Sort.Direction.DESC, "count");
+        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
 
         // Create aggregation
         Aggregation aggregation = Aggregation.newAggregation(
@@ -300,7 +297,7 @@ public class AccessLogService {
                 .count().as("count");
 
         // Create sort operation
-        SortOperation sortOperation = Aggregation.sort(org.springframework.data.domain.Sort.Direction.DESC, "count");
+        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
 
         // Create aggregation
         Aggregation aggregation = Aggregation.newAggregation(
@@ -341,7 +338,7 @@ public class AccessLogService {
                 .avg("responseTimeMs").as("avgResponseTime");
 
         // Create sort operation
-        SortOperation sortOperation = Aggregation.sort(org.springframework.data.domain.Sort.Direction.DESC, "count");
+        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
 
         // Create limit operation
         AggregationOperation limitOperation = Aggregation.limit(10);

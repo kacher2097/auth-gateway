@@ -18,10 +18,6 @@ public interface AccessLogRepository extends MongoRepository<AccessLog, String> 
     @Query(value = "{ 'timestamp': { $gte: ?0, $lte: ?1 } }", count = true)
     long countByDateRange(Timestamp start, Timestamp end);
 
-    // Removed countByDay method - now implemented in AccessLogService using MongoTemplate
-
-    // Removed aggregation methods - now implemented in AccessLogService using MongoTemplate
-
     @Query(value = "{ 'timestamp': { $gte: ?0, $lte: ?1 }, 'endpoint': { $regex: ?2, $options: 'i' } }", count = true)
     long countByEndpointContaining(Timestamp start, Timestamp end, String endpointPattern);
 
