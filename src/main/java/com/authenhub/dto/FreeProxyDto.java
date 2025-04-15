@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.List;
 
 public class FreeProxyDto {
@@ -49,9 +49,9 @@ public class FreeProxyDto {
         private String city;
         private boolean isActive;
         private int responseTimeMs;
-        private LocalDateTime lastChecked;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
+        private Timestamp lastChecked;
+        private Timestamp createdAt;
+        private Timestamp updatedAt;
         private String createdBy;
         private int successCount;
         private int failCount;
@@ -88,7 +88,7 @@ public class FreeProxyDto {
         private String id;
         private boolean isWorking;
         private int responseTimeMs;
-        private LocalDateTime checkedAt;
+        private Timestamp checkedAt;
     }
 
     @Data

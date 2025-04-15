@@ -4,6 +4,7 @@ import com.authenhub.dto.AuthResponse;
 import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.UserRepository;
+import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,13 +44,13 @@ public class OAuth2Controller {
                     newUser.setPassword("OAUTH2_USER"); // Không cần mật khẩu cho OAuth2
                     newUser.setRole(User.Role.USER);
                     newUser.setActive(true);
-                    newUser.setCreatedAt(new Date());
-                    newUser.setUpdatedAt(new Date());
+                    newUser.setCreatedAt(TimestampUtils.now());
+                    newUser.setUpdatedAt(TimestampUtils.now());
                     return userRepository.save(newUser);
                 });
         
         // Cập nhật thời gian đăng nhập
-        user.setLastLogin(new Date());
+        user.setLastLogin(TimestampUtils.now());
         userRepository.save(user);
         
         // Tạo token JWT

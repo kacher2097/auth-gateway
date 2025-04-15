@@ -26,7 +26,7 @@ export interface DashboardStats {
 export default {
   async getDashboardStats(): Promise<DashboardStats> {
     const authStore = useAuthStore()
-    const response = await api.get('/admin/dashboard', {
+    const response = await api.post('/admin/dashboard', {}, {
       headers: { Authorization: `Bearer ${authStore.token}` }
     })
     return response.data
@@ -34,8 +34,7 @@ export default {
 
   async getUsers(params: { page?: number; limit?: number; search?: string } = {}) {
     const authStore = useAuthStore()
-    const response = await api.get('/admin/users', {
-      params,
+    const response = await api.post('/admin/users', params, {
       headers: { Authorization: `Bearer ${authStore.token}` }
     })
     return response.data

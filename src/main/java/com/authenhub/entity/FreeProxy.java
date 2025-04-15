@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Data
 @Document(collection = "free_proxies")
@@ -18,9 +18,9 @@ public class FreeProxy {
     private String city;
     private boolean isActive;
     private int responseTimeMs;
-    private LocalDateTime lastChecked;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Timestamp lastChecked;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
     private String createdBy; // User ID who added this proxy
     private int successCount;
     private int failCount;

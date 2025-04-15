@@ -1,10 +1,10 @@
 <template>
   <div>
     <Breadcrumb :items="breadcrumbItems" />
-    
+
     <div class="bg-white shadow rounded-lg p-6 mt-4">
       <h2 class="text-xl font-semibold text-gray-800 mb-4">User Activity</h2>
-      
+
       <!-- Filters -->
       <div class="mb-6 flex flex-wrap gap-4 items-center">
         <div>
@@ -14,7 +14,7 @@
             @change="handleDateRangeChange"
           />
         </div>
-        
+
         <div>
           <Select
             v-model:value="selectedUser"
@@ -29,7 +29,7 @@
             </Select.Option>
           </Select>
         </div>
-        
+
         <div>
           <Select
             v-model:value="selectedAction"
@@ -46,18 +46,18 @@
             <Select.Option value="PROFILE_UPDATE">Profile Update</Select.Option>
           </Select>
         </div>
-        
+
         <Button type="primary" @click="fetchUserActivity">
           <template #icon><SearchOutlined /></template>
           Apply Filters
         </Button>
-        
+
         <Button @click="resetFilters">
           <template #icon><ClearOutlined /></template>
           Reset
         </Button>
       </div>
-      
+
       <!-- Activity Table -->
       <Table
         :columns="columns"
@@ -69,8 +69,8 @@
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'user'">
             <div class="flex items-center">
-              <Avatar 
-                :src="record.user?.avatar" 
+              <Avatar
+                :src="record.user?.avatar"
                 :style="{ backgroundColor: !record.user?.avatar ? '#1890ff' : 'transparent' }"
               >
                 {{ record.user?.fullName.charAt(0) }}
@@ -78,13 +78,13 @@
               <span class="ml-2">{{ record.user?.fullName }}</span>
             </div>
           </template>
-          
+
           <template v-if="column.key === 'action'">
             <Tag :color="getActionColor(record.action)">
               {{ record.action }}
             </Tag>
           </template>
-          
+
           <template v-if="column.key === 'details'">
             <Button type="link" @click="showDetails(record)">
               View Details
@@ -93,7 +93,7 @@
         </template>
       </Table>
     </div>
-    
+
     <!-- Activity Details Modal -->
     <Modal
       :title="'Activity Details'"
@@ -259,12 +259,12 @@ const handleDateRangeChange = (dates: any) => {
 // Fetch users
 const fetchUsers = async () => {
   try {
-    const response = await api.get('/admin/users', {
+    const response = await api.post('/admin/users', {}, {
       headers: {
         Authorization: `Bearer ${authStore.token}`
       }
     })
-    
+
     // Process response
     if (response.data && response.data.data) {
       users.value = response.data.data
@@ -281,26 +281,26 @@ const fetchUsers = async () => {
 const fetchUserActivity = async () => {
   try {
     loading.value = true
-    
+
     const params: any = {
       startDate: dateRange.value[0].toISOString(),
       endDate: dateRange.value[1].toISOString()
     }
-    
+
     if (selectedUser.value) {
       params.userId = selectedUser.value
     }
-    
+
     if (selectedAction.value) {
       params.action = selectedAction.value
     }
-    
+
     const response = await api.post('/admin/analytics/user-activity', params, {
       headers: {
         Authorization: `Bearer ${authStore.token}`
       }
     })
-    
+
     // Process response
     if (response.data && response.data.data) {
       activities.value = response.data.data

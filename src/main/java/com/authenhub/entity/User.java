@@ -7,8 +7,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -22,10 +22,10 @@ public class User implements UserDetails {
     private String fullName;
     private String avatar;
     private Role role;
-    private boolean isActive;
-    private Date lastLogin;
-    private Date createdAt;
-    private Date updatedAt;
+    private boolean active;
+    private Timestamp lastLogin;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
     private String provider;
 
 //    @Column(name = "social_provider")
@@ -50,7 +50,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return isActive;
+        return active;
     }
 
     @Override
@@ -60,6 +60,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isActive;
+        return active;
     }
-} 
+}

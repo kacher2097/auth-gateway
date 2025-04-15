@@ -4,6 +4,8 @@ import com.authenhub.entity.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends MongoRepository<User, String> {
@@ -14,6 +16,10 @@ public interface UserRepository extends MongoRepository<User, String> {
     Boolean existsByEmail(String email);
 
     long countByRole(User.Role role);
+
+    long countByActive(boolean active);
+
+    List<User> findByCreatedAtBetween(Timestamp start, Timestamp end);
 
     @Query(value = "{socialProvider: {$exists: true, $ne: null}}")
     long countBySocialLogin();

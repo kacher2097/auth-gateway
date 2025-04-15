@@ -14,8 +14,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.sql.Timestamp;
+import com.authenhub.utils.TimestampUtils;
 
 @Slf4j
 @Service
@@ -66,8 +66,8 @@ public class AuthService {
         user.setFullName(request.getFullName());
         user.setRole(com.authenhub.entity.User.Role.USER);
         user.setActive(true);
-        user.setCreatedAt(new Date());
-        user.setUpdatedAt(new Date());
+        user.setCreatedAt(TimestampUtils.now());
+        user.setUpdatedAt(TimestampUtils.now());
 
         userRepository.save(user);
 
@@ -93,7 +93,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
         // Cập nhật thời gian đăng nhập
-        user.setLastLogin(new Date());
+        user.setLastLogin(TimestampUtils.now());
         userRepository.save(user);
 
         // Tạo token và response
@@ -120,15 +120,15 @@ public class AuthService {
                     newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
                     newUser.setRole(User.Role.USER);
                     newUser.setActive(true);
-                    newUser.setCreatedAt(new Date());
-                    newUser.setUpdatedAt(new Date());
+                    newUser.setCreatedAt(TimestampUtils.now());
+                    newUser.setUpdatedAt(TimestampUtils.now());
                     newUser.setSocialProvider(request.getProvider());
 //                    newUser.setSocialId(socialUserInfo.getId());
                     return userRepository.save(newUser);
                 });
 
         // Cập nhật thời gian đăng nhập
-        user.setLastLogin(new Date());
+        user.setLastLogin(TimestampUtils.now());
         userRepository.save(user);
 
         // Tạo token và response
@@ -169,14 +169,14 @@ public class AuthService {
                         newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
                         newUser.setRole(User.Role.USER);
                         newUser.setActive(true);
-                        newUser.setCreatedAt(new Date());
-                        newUser.setUpdatedAt(new Date());
+                        newUser.setCreatedAt(TimestampUtils.now());
+                        newUser.setUpdatedAt(TimestampUtils.now());
                         newUser.setSocialProvider(request.getProvider());
                         return userRepository.save(newUser);
                     });
 
             // Update last login time
-            user.setLastLogin(new Date());
+            user.setLastLogin(TimestampUtils.now());
             userRepository.save(user);
 
             // Generate JWT token
@@ -210,7 +210,7 @@ public class AuthService {
 
         // Update password
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        user.setUpdatedAt(new Date());
+        user.setUpdatedAt(TimestampUtils.now());
         userRepository.save(user);
     }
 
@@ -229,7 +229,7 @@ public class AuthService {
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
         resetToken.setUserId(user.getId());
-        resetToken.setExpiryDate(LocalDateTime.now().plusHours(24)); // Token valid for 24 hours
+        resetToken.setExpiryDate(TimestampUtils.addHours(TimestampUtils.now(), 24)); // Token valid for 24 hours
         resetToken.setUsed(false);
         tokenRepository.save(resetToken);
 
@@ -274,7 +274,7 @@ public class AuthService {
 
         // Update password
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        user.setUpdatedAt(new Date());
+        user.setUpdatedAt(TimestampUtils.now());
         userRepository.save(user);
 
         // Mark token as used

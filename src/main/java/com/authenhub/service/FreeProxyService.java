@@ -5,24 +5,20 @@ import com.authenhub.entity.FreeProxy;
 import com.authenhub.entity.User;
 import com.authenhub.repository.FreeProxyRepository;
 import com.authenhub.repository.UserRepository;
-//import com.opencsv.CSVReader;
-//import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-//import org.apache.poi.ss.usermodel.*;
-//import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import java.sql.Timestamp;
+import com.authenhub.utils.TimestampUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,8 +61,8 @@ public class FreeProxyService {
         proxy.setCity(request.getCity());
         proxy.setNotes(request.getNotes());
         proxy.setActive(true);
-        proxy.setCreatedAt(LocalDateTime.now());
-        proxy.setUpdatedAt(LocalDateTime.now());
+        proxy.setCreatedAt(TimestampUtils.now());
+        proxy.setUpdatedAt(TimestampUtils.now());
         proxy.setCreatedBy(user.getId());
         proxy.setSuccessCount(0);
         proxy.setFailCount(0);
@@ -100,7 +96,7 @@ public class FreeProxyService {
         proxy.setCountry(request.getCountry());
         proxy.setCity(request.getCity());
         proxy.setNotes(request.getNotes());
-        proxy.setUpdatedAt(LocalDateTime.now());
+        proxy.setUpdatedAt(TimestampUtils.now());
 
         FreeProxy savedProxy = proxyRepository.save(proxy);
         return FreeProxyDto.Response.fromEntity(savedProxy);
@@ -131,7 +127,7 @@ public class FreeProxyService {
         proxy.setResponseTimeMs(result.getResponseTimeMs());
         proxy.setLastChecked(result.getCheckedAt());
         proxy.setActive(result.isWorking());
-        proxy.setUpdatedAt(LocalDateTime.now());
+        proxy.setUpdatedAt(TimestampUtils.now());
 
         proxyRepository.save(proxy);
         return result;
@@ -140,7 +136,7 @@ public class FreeProxyService {
     private FreeProxyDto.CheckResult checkProxy(FreeProxy proxy) {
         boolean isWorking = false;
         int responseTime = 0;
-        LocalDateTime checkedAt = LocalDateTime.now();
+        Timestamp checkedAt = TimestampUtils.now();
 
         try {
             long startTime = System.currentTimeMillis();
@@ -214,7 +210,7 @@ public class FreeProxyService {
                 proxy.setResponseTimeMs(result.getResponseTimeMs());
                 proxy.setLastChecked(result.getCheckedAt());
                 proxy.setActive(result.isWorking());
-                proxy.setUpdatedAt(LocalDateTime.now());
+                proxy.setUpdatedAt(TimestampUtils.now());
 
                 proxyRepository.save(proxy);
                 log.info("Checked proxy {}: {}", proxy.getId(), result.isWorking() ? "working" : "not working");

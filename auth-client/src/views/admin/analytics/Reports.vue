@@ -1,7 +1,7 @@
 <template>
   <div>
     <Breadcrumb :items="breadcrumbItems" />
-    
+
     <div class="bg-white shadow rounded-lg p-6 mt-4">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-semibold text-gray-800">Analytics Reports</h2>
@@ -10,7 +10,7 @@
           Create New Report
         </Button>
       </div>
-      
+
       <!-- Reports Table -->
       <Table
         :columns="columns"
@@ -25,37 +25,37 @@
               {{ record.type }}
             </Tag>
           </template>
-          
+
           <template v-if="column.key === 'status'">
             <Tag :color="getStatusColor(record.status)">
               {{ record.status }}
             </Tag>
           </template>
-          
+
           <template v-if="column.key === 'actions'">
             <Space>
-              <Button 
-                type="primary" 
-                size="small" 
+              <Button
+                type="primary"
+                size="small"
                 @click="viewReport(record)"
                 :disabled="record.status === 'PENDING'"
               >
                 <template #icon><EyeOutlined /></template>
                 View
               </Button>
-              <Button 
-                type="primary" 
-                size="small" 
+              <Button
+                type="primary"
+                size="small"
                 @click="downloadReport(record)"
                 :disabled="record.status === 'PENDING' || record.status === 'FAILED'"
               >
                 <template #icon><DownloadOutlined /></template>
                 Download
               </Button>
-              <Button 
-                type="primary" 
-                danger 
-                size="small" 
+              <Button
+                type="primary"
+                danger
+                size="small"
                 @click="confirmDeleteReport(record)"
               >
                 <template #icon><DeleteOutlined /></template>
@@ -66,7 +66,7 @@
         </template>
       </Table>
     </div>
-    
+
     <!-- Report View Modal -->
     <Modal
       :title="selectedReport?.name"
@@ -303,13 +303,13 @@ const navigateToNewReport = () => {
 const fetchReports = async () => {
   try {
     loading.value = true
-    
-    const response = await api.get('/admin/reports', {
+
+    const response = await api.post('/admin/reports', {}, {
       headers: {
         Authorization: `Bearer ${authStore.token}`
       }
     })
-    
+
     // Process response
     if (response.data && response.data.data) {
       reports.value = response.data.data
@@ -331,13 +331,13 @@ const viewReport = async (report: any) => {
     reportModalVisible.value = true
     reportLoading.value = true
     reportData.value = null
-    
+
     const response = await api.get(`/admin/reports/${report.id}/data`, {
       headers: {
         Authorization: `Bearer ${authStore.token}`
       }
     })
-    
+
     // Process response
     if (response.data && response.data.data) {
       reportData.value = response.data.data
@@ -361,7 +361,7 @@ const downloadReport = async (report: any) => {
       },
       responseType: 'blob'
     })
-    
+
     // Create download link
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
@@ -370,7 +370,7 @@ const downloadReport = async (report: any) => {
     document.body.appendChild(link)
     link.click()
     link.remove()
-    
+
     toast.success('Report downloaded successfully')
   } catch (error) {
     console.error('Error downloading report:', error)
@@ -393,16 +393,16 @@ const confirmDeleteReport = (report: any) => {
 const deleteReport = async (reportId: string) => {
   try {
     loading.value = true
-    
+
     await api.delete(`/admin/reports/${reportId}`, {
       headers: {
         Authorization: `Bearer ${authStore.token}`
       }
     })
-    
+
     // Remove from list
     reports.value = reports.value.filter(report => report.id !== reportId)
-    
+
     toast.success('Report deleted successfully')
   } catch (error) {
     console.error('Error deleting report:', error)

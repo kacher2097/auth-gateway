@@ -33,6 +33,11 @@ public class FreeProxyController {
                 .build());
     }
 
+    @PostMapping("/list")
+    public ResponseEntity<ApiResponse> getAllProxiesPost() {
+        return getAllProxies();
+    }
+
     @GetMapping("/active")
     public ResponseEntity<ApiResponse> getActiveProxies() {
         List<FreeProxyDto.Response> proxies = proxyService.getActiveProxies();
@@ -43,6 +48,11 @@ public class FreeProxyController {
                 .build());
     }
 
+    @PostMapping("/active")
+    public ResponseEntity<ApiResponse> getActiveProxiesPost() {
+        return getActiveProxies();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getProxyById(@PathVariable String id) {
         FreeProxyDto.Response proxy = proxyService.getProxyById(id);
@@ -51,6 +61,11 @@ public class FreeProxyController {
                 .message("Proxy retrieved successfully")
                 .data(proxy)
                 .build());
+    }
+
+    @PostMapping("/{id}/get")
+    public ResponseEntity<ApiResponse> getProxyByIdPost(@PathVariable String id) {
+        return getProxyById(id);
     }
 
     @PostMapping
@@ -115,6 +130,28 @@ public class FreeProxyController {
                 .build());
     }
 
+    @PostMapping("/protocol")
+    public ResponseEntity<ApiResponse> getProxiesByProtocolPost(@RequestBody ProxyProtocolRequest request) {
+        List<FreeProxyDto.Response> proxies = proxyService.getProxiesByProtocol(request.getProtocol());
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Proxies retrieved successfully")
+                .data(proxies)
+                .build());
+    }
+
+    public static class ProxyProtocolRequest {
+        private String protocol;
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
+        }
+    }
+
     @GetMapping("/country/{country}")
     public ResponseEntity<ApiResponse> getProxiesByCountry(@PathVariable String country) {
         List<FreeProxyDto.Response> proxies = proxyService.getProxiesByCountry(country);
@@ -123,6 +160,28 @@ public class FreeProxyController {
                 .message("Proxies retrieved successfully")
                 .data(proxies)
                 .build());
+    }
+
+    @PostMapping("/country")
+    public ResponseEntity<ApiResponse> getProxiesByCountryPost(@RequestBody ProxyCountryRequest request) {
+        List<FreeProxyDto.Response> proxies = proxyService.getProxiesByCountry(request.getCountry());
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Proxies retrieved successfully")
+                .data(proxies)
+                .build());
+    }
+
+    public static class ProxyCountryRequest {
+        private String country;
+
+        public String getCountry() {
+            return country;
+        }
+
+        public void setCountry(String country) {
+            this.country = country;
+        }
     }
 
     @GetMapping("/fast")
@@ -135,6 +194,29 @@ public class FreeProxyController {
                 .build());
     }
 
+    @PostMapping("/fast")
+    public ResponseEntity<ApiResponse> getFastProxiesPost(@RequestBody FastProxyRequest request) {
+        int maxResponseTime = request.getMaxResponseTime() != null ? request.getMaxResponseTime() : 1000;
+        List<FreeProxyDto.Response> proxies = proxyService.getFastProxies(maxResponseTime);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Fast proxies retrieved successfully")
+                .data(proxies)
+                .build());
+    }
+
+    public static class FastProxyRequest {
+        private Integer maxResponseTime;
+
+        public Integer getMaxResponseTime() {
+            return maxResponseTime;
+        }
+
+        public void setMaxResponseTime(Integer maxResponseTime) {
+            this.maxResponseTime = maxResponseTime;
+        }
+    }
+
     @GetMapping("/reliable")
     public ResponseEntity<ApiResponse> getReliableProxies(@RequestParam(defaultValue = "90") double minUptime) {
         List<FreeProxyDto.Response> proxies = proxyService.getReliableProxies(minUptime);
@@ -143,6 +225,29 @@ public class FreeProxyController {
                 .message("Reliable proxies retrieved successfully")
                 .data(proxies)
                 .build());
+    }
+
+    @PostMapping("/reliable")
+    public ResponseEntity<ApiResponse> getReliableProxiesPost(@RequestBody ReliableProxyRequest request) {
+        double minUptime = request.getMinUptime() != null ? request.getMinUptime() : 90.0;
+        List<FreeProxyDto.Response> proxies = proxyService.getReliableProxies(minUptime);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Reliable proxies retrieved successfully")
+                .data(proxies)
+                .build());
+    }
+
+    public static class ReliableProxyRequest {
+        private Double minUptime;
+
+        public Double getMinUptime() {
+            return minUptime;
+        }
+
+        public void setMinUptime(Double minUptime) {
+            this.minUptime = minUptime;
+        }
     }
 
 //    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
