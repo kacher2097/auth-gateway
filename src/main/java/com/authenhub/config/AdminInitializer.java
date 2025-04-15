@@ -2,6 +2,7 @@ package com.authenhub.config;
 
 import com.authenhub.entity.User;
 import com.authenhub.repository.UserRepository;
+import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -41,11 +42,11 @@ public class AdminInitializer implements CommandLineRunner {
             admin.setFullName(adminFullName);
             admin.setRole(User.Role.ADMIN);
             admin.setActive(true);
-            admin.setCreatedAt(new Date());
-            admin.setUpdatedAt(new Date());
+            admin.setCreatedAt(TimestampUtils.now());
+            admin.setUpdatedAt(TimestampUtils.now());
 
             userRepository.save(admin);
             System.out.println("Đã tạo tài khoản admin mặc định");
         }
     }
-} 
+}

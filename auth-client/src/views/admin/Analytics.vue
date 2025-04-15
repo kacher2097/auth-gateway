@@ -262,7 +262,7 @@ async function fetchAnalytics() {
 // Fetch dashboard data for user counts
 async function fetchDashboardData() {
   try {
-    const response = await api.get('/admin/dashboard', {
+    const response = await api.post('/admin/dashboard', {}, {
       headers: {
         Authorization: `Bearer ${authStore.token}`
       }

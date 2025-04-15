@@ -6,13 +6,12 @@ import com.authenhub.service.AccessLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
+import com.authenhub.utils.TimestampUtils;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/admin/analytics")
@@ -24,15 +23,16 @@ public class AdminAnalyticsController {
 
     @PostMapping("/access-stats")
     public ResponseEntity<ApiResponse> getAccessStats(@RequestBody AccessStatsRequest request) {
-        LocalDateTime startDate = request.getStartDate();
-        LocalDateTime endDate = request.getEndDate();
+        Timestamp startDate = request.getStartDate();
+        Timestamp endDate = request.getEndDate();
 
         if (startDate == null) {
-            startDate = LocalDateTime.now().minusDays(30);
+            endDate = TimestampUtils.now();
+            startDate = TimestampUtils.addDays(endDate, -30);
         }
 
         if (endDate == null) {
-            endDate = LocalDateTime.now();
+            endDate = TimestampUtils.now();
         }
         Map<String, Object> stats = accessLogService.getAccessStats(startDate, endDate);
 
@@ -43,5 +43,98 @@ public class AdminAnalyticsController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/traffic")
+    public ResponseEntity<ApiResponse> getTrafficData(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return getTrafficDataInternal(startDate, endDate);
+    }
+
+    @PostMapping("/traffic")
+    public ResponseEntity<ApiResponse> getTrafficDataPost(@RequestBody(required = false) Map<String, Object> params) {
+        String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
+        String endDate = params != null && params.containsKey("endDate") ? params.get("endDate").toString() : null;
+
+        return getTrafficDataInternal(startDate, endDate);
+    }
+
+    private ResponseEntity<ApiResponse> getTrafficDataInternal(String startDateStr, String endDateStr) {
+        // Parse dates or use defaults
+        Timestamp startDate;
+        Timestamp endDate;
+
+        if (startDateStr != null) {
+            startDate = Timestamp.valueOf(startDateStr.replace('T', ' ').substring(0, 19));
+        } else {
+            endDate = TimestampUtils.now();
+            startDate = TimestampUtils.addDays(endDate, -30);
+        }
+
+        if (endDateStr != null) {
+            endDate = Timestamp.valueOf(endDateStr.replace('T', ' ').substring(0, 19));
+        } else {
+            endDate = TimestampUtils.now();
+        }
+
+        // Get traffic data from access logs
+        Map<String, Object> accessStats = accessLogService.getAccessStats(startDate, endDate);
+
+        // Extract daily visits as traffic data
+        Object dailyVisits = accessStats.get("dailyVisits");
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Traffic data retrieved successfully")
+                .data(dailyVisits)
+                .build());
+    }
+
+    @GetMapping("/user-activity")
+    public ResponseEntity<ApiResponse> getUserActivityData(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return getUserActivityDataInternal(startDate, endDate);
+    }
+
+    @PostMapping("/user-activity")
+    public ResponseEntity<ApiResponse> getUserActivityDataPost(@RequestBody(required = false) Map<String, Object> params) {
+        String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
+        String endDate = params != null && params.containsKey("endDate") ? params.get("endDate").toString() : null;
+
+        return getUserActivityDataInternal(startDate, endDate);
+    }
+
+    private ResponseEntity<ApiResponse> getUserActivityDataInternal(String startDateStr, String endDateStr) {
+        // Parse dates or use defaults
+        Timestamp startDate;
+        Timestamp endDate;
+
+        if (startDateStr != null) {
+            startDate = Timestamp.valueOf(startDateStr.replace('T', ' ').substring(0, 19));
+        } else {
+            endDate = TimestampUtils.now();
+            startDate = TimestampUtils.addDays(endDate, -30);
+        }
+
+        if (endDateStr != null) {
+            endDate = Timestamp.valueOf(endDateStr.replace('T', ' ').substring(0, 19));
+        } else {
+            endDate = TimestampUtils.now();
+        }
+
+        // Get user activity data
+        // This is a simplified implementation - in a real app, you would have more detailed user activity data
+        Map<String, Object> accessStats = accessLogService.getAccessStats(startDate, endDate);
+
+        // For this example, we'll just return the daily visits data reformatted as user activity
+        Object dailyVisits = accessStats.get("dailyVisits");
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("User activity data retrieved successfully")
+                .data(dailyVisits)
+                .build());
     }
 }

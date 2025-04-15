@@ -1,10 +1,10 @@
 <template>
   <div>
     <Breadcrumb :items="breadcrumbItems" />
-    
+
     <div class="bg-white shadow rounded-lg p-6 mt-4">
       <h2 class="text-xl font-semibold text-gray-800 mb-4">Create New Report</h2>
-      
+
       <Form
         :model="reportForm"
         layout="vertical"
@@ -20,15 +20,15 @@
               <Input v-model:value="reportForm.name" placeholder="Enter report name" />
             </Form.Item>
           </Col>
-          
+
           <Col :span="12">
             <Form.Item
               label="Report Type"
               name="type"
               :rules="[{ required: true, message: 'Please select report type' }]"
             >
-              <Select 
-                v-model:value="reportForm.type" 
+              <Select
+                v-model:value="reportForm.type"
                 placeholder="Select report type"
                 @change="handleReportTypeChange"
               >
@@ -39,7 +39,7 @@
             </Form.Item>
           </Col>
         </Row>
-        
+
         <Row :gutter="16">
           <Col :span="24">
             <Form.Item
@@ -50,11 +50,11 @@
             </Form.Item>
           </Col>
         </Row>
-        
+
         <!-- Dynamic parameters based on report type -->
         <div v-if="reportForm.type === 'USER_ACTIVITY'">
           <Divider>User Activity Parameters</Divider>
-          
+
           <Row :gutter="16">
             <Col :span="12">
               <Form.Item
@@ -62,14 +62,14 @@
                 name="dateRange"
                 :rules="[{ required: true, message: 'Please select date range' }]"
               >
-                <DatePicker.RangePicker 
+                <DatePicker.RangePicker
                   v-model:value="reportForm.parameters.dateRange"
                   style="width: 100%"
                   :disabled-date="disabledDate"
                 />
               </Form.Item>
             </Col>
-            
+
             <Col :span="12">
               <Form.Item
                 label="User"
@@ -89,7 +89,7 @@
               </Form.Item>
             </Col>
           </Row>
-          
+
           <Row :gutter="16">
             <Col :span="12">
               <Form.Item
@@ -111,7 +111,7 @@
                 </Select>
               </Form.Item>
             </Col>
-            
+
             <Col :span="12">
               <Form.Item
                 label="Include Details"
@@ -125,10 +125,10 @@
             </Col>
           </Row>
         </div>
-        
+
         <div v-else-if="reportForm.type === 'LOGIN_STATS'">
           <Divider>Login Statistics Parameters</Divider>
-          
+
           <Row :gutter="16">
             <Col :span="12">
               <Form.Item
@@ -136,14 +136,14 @@
                 name="dateRange"
                 :rules="[{ required: true, message: 'Please select date range' }]"
               >
-                <DatePicker.RangePicker 
+                <DatePicker.RangePicker
                   v-model:value="reportForm.parameters.dateRange"
                   style="width: 100%"
                   :disabled-date="disabledDate"
                 />
               </Form.Item>
             </Col>
-            
+
             <Col :span="12">
               <Form.Item
                 label="Group By"
@@ -161,7 +161,7 @@
               </Form.Item>
             </Col>
           </Row>
-          
+
           <Row :gutter="16">
             <Col :span="12">
               <Form.Item
@@ -174,7 +174,7 @@
                 </Checkbox>
               </Form.Item>
             </Col>
-            
+
             <Col :span="12">
               <Form.Item
                 label="Include Device Info"
@@ -188,10 +188,10 @@
             </Col>
           </Row>
         </div>
-        
+
         <div v-else-if="reportForm.type === 'SYSTEM_USAGE'">
           <Divider>System Usage Parameters</Divider>
-          
+
           <Row :gutter="16">
             <Col :span="12">
               <Form.Item
@@ -199,14 +199,14 @@
                 name="dateRange"
                 :rules="[{ required: true, message: 'Please select date range' }]"
               >
-                <DatePicker.RangePicker 
+                <DatePicker.RangePicker
                   v-model:value="reportForm.parameters.dateRange"
                   style="width: 100%"
                   :disabled-date="disabledDate"
                 />
               </Form.Item>
             </Col>
-            
+
             <Col :span="12">
               <Form.Item
                 label="Metrics"
@@ -228,7 +228,7 @@
               </Form.Item>
             </Col>
           </Row>
-          
+
           <Row :gutter="16">
             <Col :span="12">
               <Form.Item
@@ -247,7 +247,7 @@
                 </Select>
               </Form.Item>
             </Col>
-            
+
             <Col :span="12">
               <Form.Item
                 label="Format"
@@ -265,7 +265,7 @@
             </Col>
           </Row>
         </div>
-        
+
         <Form.Item style="margin-top: 24px">
           <Button type="primary" html-type="submit" :loading="submitting">
             <template #icon><FileAddOutlined /></template>
@@ -319,12 +319,12 @@ const reportForm = ref({
     userId: '',
     activityTypes: [],
     includeDetails: true,
-    
+
     // Login Stats parameters
     groupBy: 'day',
     includeFailedLogins: true,
     includeDeviceInfo: true,
-    
+
     // System Usage parameters
     metrics: ['activeUsers', 'newUsers'],
     format: 'json'
@@ -343,7 +343,7 @@ const handleReportTypeChange = (value: string) => {
     ...reportForm.value.parameters,
     dateRange: [dayjs().subtract(30, 'days'), dayjs()]
   }
-  
+
   // Set default parameters based on report type
   if (value === 'USER_ACTIVITY') {
     reportForm.value.parameters = {
@@ -372,12 +372,12 @@ const handleReportTypeChange = (value: string) => {
 // Fetch users
 const fetchUsers = async () => {
   try {
-    const response = await api.get('/admin/users', {
+    const response = await api.post('/admin/users', {}, {
       headers: {
         Authorization: `Bearer ${authStore.token}`
       }
     })
-    
+
     // Process response
     if (response.data && response.data.data) {
       users.value = response.data.data
@@ -394,26 +394,26 @@ const fetchUsers = async () => {
 const handleSubmit = async () => {
   try {
     submitting.value = true
-    
+
     // Prepare parameters
     const parameters: any = {}
-    
+
     // Common parameters
     if (reportForm.value.parameters.dateRange && reportForm.value.parameters.dateRange.length === 2) {
       parameters.startDate = reportForm.value.parameters.dateRange[0].toISOString()
       parameters.endDate = reportForm.value.parameters.dateRange[1].toISOString()
     }
-    
+
     // Type-specific parameters
     if (reportForm.value.type === 'USER_ACTIVITY') {
       if (reportForm.value.parameters.userId) {
         parameters.userId = reportForm.value.parameters.userId
       }
-      
+
       if (reportForm.value.parameters.activityTypes && reportForm.value.parameters.activityTypes.length > 0) {
         parameters.activityTypes = reportForm.value.parameters.activityTypes
       }
-      
+
       parameters.includeDetails = reportForm.value.parameters.includeDetails
     } else if (reportForm.value.type === 'LOGIN_STATS') {
       parameters.groupBy = reportForm.value.parameters.groupBy
@@ -424,7 +424,7 @@ const handleSubmit = async () => {
       parameters.groupBy = reportForm.value.parameters.groupBy
       parameters.format = reportForm.value.parameters.format
     }
-    
+
     // Create report request
     const reportRequest = {
       name: reportForm.value.name,
@@ -432,20 +432,20 @@ const handleSubmit = async () => {
       description: reportForm.value.description || null,
       parameters
     }
-    
+
     const response = await api.post('/admin/reports', reportRequest, {
       headers: {
         Authorization: `Bearer ${authStore.token}`
       }
     })
-    
+
     toast.success('Report created successfully')
-    
+
     // Navigate to reports list
     router.push('/admin/analytics/reports')
   } catch (error: any) {
     console.error('Error creating report:', error)
-    
+
     if (error.response?.data?.message) {
       toast.error(error.response.data.message)
     } else {

@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import authService, { UserInfo, LoginRequest, RegisterRequest, SocialLoginRequest, OAuthCodeRequest } from '@/services/auth.service'
 import router from '@/router'
 import { ApiError } from '@/utils/errorHandler'
-import { useToast } from '@/components/ui/ToastContainer.vue'
 
 export const useAuthStore = defineStore('auth', () => {
   // State

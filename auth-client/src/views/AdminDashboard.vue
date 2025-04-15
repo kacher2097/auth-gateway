@@ -166,7 +166,7 @@ async function fetchDashboardData() {
     loading.value = true
     error.value = ''
 
-    const response = await api.get('/admin/dashboard', {
+    const response = await api.post('/admin/dashboard', {}, {
       headers: {
         Authorization: `Bearer ${authStore.token}`
       }
@@ -191,7 +191,7 @@ async function fetchDashboardData() {
 
 async function fetchUsers() {
   try {
-    const response = await api.get('/admin/users', {
+    const response = await api.post('/admin/users', {}, {
       headers: {
         Authorization: `Bearer ${authStore.token}`
       }

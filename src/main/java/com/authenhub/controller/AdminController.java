@@ -6,16 +6,23 @@ import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.service.UserManagementService;
+import com.authenhub.service.AccessLogService;
+import com.authenhub.service.UserService;
+import java.sql.Timestamp;
+import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.Optional;
-
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
@@ -24,10 +31,26 @@ public class AdminController {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final UserManagementService userManagementService;
+    private final AccessLogService accessLogService;
+    private final UserService userService;
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getAllUsers() {
+        return getUsersList(null, null, null);
+    }
+
+    @PostMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getUsersPost(@RequestBody(required = false) Map<String, Object> params) {
+        Integer page = params != null && params.containsKey("page") ? Integer.valueOf(params.get("page").toString()) : null;
+        Integer limit = params != null && params.containsKey("limit") ? Integer.valueOf(params.get("limit").toString()) : null;
+        String search = params != null && params.containsKey("search") ? params.get("search").toString() : null;
+
+        return getUsersList(page, limit, search);
+    }
+
+    private ResponseEntity<ApiResponse> getUsersList(Integer page, Integer limit, String search) {
         List<User> users = userRepository.findAll();
 
         // Remove sensitive information
@@ -43,6 +66,16 @@ public class AdminController {
     @GetMapping("/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getUserById(@PathVariable String id) {
+        return getUserByIdInternal(id);
+    }
+
+    @PostMapping("/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getUserByIdPost(@PathVariable String id) {
+        return getUserByIdInternal(id);
+    }
+
+    private ResponseEntity<ApiResponse> getUserByIdInternal(String id) {
         Optional<User> userOpt = userRepository.findById(id);
 
         if (userOpt.isEmpty()) {
@@ -138,6 +171,16 @@ public class AdminController {
     @GetMapping("/dashboard")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getDashboardData() {
+        return getDashboardDataInternal();
+    }
+
+    @PostMapping("/dashboard")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getDashboardDataPost() {
+        return getDashboardDataInternal();
+    }
+
+    private ResponseEntity<ApiResponse> getDashboardDataInternal() {
         long userCount = userRepository.count();
         long adminCount = userRepository.countByRole(User.Role.ADMIN);
         long regularUserCount = userRepository.countByRole(User.Role.USER);
@@ -149,6 +192,115 @@ public class AdminController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/statistics")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getStatistics(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return getStatisticsInternal(startDate, endDate);
+    }
+
+    @PostMapping("/statistics")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getStatisticsPost(@RequestBody(required = false) Map<String, Object> params) {
+        String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
+        String endDate = params != null && params.containsKey("endDate") ? params.get("endDate").toString() : null;
+
+        return getStatisticsInternal(startDate, endDate);
+    }
+
+    private ResponseEntity<ApiResponse> getStatisticsInternal(String startDateStr, String endDateStr) {
+        try {
+            // Parse dates or use defaults
+            Timestamp startDate;
+            Timestamp endDate;
+
+            if (startDateStr != null) {
+                startDate = Timestamp.valueOf(startDateStr.replace('T', ' ').substring(0, 19));
+            } else {
+                endDate = TimestampUtils.now();
+                startDate = TimestampUtils.addDays(endDate, -30);
+            }
+
+            if (endDateStr != null) {
+                endDate = Timestamp.valueOf(endDateStr.replace('T', ' ').substring(0, 19));
+            } else {
+                endDate = TimestampUtils.now();
+            }
+
+            // Get user statistics
+            long totalUsers = userService.countTotalUsers();
+            long activeUsers = userService.countUsersByActive(true);
+            long newUsers = userService.countUsersByCreatedAtBetween(startDate, endDate);
+
+            // Get login statistics from access logs
+            Map<String, Object> accessStats = accessLogService.getAccessStats(startDate, endDate);
+
+            // Create statistics response
+            Map<String, Object> statistics = new HashMap<>();
+            statistics.put("totalUsers", totalUsers);
+            statistics.put("activeUsers", activeUsers);
+            statistics.put("newUsers", newUsers);
+            statistics.put("loginAttempts", accessStats.getOrDefault("totalLogins", 0));
+            statistics.put("successfulLogins", accessStats.getOrDefault("successfulLogins", 0));
+            statistics.put("failedLogins", accessStats.getOrDefault("failedLogins", 0));
+
+            return ResponseEntity.ok(ApiResponse.builder()
+                    .success(true)
+                    .message("Statistics retrieved successfully")
+                    .data(statistics)
+                    .build());
+        } catch (Exception e) {
+            log.error("Error getting statistics", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/login-activity")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getLoginActivity(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return getLoginActivityInternal(startDate, endDate);
+    }
+
+    @PostMapping("/login-activity")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse> getLoginActivityPost(@RequestBody(required = false) Map<String, Object> params) {
+        String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
+        String endDate = params != null && params.containsKey("endDate") ? params.get("endDate").toString() : null;
+
+        return getLoginActivityInternal(startDate, endDate);
+    }
+
+    private ResponseEntity<ApiResponse> getLoginActivityInternal(String startDateStr, String endDateStr) {
+        // Parse dates or use defaults
+        Timestamp startDate;
+        Timestamp endDate;
+
+        if (startDateStr != null) {
+            startDate = Timestamp.valueOf(startDateStr.replace('T', ' ').substring(0, 19));
+        } else {
+            endDate = TimestampUtils.now();
+            startDate = TimestampUtils.addDays(endDate, -30);
+        }
+
+        if (endDateStr != null) {
+            endDate = Timestamp.valueOf(endDateStr.replace('T', ' ').substring(0, 19));
+        } else {
+            endDate = TimestampUtils.now();
+        }
+
+        // Get login activity from access logs
+        List<Map<String, Object>> loginActivity = accessLogService.getLoginActivity(startDate, endDate);
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Login activity retrieved successfully")
+                .data(loginActivity)
+                .build());
     }
 
     private static class DashboardData {

@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Data
 @Document(collection = "access_logs")
@@ -18,11 +18,11 @@ public class AccessLog {
     private String endpoint;
     private String method;
     private int statusCode;
-    private LocalDateTime timestamp;
+    private Timestamp timestamp;
     private String sessionId;
     private String referrer;
     private long responseTimeMs;
-    
+
     // For analytics
     private String country;
     private String city;
