@@ -59,7 +59,7 @@ public class JwtService {
         return roles != null && roles.contains(role);
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
@@ -74,9 +74,22 @@ public class JwtService {
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
 
-        // Add user roles to the token
-        claims.put("roles", userDetails.getAuthorities().stream()
+        // Add user roles and permissions to the token
+        List<String> authorities = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        claims.put("roles", authorities.stream()
+                .filter(auth -> auth.startsWith("ROLE_"))
+                .toList());
+
+        claims.put("roleId", authorities.stream()
+                .filter(auth -> auth.startsWith("ROLE_"))
+                .toList());
+
+        // Add permissions separately for easier access
+        claims.put("permissions", authorities.stream()
+                .filter(auth -> !auth.startsWith("ROLE_"))
                 .toList());
 
         // Add additional user info if available
@@ -96,6 +109,19 @@ public class JwtService {
         }
 
         return createToken(claims, userDetails);
+    }
+
+    public String createToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roleId", user.getRoleId());
+        claims.put("userId", user.getId());
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(user.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(SignatureAlgorithm.HS256, getSignKey())
+                .compact();
     }
 
     private String createToken(Map<String, Object> claims, UserDetails userDetails) {

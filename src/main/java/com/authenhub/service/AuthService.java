@@ -102,7 +102,7 @@ public class AuthService {
         userRepository.save(user);
 
         // Tạo token và response
-        String token = jwtService.generateToken(user);
+        String token = jwtService.createToken(user);
         return AuthResponse.builder()
                 .token(token)
                 .user(AuthResponse.UserInfo.fromUser(user))

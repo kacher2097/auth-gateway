@@ -333,11 +333,125 @@
         </dependencies>
     </dependencyManagement>
     <build>
+        <finalName>auth-gateway</finalName>
         <plugins>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <!-- copy resource to folder target -->
+                    <execution>
+                        <id>copy-resources-target</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/config</directory>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}/config</outputDirectory>
+                        </configuration>
+                    </execution>
+
+                    <!-- copy resource to folder app -->
+                    <execution>
+                        <id>copy-resources-base</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}/../config</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!---          -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <excludeArtifactIds>junit</excludeArtifactIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!---          -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${version.mapstruct}</version>
+                        </path>
+                        <!--						<path>-->
+                        <!--							<groupId>org.hibernate</groupId>-->
+                        <!--							<artifactId>hibernate-jpamodelgen</artifactId>-->
+                        <!--							<version>${hibernate.version}</version>-->
+                        <!--						</path>-->
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <!-- Make this jar executable -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <!-- DO NOT include config in your Jar-->
+                    <excludes>
+                        <exclude>config/**</exclude>
+
+                        <exclude>libs/**</exclude>
+                    </excludes>
+                    <archive>
+                        <manifest>
+                            <!-- Jar file entry point -->
+                            <addClasspath>true</addClasspath>
+                            <mainClass>com.affblog.crawldata.CrawldataApplication</mainClass>
+                            <classpathPrefix>libs/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <classifier>exec</classifier> <!-- Chỉ tạo JAR chạy được -->
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -347,5 +461,14 @@
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>/**</exclude>
+                </excludes>
+            </resource>
+        </resources>
     </build>
 </project>
