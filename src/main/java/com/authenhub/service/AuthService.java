@@ -6,10 +6,15 @@ import com.authenhub.bean.OAuth2CallbackRequest;
 import com.authenhub.bean.RegisterRequest;
 import com.authenhub.bean.ResetPasswordRequest;
 import com.authenhub.bean.SocialLoginRequest;
+import com.authenhub.bean.response.UserInfoResponse;
 import com.authenhub.dto.*;
 import com.authenhub.entity.PasswordResetToken;
+import com.authenhub.entity.Permission;
+import com.authenhub.entity.Role;
 import com.authenhub.exception.*;
 import com.authenhub.repository.PasswordResetTokenRepository;
+import com.authenhub.repository.PermissionRepository;
+import com.authenhub.repository.RoleRepository;
 import com.authenhub.service.SocialLoginService.SocialUserInfo;
 import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
@@ -22,6 +27,9 @@ import org.springframework.stereotype.Service;
 
 import com.authenhub.utils.TimestampUtils;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 public class AuthService {
@@ -32,18 +40,20 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final SocialLoginService socialLoginService;
     private final EmailService emailService;
+    private final RoleRepository roleRepository;
+    private final PermissionRepository permissionRepository;
 
     // Optional dependency that will only be injected in dev profile
     private final MockEmailService mockEmailService;
 
     public AuthService(UserRepository userRepository,
-                      PasswordResetTokenRepository tokenRepository,
-                      PasswordEncoder passwordEncoder,
-                      JwtService jwtService,
-                      AuthenticationManager authenticationManager,
-                      SocialLoginService socialLoginService,
-                      EmailService emailService,
-                      @org.springframework.beans.factory.annotation.Autowired(required = false) MockEmailService mockEmailService) {
+                       PasswordResetTokenRepository tokenRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtService jwtService,
+                       AuthenticationManager authenticationManager,
+                       SocialLoginService socialLoginService,
+                       EmailService emailService, RoleRepository roleRepository, PermissionRepository permissionRepository,
+                       @org.springframework.beans.factory.annotation.Autowired(required = false) MockEmailService mockEmailService) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
@@ -51,6 +61,8 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
         this.socialLoginService = socialLoginService;
         this.emailService = emailService;
+        this.roleRepository = roleRepository;
+        this.permissionRepository = permissionRepository;
         this.mockEmailService = mockEmailService;
     }
 
@@ -144,12 +156,27 @@ public class AuthService {
                 .build();
     }
 
-    public AuthResponse.UserInfo getCurrentUser(String token) {
+    public Object getCurrentUser(String token) {
         // Lấy username từ token
         String jwt = token.substring(7); // Bỏ "Bearer " ở đầu
         String username = jwtService.extractUsername(jwt);
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+//        Role role = roleRepository.findById(user.getRoleId()).orElse(null);
+//        if (role != null) {
+//            List<Permission> permissions = permissionRepository.findAllById(role.getPermissionIds());
+//            UserInfoResponse userInfoResponse = UserInfoResponse.builder()
+//                    .id(user.getId())
+//                    .username(user.getUsername())
+//                    .email(user.getEmail())
+//                    .fullName(user.getFullName())
+//                    .avatar(user.getAvatar())
+//                    .roleId(user.getRoleId())
+//                    .permissions(permissions.stream().map(Permission::getName).collect(Collectors.toSet()))
+//                    .build();
+//            log.info("UserInfoResponse have data {}", userInfoResponse);
+//            return userInfoResponse;
+//        }
         return AuthResponse.UserInfo.fromUser(user);
     }
 

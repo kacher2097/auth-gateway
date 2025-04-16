@@ -1,8 +1,6 @@
-package com.authenhub.controller;
+package com.authenhub.bean;
 
 import lombok.Data;
-
-import java.util.Date;
 
 @Data
 public class PaginatedDateRangeRequest extends DateRangeRequest {

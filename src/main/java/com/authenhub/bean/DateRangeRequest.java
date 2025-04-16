@@ -1,4 +1,4 @@
-package com.authenhub.controller;
+package com.authenhub.bean;
 
 import lombok.Data;
 

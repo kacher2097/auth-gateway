@@ -10,6 +10,7 @@ public class Constant {
     public static final String PERCENT = "%";
     public static final String FILE_EXPORT_EXTENSION = ".xlsx";
     public static final String ENTER = "\n";
+    public static final String EMPTY_STRING = "";
 
     public static final String DATE_FORMAT_HYPHEN = "yyyy-MM-dd HH:mm:ss";
     public static final String DATE_TIME_FORMAT_STRING = "dd-MM-yyyy HH:mm:ss";

@@ -27,10 +27,9 @@ public class LogFilter extends GenericFilterBean {
             MDC.put("token", NanoIdUtils.randomNanoId());
             filterChain.doFilter(servletRequest, servletResponse);
             long processTime = System.currentTimeMillis() - startTime;
-            String uri = "((HttpServletRequest) servletRequest).getRequestURI()";
-//            String ipClient = Utils.getClientIp((HttpServletRequest) servletRequest);
-//            log.info("Request to [{}] finish in {}ms", uri, processTime);
-            log.info("Request to finish in {}ms", processTime);
+            String uri = ((jakarta.servlet.http.HttpServletRequest) servletRequest).getRequestURI();
+            String ipClient = ((jakarta.servlet.http.HttpServletRequest) servletRequest).getRemoteAddr();
+            log.info("Request to [{}] from IP [{}] finish in {}ms", uri, ipClient, processTime);
             MDC.clear();
         } catch (ClientAbortException e) {
             log.warn("Broken pipe ", e);

@@ -7,11 +7,14 @@ import com.authenhub.bean.RegisterRequest;
 import com.authenhub.bean.ResetPasswordRequest;
 import com.authenhub.bean.SocialLoginRequest;
 import com.authenhub.dto.*;
+import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -43,8 +46,42 @@ public class AuthController {
         return ResponseEntity.ok(authService.socialLogin(request));
     }
 
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ApiResponse> refreshToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .success(false)
+                    .message("User not authenticated")
+                    .build());
+        }
+
+        if (!(authentication.getPrincipal() instanceof User)) {
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .success(false)
+                    .message("Invalid authentication principal")
+                    .build());
+        }
+
+        User user = (User) authentication.getPrincipal();
+
+        // Tạo token mới
+        String newToken = jwtService.generateToken(user);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("token", newToken);
+        data.put("username", user.getUsername());
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Token refreshed successfully")
+                .data(data)
+                .build());
+    }
+
     @GetMapping("/me")
-    public ResponseEntity<AuthResponse.UserInfo> getCurrentUser(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> getCurrentUser(@RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(authService.getCurrentUser(token));
     }
 

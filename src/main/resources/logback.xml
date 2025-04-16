@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="true" scan="true" scanPeriod="10 seconds">
 
-    <property name="log-path" value="/var/logs/admin-dashboard"/>
+    <property name="log-path" value="./logs"/>
     <property name="name-file" value="admin"/>
     <property name="time-file" value="20"/>
     <property name="size-file" value="20 MB"/>
@@ -122,7 +122,7 @@
     <logger name="java.sql.Connection" value="DEBUG"/>
     <logger name="java.sql.Statement" value="DEBUG"/>
 
-    <Logger name="com.affblog" additivity="false" level="debug">
+    <Logger name="com.authenhub" additivity="false" level="debug">
         <appender-ref ref="warn-log" level="warn"/>
         <appender-ref ref="error-log" level="error"/>
         <appender-ref ref="debug-log" level="debug"/>
@@ -140,4 +140,12 @@
         <appender-ref ref="STDOUT" level="debug"/>
     </Logger>
 
+    <!-- Root logger - catch all other packages -->
+    <root level="info">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="info-log" />
+        <appender-ref ref="warn-log" />
+        <appender-ref ref="error-log" />
+        <appender-ref ref="debug-log" />
+    </root>
 </configuration>

@@ -1,8 +1,9 @@
 HELP.md
+# Maven target directory
 target/
+**/target/
+**/target/**
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 .mvn
 mvnw
 mvnw.cmd
@@ -109,7 +110,12 @@ fabric.properties
 hs_err_pid*
 
 ### Maven template
+# Maven target directory (duplicated for clarity)
 target/
+**/target/
+**/target/**
+.target/**
+/target-*
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -256,7 +262,8 @@ bh_unicode_properties.cache
 GitHub.sublime-settings
 
 # Logs
-logs
+# Uncomment the next line if you want to ignore the logs directory
+# logs
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -279,3 +286,26 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Additional Maven/Java ignores
+.flattened-pom.xml
+.project
+.classpath
+
+# Compiled output
+classes/
+generated/
+gen/
+
+# Deployment directories
+deploy/
+
+# Temporary files
+tmp/
+temp/
+
+# Backup files
+*~
+*.bak
+*.old
+*.orig

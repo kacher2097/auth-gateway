@@ -1,16 +1,16 @@
-spring:
-  mail:
-    host: localhost
-    port: 1025
-    username: test
-    password: test
-    properties:
-      mail:
-        smtp:
-          auth: false
-          starttls:
-            enable: false
-
-# Set to true to use the mock email service
-app:
-  use-mock-email: true
+#spring:
+#  mail:
+#    host: localhost
+#    port: 1025
+#    username: test
+#    password: test
+#    properties:
+#      mail:
+#        smtp:
+#          auth: false
+#          starttls:
+#            enable: false
+#
+## Set to true to use the mock email service
+#app:
+#  use-mock-email: true
