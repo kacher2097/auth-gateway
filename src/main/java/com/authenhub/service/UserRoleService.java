@@ -5,6 +5,7 @@ import com.authenhub.entity.User;
 import com.authenhub.exception.ResourceNotFoundException;
 import com.authenhub.repository.RoleRepository;
 import com.authenhub.repository.UserRepository;
+import com.authenhub.service.interfaces.IUserRoleService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,11 +14,12 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserRoleService {
+public class UserRoleService implements IUserRoleService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
+    @Override
     public User assignRolesToUser(String userId, String roleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
@@ -32,6 +34,7 @@ public class UserRoleService {
         return userRepository.save(user);
     }
 
+    @Override
     public User addRolesToUser(String userId, String roleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
@@ -48,6 +51,7 @@ public class UserRoleService {
         return userRepository.save(user);
     }
 
+    @Override
     public User removeRolesFromUser(String userId, String roleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
@@ -63,6 +67,7 @@ public class UserRoleService {
         return userRepository.save(user);
     }
 
+    @Override
     public Role getUserRoles(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
@@ -71,6 +76,7 @@ public class UserRoleService {
         return roles.orElse(null);
     }
 
+    @Override
     public boolean hasPermission(User user, String permissionName) {
         if (user == null) {
             return false;
@@ -101,7 +107,8 @@ public class UserRoleService {
         return false;
     }
 
-    private void validateRoleIds(String roleId) {
+    @Override
+    public void validateRoleIds(String roleId) {
         if (!roleRepository.existsById(roleId)) {
             throw new ResourceNotFoundException("Role not found with id: " + roleId);
         }

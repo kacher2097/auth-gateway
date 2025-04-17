@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>VNPAY</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+
+    <!-- use the font -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-size: 48px;
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+<div>
+    <div>
+        <div>Tài khoản đăng nhập Omni BE đã được tạo thành công.</div>
+        <div th:text="${'Tên đăng nhập là: ' + name}"></div>
+        <div th:text="${'Mật khẩu mới là: ' + newPassword}"></div>
+        <br/>
+        <div>Trân trọng.</div>
+        <div>Bạn vui lòng không trả lời email này.</div>
+    </div>
+    <br/>
+    <div>----------------------------------------------------------------------</div>
+    <br/>
+    <div>
+        <div style="font-size: 11px; font-family: Verdana, serif; color: #4b7cb6">
+            Lập trình viên
+        </div>
+        <div style="font-size: 11px; font-family: Verdana, serif; color: #4b7cb6">
+            Phòng dịch vụ GTGT- Công ty Cổ phần Giải pháp Thanh toán Việt Nam (VNPAY)
+        </div>
+        <br/>
+        <div style="font-size: 11px; font-family: Verdana, serif">
+            <span style="color: #868686; font-weight: bold">Địa chỉ:</span>
+            <span style="color: #8b8b8b">Tầng 8, số 22 Láng Hạ, Đống Đa, Hà Nội</span>
+            <span style="color: #9b9b9b"> | </span>
+            <span style="color: #868686; font-weight: bold">Điện thoại:</span>
+            <span style="color: #8b8b8b">024 3776 4668</span>
+        </div>
+        <div style="font-size: 11px; font-family: Verdana, serif">
+            <span style="color: #868686; font-weight: bold">Web:</span>
+            <span>www.vnpay.vn |  www.vnpayqr.vn  |  www.vidientu.vnpay.vn</span>
+        </div>
+        <img src='cid:logo'/>
+    </div>
+</div>
+</body>
+</html>

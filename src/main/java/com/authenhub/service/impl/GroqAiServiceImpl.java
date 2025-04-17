@@ -1,11 +1,11 @@
 package com.authenhub.service.impl;
 
-import com.authenhub.bean.ApiResponse;
+import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.bean.ChatMessage;
 import com.authenhub.bean.ai.AiPromptRequest;
 import com.authenhub.bean.ai.AiResponseJson;
 import com.authenhub.config.application.JsonMapper;
-import com.authenhub.service.AiService;
+import com.authenhub.service.interfaces.AiService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.ai.chat.model.ChatModel;

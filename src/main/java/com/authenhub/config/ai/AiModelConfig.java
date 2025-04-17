@@ -6,16 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.ai.openai.OpenAiImageModel;
 import org.springframework.ai.openai.api.OpenAiApi;
-import org.springframework.ai.openai.api.OpenAiImageApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@Getter
 @Slf4j
 @Configuration
-@Getter
 @RequiredArgsConstructor
 public class AiModelConfig {
 
@@ -66,21 +64,24 @@ public class AiModelConfig {
         return openAiChatModel;
     }
 
-    @Bean("openAiImageModel")
-    public OpenAiImageModel groqImgModel() {
-        log.info("Begin init Groq AI with chat model {}", groqChatModel);
+//    @Bean("openAiModel")
+//    public OpenAiChatModel groqImgModel() {
+//        log.info("Begin init Open AI with chat model ");
 //        OpenAiImageOptions options = OpenAiImageOptions.builder()
 //                .model(groqChatModel)
 //                .height(1080)
 //                .width(2040)
 //                .build();
-        OpenAiImageApi openAiImageApi = OpenAiImageApi.builder()
-                .apiKey(groqApiKey)
-                .baseUrl(groqBaseUrl)
-                .build();
-        OpenAiImageModel openAiChatModel = new OpenAiImageModel(openAiImageApi);
-
-        log.info("Config done for Groq img model");
-        return openAiChatModel;
-    }
+////        OpenAiImageApi openAiImageApi = OpenAiImageApi.builder()
+////                .apiKey(groqApiKey)
+////                .baseUrl(groqBaseUrl)
+////                .build();
+//        OpenAiChatModel openAiChatModel = OpenAiChatModel.builder()
+//                .defaultOptions(options)
+//                .build();
+////        OpenAiImageModel openAiChatModel = new OpenAiImageModel(openAiImageApi);
+//
+//        log.info("Config done for Groq img model");
+//        return openAiChatModel;
+//    }
 }

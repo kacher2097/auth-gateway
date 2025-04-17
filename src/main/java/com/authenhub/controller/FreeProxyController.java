@@ -73,16 +73,10 @@ public class FreeProxyController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<ApiResponse> createProxy(
             @Valid @RequestBody FreeProxyDto.Request request,
             @RequestHeader("Authorization") String token) {
-
-        // Extract username from token
-        String jwt = token.substring(7); // Remove "Bearer " prefix
-        String username = jwtService.extractUsername(jwt);
-
-        FreeProxyDto.Response createdProxy = proxyService.createProxy(request, username);
+        FreeProxyDto.Response createdProxy = proxyService.createProxy(request, token);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.builder()
                 .success(true)
                 .message("Proxy created successfully")
@@ -91,7 +85,6 @@ public class FreeProxyController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ApiResponse> updateProxy(
             @PathVariable String id,
             @Valid @RequestBody FreeProxyDto.Request request) {
@@ -105,7 +98,6 @@ public class FreeProxyController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ApiResponse> deleteProxy(@PathVariable String id) {
         proxyService.deleteProxy(id);
         return ResponseEntity.ok(ApiResponse.builder()

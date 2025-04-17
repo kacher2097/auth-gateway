@@ -3,6 +3,7 @@ package com.authenhub.service;
 import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.entity.User;
 import com.authenhub.repository.UserRepository;
+import com.authenhub.service.interfaces.IUserManagementService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,10 +12,11 @@ import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
-public class UserManagementService {
+public class UserManagementService implements IUserManagementService {
 
     private final UserRepository userRepository;
 
+    @Override
     public User updateUser(String userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -41,6 +43,7 @@ public class UserManagementService {
         return userRepository.save(user);
     }
 
+    @Override
     public User setUserActiveStatus(String userId, boolean active) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -50,6 +53,7 @@ public class UserManagementService {
         return userRepository.save(user);
     }
 
+    @Override
     public User setUserRole(String userId, User.Role role) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

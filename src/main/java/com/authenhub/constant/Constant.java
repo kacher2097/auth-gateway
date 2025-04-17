@@ -4,6 +4,11 @@ import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 
 public class Constant {
+
+    private Constant() {}
+
+    public static final String TOKEN = "token";
+
     public static final DateTimeFormatter DATE_PATH = DateTimeFormatter.ofPattern("yyyy/MM/dd");
     public static final String UNDER_SCORE = "_";
     public static final String SLASH = "/";
@@ -25,6 +30,8 @@ public class Constant {
     public static final String NUMBER_FORMAT = "0";
     public static final String SOLID = "SOLID";
 
+    public static final String LOCALHOST_IPV4 = "127.0.0.1";
+    public static final String LOCALHOST_IPV6 = "0:0:0:0:0:0:0:1";
 
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
     public static final SimpleDateFormat MONTH_FORMAT = new SimpleDateFormat("MM/yyyy");

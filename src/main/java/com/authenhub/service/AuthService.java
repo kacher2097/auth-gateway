@@ -1,71 +1,38 @@
 package com.authenhub.service;
 
-import com.authenhub.bean.ChangePasswordRequest;
-import com.authenhub.bean.ForgotPasswordRequest;
-import com.authenhub.bean.OAuth2CallbackRequest;
-import com.authenhub.bean.RegisterRequest;
-import com.authenhub.bean.ResetPasswordRequest;
-import com.authenhub.bean.SocialLoginRequest;
-import com.authenhub.bean.response.UserInfoResponse;
-import com.authenhub.dto.*;
+import com.authenhub.bean.*;
+import com.authenhub.dto.AuthRequest;
+import com.authenhub.dto.AuthResponse;
 import com.authenhub.entity.PasswordResetToken;
-import com.authenhub.entity.Permission;
-import com.authenhub.entity.Role;
-import com.authenhub.exception.*;
-import com.authenhub.repository.PasswordResetTokenRepository;
-import com.authenhub.repository.PermissionRepository;
-import com.authenhub.repository.RoleRepository;
-import com.authenhub.service.SocialLoginService.SocialUserInfo;
 import com.authenhub.entity.User;
+import com.authenhub.exception.*;
 import com.authenhub.filter.JwtService;
+import com.authenhub.repository.PasswordResetTokenRepository;
 import com.authenhub.repository.UserRepository;
+import com.authenhub.service.SocialLoginService.SocialUserInfo;
+import com.authenhub.service.interfaces.IAuthService;
+import com.authenhub.utils.TimestampUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.authenhub.utils.TimestampUtils;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Slf4j
 @Service
-public class AuthService {
-    private final UserRepository userRepository;
-    private final PasswordResetTokenRepository tokenRepository;
-    private final PasswordEncoder passwordEncoder;
+@RequiredArgsConstructor
+public class AuthService implements IAuthService {
+
     private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
-    private final SocialLoginService socialLoginService;
     private final EmailService emailService;
-    private final RoleRepository roleRepository;
-    private final PermissionRepository permissionRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final SocialLoginService socialLoginService;
+    private final AuthenticationManager authenticationManager;
+    private final PasswordResetTokenRepository tokenRepository;
 
-    // Optional dependency that will only be injected in dev profile
-    private final MockEmailService mockEmailService;
-
-    public AuthService(UserRepository userRepository,
-                       PasswordResetTokenRepository tokenRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtService jwtService,
-                       AuthenticationManager authenticationManager,
-                       SocialLoginService socialLoginService,
-                       EmailService emailService, RoleRepository roleRepository, PermissionRepository permissionRepository,
-                       @org.springframework.beans.factory.annotation.Autowired(required = false) MockEmailService mockEmailService) {
-        this.userRepository = userRepository;
-        this.tokenRepository = tokenRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.authenticationManager = authenticationManager;
-        this.socialLoginService = socialLoginService;
-        this.emailService = emailService;
-        this.roleRepository = roleRepository;
-        this.permissionRepository = permissionRepository;
-        this.mockEmailService = mockEmailService;
-    }
-
+    @Override
     public AuthResponse register(RegisterRequest request) {
         // Kiểm tra username và email đã tồn tại
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -96,6 +63,7 @@ public class AuthService {
                 .build();
     }
 
+    @Override
     public AuthResponse login(AuthRequest request) {
         // Xác thực thông tin đăng nhập
         var authentication = authenticationManager.authenticate(
@@ -121,6 +89,7 @@ public class AuthService {
                 .build();
     }
 
+    @Override
     public AuthResponse socialLogin(SocialLoginRequest request) {
         // Lấy thông tin user từ social provider
         var socialUserInfo = socialLoginService.getUserInfo(request.getAccessToken(), request.getProvider());
@@ -156,6 +125,7 @@ public class AuthService {
                 .build();
     }
 
+    @Override
     public Object getCurrentUser(String token) {
         // Lấy username từ token
         String jwt = token.substring(7); // Bỏ "Bearer " ở đầu
@@ -180,6 +150,7 @@ public class AuthService {
         return AuthResponse.UserInfo.fromUser(user);
     }
 
+    @Override
     public AuthResponse handleOAuth2Callback(OAuth2CallbackRequest request) {
         try {
             // Exchange authorization code for user info
@@ -226,26 +197,10 @@ public class AuthService {
     }
 
     public void changePassword(String username, ChangePasswordRequest request) {
-        // Validate passwords match
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new PasswordMismatchException();
-        }
 
-        // Get user
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
-
-        // Verify current password
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new InvalidPasswordException();
-        }
-
-        // Update password
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        user.setUpdatedAt(TimestampUtils.now());
-        userRepository.save(user);
     }
 
+    @Override
     public void forgotPassword(ForgotPasswordRequest request) {
         // Find user by email
         User user = userRepository.findByEmail(request.getEmail())
@@ -273,11 +228,11 @@ public class AuthService {
             } catch (Exception e) {
                 log.warn("Real email service failed, falling back to mock: {}", e.getMessage());
                 // If real email service fails, try to use the mock service if available
-                if (mockEmailService != null) {
-                    mockEmailService.sendPasswordResetEmail(user.getEmail(), token);
-                } else {
-                    throw e; // Re-throw if mock service is not available
-                }
+//                if (mockEmailService != null) {
+//                    mockEmailService.sendPasswordResetEmail(user.getEmail(), token);
+//                } else {
+//                    throw e; // Re-throw if mock service is not available
+//                }
             }
         } catch (Exception e) {
             log.error("Error sending password reset email", e);
@@ -285,6 +240,7 @@ public class AuthService {
         }
     }
 
+    @Override
     public void resetPassword(ResetPasswordRequest request) {
         // Validate passwords match
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
@@ -312,6 +268,28 @@ public class AuthService {
         // Mark token as used
         resetToken.setUsed(true);
         tokenRepository.save(resetToken);
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequest request) {
+        // Validate passwords match
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new PasswordMismatchException();
+        }
+
+        // Get user
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new InvalidPasswordException();
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setUpdatedAt(TimestampUtils.now());
+        userRepository.save(user);
     }
 
     private String generateResetToken() {

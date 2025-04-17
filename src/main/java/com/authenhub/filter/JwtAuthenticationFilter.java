@@ -4,9 +4,10 @@ import com.authenhub.constant.Constant;
 import com.authenhub.constant.JwtConstant;
 import com.authenhub.entity.Permission;
 import com.authenhub.repository.PermissionRepository;
+import com.authenhub.utils.Utils;
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -40,8 +40,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            FilterChain filterChain) {
+        long startTime = System.currentTimeMillis();
+        MDC.put(Constant.TOKEN, NanoIdUtils.randomNanoId());
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
@@ -73,12 +74,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("Function doFilterInternal has exception: ", ex);
 //            response(response, BaseResponse.of(BaseResponseCode.FORBIDDEN));
         } finally {
-//            log.info(
-//                    "Request to {} with ip=[{}] finish in {} ms",
-//                    getRequestUri(request),
-//                    getClientIp(request),
-//                    end(startTime)
-//            );
+            log.info(
+                    "Request to {} with ip=[{}] finish in {} ms",
+                    Utils.getRequestUri(request),
+                    Utils.getClientIp(request),
+                    Utils.end(startTime)
+            );
             MDC.clear();
         }
 

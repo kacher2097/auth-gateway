@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ApiResponseCode implements IApiResponse {
 
-    EXEPTION_CODE("99", "EXEPTION"),
+    EXCEPTION_CODE("99", "EXEPTION"),
     SUCCESS_CODE("00", "SUCCESS"),
     ;
     private final String code;

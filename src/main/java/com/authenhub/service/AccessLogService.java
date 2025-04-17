@@ -2,6 +2,7 @@ package com.authenhub.service;
 
 import com.authenhub.entity.AccessLog;
 import com.authenhub.repository.AccessLogRepository;
+import com.authenhub.service.interfaces.IAccessLogService;
 import com.authenhub.utils.TimestampUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +30,12 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AccessLogService {
+public class AccessLogService implements IAccessLogService {
 
     private final AccessLogRepository accessLogRepository;
     private final MongoTemplate mongoTemplate;
 
+    @Override
     public void logAccess(HttpServletRequest request, int statusCode, long startTime) {
         try {
             AccessLog accessLog = new AccessLog();
@@ -66,50 +68,7 @@ public class AccessLogService {
         }
     }
 
-//    public Map<String, Object> getAccessStats(LocalDateTime start, LocalDateTime end) {
-//        try {
-//
-//            log.info("Getting access stats for date range: {} to {}", start, end);
-//            Map<String, Object> stats = new HashMap<>();
-//
-//            // If no date range provided, default to last 30 days
-//            if (start == null) {
-//                end = LocalDateTime.now();
-//                start = end.minus(30, ChronoUnit.DAYS);
-//            }
-//
-//            // Get total visits
-//            long totalVisits = accessLogRepository.countByDateRange(start, end);
-//            stats.put("totalVisits", totalVisits);
-//
-//            // Get daily visits
-//            List<AccessLogAggregationDto.DailyCount> dailyVisits = accessLogRepository.countByDay(start, end);
-//            stats.put("dailyVisits", dailyVisits);
-//
-//            // Get browser stats
-//            List<AccessLogAggregationDto.BrowserCount> browserStats = accessLogRepository.countByBrowser(start, end);
-//            stats.put("browserStats", browserStats);
-//
-//            // Get device type stats
-//            List<AccessLogAggregationDto.DeviceTypeCount> deviceStats = accessLogRepository.countByDeviceType(start, end);
-//            stats.put("deviceStats", deviceStats);
-//
-//            // Get top endpoints
-//            List<AccessLogAggregationDto.EndpointStats> topEndpoints = accessLogRepository.getTopEndpoints(start, end);
-//            stats.put("topEndpoints", topEndpoints);
-//
-//            // Get top users
-//            List<AccessLogAggregationDto.UserStats> topUsers = accessLogRepository.getTopUsers(start, end);
-//            stats.put("topUsers", topUsers);
-//
-//            return stats;
-//        } catch (Exception e) {
-//            log.error("Error getting access stats", e);
-//            return Collections.emptyMap();
-//        }
-//
-//    }
-
+    @Override
     public Map<String, Object> getAccessStats(Timestamp start, Timestamp end) {
         Map<String, Object> stats = new HashMap<>();
 
@@ -155,6 +114,7 @@ public class AccessLogService {
         return stats;
     }
 
+    @Override
     public List<Map<String, Object>> getLoginActivity(Timestamp start, Timestamp end) {
         // If no date range provided, default to last 30 days
         if (start == null) {
@@ -185,6 +145,224 @@ public class AccessLogService {
         }
 
         return loginActivity;
+    }
+
+    /**
+     * Count access logs by day
+     *
+     * @param start the start date
+     * @param end   the end date
+     * @return the list of daily counts
+     */
+    @Override
+    public List<Map<String, Object>> countByDay(Timestamp start, Timestamp end) {
+        // Create match operation
+        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
+
+        // Create projection operation to extract date
+        ProjectionOperation projectOperation = Aggregation.project()
+                .andExpression("timestamp").as("date");
+
+        // Create group operation
+//        GroupOperation groupOperation = Aggregation.group(DateOperators.DateToString.dateOf("date").toString("%Y-%m-%d"))
+//                .count().as("count");
+
+        // Create sort operation
+        SortOperation sortOperation = Aggregation.sort(org.springframework.data.domain.Sort.Direction.ASC, "_id");
+
+        // Create aggregation
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchOperation,
+                projectOperation,
+                sortOperation
+        );
+
+        // Execute aggregation
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
+
+        // Convert results to List<Map<String, Object>>
+        List<Map<String, Object>> dailyCounts = new ArrayList<>();
+        for (Map result : results.getMappedResults()) {
+            Map<String, Object> dailyCount = new HashMap<>();
+            dailyCount.put("_id", result.get("_id"));
+            dailyCount.put("count", result.get("count"));
+            dailyCounts.add(dailyCount);
+        }
+
+        return dailyCounts;
+    }
+
+    /**
+     * Count access logs by browser
+     *
+     * @param start the start date
+     * @param end   the end date
+     * @return the list of browser counts
+     */
+    @Override
+    public List<Map<String, Object>> countByBrowser(Timestamp start, Timestamp end) {
+
+        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
+        GroupOperation groupOperation = Aggregation.group("browser")
+                .count().as("count");
+
+        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
+
+        // Create aggregation
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchOperation,
+                groupOperation,
+                sortOperation
+        );
+
+        // Execute aggregation
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
+
+        // Convert results to List<Map<String, Object>>
+        List<Map<String, Object>> browserCounts = new ArrayList<>();
+        for (Map result : results.getMappedResults()) {
+            Map<String, Object> browserCount = new HashMap<>();
+            browserCount.put("_id", result.get("_id"));
+            browserCount.put("count", result.get("count"));
+            browserCounts.add(browserCount);
+        }
+
+        return browserCounts;
+    }
+
+    /**
+     * Count access logs by device type
+     *
+     * @param start the start date
+     * @param end   the end date
+     * @return the list of device type counts
+     */
+    @Override
+    public List<Map<String, Object>> countByDeviceType(Timestamp start, Timestamp end) {
+        // Create match operation
+        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
+
+        // Create group operation
+        GroupOperation groupOperation = Aggregation.group("deviceType")
+                .count().as("count");
+
+        // Create sort operation
+        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
+
+        // Create aggregation
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchOperation,
+                groupOperation,
+                sortOperation
+        );
+
+        // Execute aggregation
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
+
+        // Convert results to List<Map<String, Object>>
+        List<Map<String, Object>> deviceTypeCounts = new ArrayList<>();
+        for (Map result : results.getMappedResults()) {
+            Map<String, Object> deviceTypeCount = new HashMap<>();
+            deviceTypeCount.put("_id", result.get("_id"));
+            deviceTypeCount.put("count", result.get("count"));
+            deviceTypeCounts.add(deviceTypeCount);
+        }
+
+        return deviceTypeCounts;
+    }
+
+    /**
+     * Get top endpoints
+     *
+     * @param start the start date
+     * @param end   the end date
+     * @return the list of top endpoints
+     */
+    @Override
+    public List<Map<String, Object>> getTopEndpoints(Timestamp start, Timestamp end) {
+        // Create match operation
+        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
+
+        // Create group operation
+        GroupOperation groupOperation = Aggregation.group("endpoint")
+                .count().as("count")
+                .avg("responseTimeMs").as("avgResponseTime");
+
+        // Create sort operation
+        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
+
+        // Create limit operation
+        AggregationOperation limitOperation = Aggregation.limit(10);
+
+        // Create aggregation
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchOperation,
+                groupOperation,
+                sortOperation,
+                limitOperation
+        );
+
+        // Execute aggregation
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
+
+        // Convert results to List<Map<String, Object>>
+        List<Map<String, Object>> topEndpoints = new ArrayList<>();
+        for (Map result : results.getMappedResults()) {
+            Map<String, Object> endpoint = new HashMap<>();
+            endpoint.put("_id", result.get("_id"));
+            endpoint.put("count", result.get("count"));
+            endpoint.put("avgResponseTime", result.get("avgResponseTime"));
+            topEndpoints.add(endpoint);
+        }
+
+        return topEndpoints;
+    }
+
+    /**
+     * Get top users
+     *
+     * @param start the start date
+     * @param end   the end date
+     * @return the list of top users
+     */
+    @Override
+    public List<Map<String, Object>> getTopUsers(Timestamp start, Timestamp end) {
+        // Create match operation
+        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
+
+        // Create group operation
+        GroupOperation groupOperation = Aggregation.group("userId")
+                .count().as("count")
+                .first("username").as("username");
+
+        // Create sort operation
+        SortOperation sortOperation = Aggregation.sort(org.springframework.data.domain.Sort.Direction.DESC, "count");
+
+        // Create limit operation
+        AggregationOperation limitOperation = Aggregation.limit(10);
+
+        // Create aggregation
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchOperation,
+                groupOperation,
+                sortOperation,
+                limitOperation
+        );
+
+        // Execute aggregation
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
+
+        // Convert results to List<Map<String, Object>>
+        List<Map<String, Object>> topUsers = new ArrayList<>();
+        for (Map result : results.getMappedResults()) {
+            Map<String, Object> user = new HashMap<>();
+            user.put("_id", result.get("_id"));
+            user.put("count", result.get("count"));
+            user.put("username", result.get("username"));
+            topUsers.add(user);
+        }
+
+        return topUsers;
     }
 
     private String getClientIp(HttpServletRequest request) {
@@ -244,216 +422,4 @@ public class AccessLogService {
         }
     }
 
-    /**
-     * Count access logs by day
-     *
-     * @param start the start date
-     * @param end   the end date
-     * @return the list of daily counts
-     */
-    public List<Map<String, Object>> countByDay(Timestamp start, Timestamp end) {
-        // Create match operation
-        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-
-        // Create projection operation to extract date
-        ProjectionOperation projectOperation = Aggregation.project()
-                .andExpression("timestamp").as("date");
-
-        // Create group operation
-//        GroupOperation groupOperation = Aggregation.group(DateOperators.DateToString.dateOf("date").toString("%Y-%m-%d"))
-//                .count().as("count");
-
-        // Create sort operation
-        SortOperation sortOperation = Aggregation.sort(org.springframework.data.domain.Sort.Direction.ASC, "_id");
-
-        // Create aggregation
-        Aggregation aggregation = Aggregation.newAggregation(
-                matchOperation,
-                projectOperation,
-                sortOperation
-        );
-
-        // Execute aggregation
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
-
-        // Convert results to List<Map<String, Object>>
-        List<Map<String, Object>> dailyCounts = new ArrayList<>();
-        for (Map result : results.getMappedResults()) {
-            Map<String, Object> dailyCount = new HashMap<>();
-            dailyCount.put("_id", result.get("_id"));
-            dailyCount.put("count", result.get("count"));
-            dailyCounts.add(dailyCount);
-        }
-
-        return dailyCounts;
-    }
-
-    /**
-     * Count access logs by browser
-     *
-     * @param start the start date
-     * @param end   the end date
-     * @return the list of browser counts
-     */
-    public List<Map<String, Object>> countByBrowser(Timestamp start, Timestamp end) {
-
-        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-        GroupOperation groupOperation = Aggregation.group("browser")
-                .count().as("count");
-
-        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
-
-        // Create aggregation
-        Aggregation aggregation = Aggregation.newAggregation(
-                matchOperation,
-                groupOperation,
-                sortOperation
-        );
-
-        // Execute aggregation
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
-
-        // Convert results to List<Map<String, Object>>
-        List<Map<String, Object>> browserCounts = new ArrayList<>();
-        for (Map result : results.getMappedResults()) {
-            Map<String, Object> browserCount = new HashMap<>();
-            browserCount.put("_id", result.get("_id"));
-            browserCount.put("count", result.get("count"));
-            browserCounts.add(browserCount);
-        }
-
-        return browserCounts;
-    }
-
-    /**
-     * Count access logs by device type
-     *
-     * @param start the start date
-     * @param end   the end date
-     * @return the list of device type counts
-     */
-    public List<Map<String, Object>> countByDeviceType(Timestamp start, Timestamp end) {
-        // Create match operation
-        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-
-        // Create group operation
-        GroupOperation groupOperation = Aggregation.group("deviceType")
-                .count().as("count");
-
-        // Create sort operation
-        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
-
-        // Create aggregation
-        Aggregation aggregation = Aggregation.newAggregation(
-                matchOperation,
-                groupOperation,
-                sortOperation
-        );
-
-        // Execute aggregation
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
-
-        // Convert results to List<Map<String, Object>>
-        List<Map<String, Object>> deviceTypeCounts = new ArrayList<>();
-        for (Map result : results.getMappedResults()) {
-            Map<String, Object> deviceTypeCount = new HashMap<>();
-            deviceTypeCount.put("_id", result.get("_id"));
-            deviceTypeCount.put("count", result.get("count"));
-            deviceTypeCounts.add(deviceTypeCount);
-        }
-
-        return deviceTypeCounts;
-    }
-
-    /**
-     * Get top endpoints
-     *
-     * @param start the start date
-     * @param end   the end date
-     * @return the list of top endpoints
-     */
-    public List<Map<String, Object>> getTopEndpoints(Timestamp start, Timestamp end) {
-        // Create match operation
-        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-
-        // Create group operation
-        GroupOperation groupOperation = Aggregation.group("endpoint")
-                .count().as("count")
-                .avg("responseTimeMs").as("avgResponseTime");
-
-        // Create sort operation
-        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
-
-        // Create limit operation
-        AggregationOperation limitOperation = Aggregation.limit(10);
-
-        // Create aggregation
-        Aggregation aggregation = Aggregation.newAggregation(
-                matchOperation,
-                groupOperation,
-                sortOperation,
-                limitOperation
-        );
-
-        // Execute aggregation
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
-
-        // Convert results to List<Map<String, Object>>
-        List<Map<String, Object>> topEndpoints = new ArrayList<>();
-        for (Map result : results.getMappedResults()) {
-            Map<String, Object> endpoint = new HashMap<>();
-            endpoint.put("_id", result.get("_id"));
-            endpoint.put("count", result.get("count"));
-            endpoint.put("avgResponseTime", result.get("avgResponseTime"));
-            topEndpoints.add(endpoint);
-        }
-
-        return topEndpoints;
-    }
-
-    /**
-     * Get top users
-     *
-     * @param start the start date
-     * @param end   the end date
-     * @return the list of top users
-     */
-    public List<Map<String, Object>> getTopUsers(Timestamp start, Timestamp end) {
-        // Create match operation
-        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-
-        // Create group operation
-        GroupOperation groupOperation = Aggregation.group("userId")
-                .count().as("count")
-                .first("username").as("username");
-
-        // Create sort operation
-        SortOperation sortOperation = Aggregation.sort(org.springframework.data.domain.Sort.Direction.DESC, "count");
-
-        // Create limit operation
-        AggregationOperation limitOperation = Aggregation.limit(10);
-
-        // Create aggregation
-        Aggregation aggregation = Aggregation.newAggregation(
-                matchOperation,
-                groupOperation,
-                sortOperation,
-                limitOperation
-        );
-
-        // Execute aggregation
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
-
-        // Convert results to List<Map<String, Object>>
-        List<Map<String, Object>> topUsers = new ArrayList<>();
-        for (Map result : results.getMappedResults()) {
-            Map<String, Object> user = new HashMap<>();
-            user.put("_id", result.get("_id"));
-            user.put("count", result.get("count"));
-            user.put("username", result.get("username"));
-            topUsers.add(user);
-        }
-
-        return topUsers;
-    }
 }

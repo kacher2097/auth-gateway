@@ -5,12 +5,14 @@ import com.authenhub.entity.FreeProxy;
 import com.authenhub.entity.User;
 import com.authenhub.repository.FreeProxyRepository;
 import com.authenhub.repository.UserRepository;
+import com.authenhub.service.interfaces.IFreeProxyService;
+import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.net.HttpURLConnection;
@@ -18,37 +20,39 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.sql.Timestamp;
-import com.authenhub.utils.TimestampUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FreeProxyService {
+public class FreeProxyService implements IFreeProxyService {
 
-    private final FreeProxyRepository proxyRepository;
     private final UserRepository userRepository;
-    private final RestTemplate restTemplate;
+    private final FreeProxyRepository proxyRepository;
 
+    @Override
     public List<FreeProxyDto.Response> getAllProxies() {
         return proxyRepository.findAll().stream()
                 .map(FreeProxyDto.Response::fromEntity)
                 .collect(Collectors.toList());
     }
 
+    @Override
     public List<FreeProxyDto.Response> getActiveProxies() {
         return proxyRepository.findByIsActiveTrue().stream()
                 .map(FreeProxyDto.Response::fromEntity)
                 .collect(Collectors.toList());
     }
 
+    @Override
     public FreeProxyDto.Response getProxyById(String id) {
         FreeProxy proxy = proxyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proxy not found"));
         return FreeProxyDto.Response.fromEntity(proxy);
     }
 
+    @Override
     public FreeProxyDto.Response createProxy(FreeProxyDto.Request request, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -86,6 +90,7 @@ public class FreeProxyService {
         return FreeProxyDto.Response.fromEntity(savedProxy);
     }
 
+    @Override
     public FreeProxyDto.Response updateProxy(String id, FreeProxyDto.Request request) {
         FreeProxy proxy = proxyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proxy not found"));
@@ -102,6 +107,7 @@ public class FreeProxyService {
         return FreeProxyDto.Response.fromEntity(savedProxy);
     }
 
+    @Override
     public void deleteProxy(String id) {
         if (!proxyRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Proxy not found");
@@ -109,6 +115,7 @@ public class FreeProxyService {
         proxyRepository.deleteById(id);
     }
 
+    @Override
     public FreeProxyDto.CheckResult checkProxyById(String id) {
         FreeProxy proxy = proxyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proxy not found"));
@@ -131,6 +138,39 @@ public class FreeProxyService {
 
         proxyRepository.save(proxy);
         return result;
+    }
+
+    @Override
+    public FreeProxyDto.ImportResult importProxies(MultipartFile file, String fileType) {
+        return null;
+    }
+
+    @Override
+    public List<FreeProxyDto.Response> getProxiesByProtocol(String protocol) {
+        return proxyRepository.findByProtocol(protocol).stream()
+                .map(FreeProxyDto.Response::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FreeProxyDto.Response> getProxiesByCountry(String country) {
+        return proxyRepository.findByCountry(country).stream()
+                .map(FreeProxyDto.Response::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FreeProxyDto.Response> getFastProxies(int maxResponseTime) {
+        return proxyRepository.findByResponseTimeLessThan(maxResponseTime).stream()
+                .map(FreeProxyDto.Response::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FreeProxyDto.Response> getReliableProxies(double minUptime) {
+        return proxyRepository.findByUptimeGreaterThan(minUptime).stream()
+                .map(FreeProxyDto.Response::fromEntity)
+                .collect(Collectors.toList());
     }
 
     private FreeProxyDto.CheckResult checkProxy(FreeProxy proxy) {
@@ -171,24 +211,6 @@ public class FreeProxyService {
                 .build();
     }
 
-    private Proxy createJavaProxy(FreeProxy proxy) {
-        Proxy.Type proxyType;
-
-        switch (proxy.getProtocol().toUpperCase()) {
-            case "SOCKS4":
-            case "SOCKS5":
-                proxyType = Proxy.Type.SOCKS;
-                break;
-            case "HTTP":
-            case "HTTPS":
-            default:
-                proxyType = Proxy.Type.HTTP;
-                break;
-        }
-
-        return new Proxy(proxyType, new InetSocketAddress(proxy.getIpAddress(), proxy.getPort()));
-    }
-
     @Scheduled(fixedRate = 3600000) // Check every hour
     public void checkAllProxies() {
         log.info("Starting scheduled check of all proxies");
@@ -222,28 +244,22 @@ public class FreeProxyService {
         log.info("Completed scheduled check of all proxies");
     }
 
-    public List<FreeProxyDto.Response> getProxiesByProtocol(String protocol) {
-        return proxyRepository.findByProtocol(protocol).stream()
-                .map(FreeProxyDto.Response::fromEntity)
-                .collect(Collectors.toList());
-    }
+    private Proxy createJavaProxy(FreeProxy proxy) {
+        Proxy.Type proxyType;
 
-    public List<FreeProxyDto.Response> getProxiesByCountry(String country) {
-        return proxyRepository.findByCountry(country).stream()
-                .map(FreeProxyDto.Response::fromEntity)
-                .collect(Collectors.toList());
-    }
+        switch (proxy.getProtocol().toUpperCase()) {
+            case "SOCKS4":
+            case "SOCKS5":
+                proxyType = Proxy.Type.SOCKS;
+                break;
+            case "HTTP":
+            case "HTTPS":
+            default:
+                proxyType = Proxy.Type.HTTP;
+                break;
+        }
 
-    public List<FreeProxyDto.Response> getFastProxies(int maxResponseTime) {
-        return proxyRepository.findByResponseTimeLessThan(maxResponseTime).stream()
-                .map(FreeProxyDto.Response::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public List<FreeProxyDto.Response> getReliableProxies(double minUptime) {
-        return proxyRepository.findByUptimeGreaterThan(minUptime).stream()
-                .map(FreeProxyDto.Response::fromEntity)
-                .collect(Collectors.toList());
+        return new Proxy(proxyType, new InetSocketAddress(proxy.getIpAddress(), proxy.getPort()));
     }
 
 //    public FreeProxyDto.ImportResult importProxiesFromFile(MultipartFile file, String fileType, String username) {

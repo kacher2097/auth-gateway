@@ -3,20 +3,17 @@ package com.authenhub.controller;
 import com.authenhub.bean.AccessStatsRequest;
 import com.authenhub.dto.ApiResponse;
 import com.authenhub.service.AccessLogService;
+import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
-import com.authenhub.utils.TimestampUtils;
 import java.util.Map;
-import java.util.HashMap;
 
 @RestController
 @RequestMapping("/admin/analytics")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminAnalyticsController {
 
     private final AccessLogService accessLogService;
