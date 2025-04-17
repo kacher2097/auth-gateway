@@ -29,7 +29,15 @@ public class JwtService {
     private long jwtExpiration;
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        if (token == null || token.isEmpty()) {
+            return null;
+        }
+        try {
+            return extractClaim(token, Claims::getSubject);
+        } catch (Exception e) {
+            log.debug("Error extracting username from token: {}", e.getMessage());
+            return null;
+        }
     }
 
     public Date extractExpiration(String token) {
@@ -37,29 +45,56 @@ public class JwtService {
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+        if (token == null || token.isEmpty()) {
+            return null;
+        }
+        try {
+            final Claims claims = extractAllClaims(token);
+            return claimsResolver.apply(claims);
+        } catch (Exception e) {
+            log.debug("Error extracting claim from token: {}", e.getMessage());
+            return null;
+        }
     }
 
     public String extractRole(String token) {
-        Claims claims = extractAllClaims(token);
-        @SuppressWarnings("unchecked")
-        List<String> roles = (List<String>) claims.get("roles");
-        if (roles != null && !roles.isEmpty()) {
-            // Return the first role (assuming a user has only one role)
-            return roles.get(0);
+        if (token == null || token.isEmpty()) {
+            return null;
         }
-        return null;
+        try {
+            Claims claims = extractAllClaims(token);
+            @SuppressWarnings("unchecked")
+            List<String> roles = (List<String>) claims.get("roles");
+            if (roles != null && !roles.isEmpty()) {
+                // Return the first role (assuming a user has only one role)
+                return roles.get(0);
+            }
+            return null;
+        } catch (Exception e) {
+            log.debug("Error extracting role from token: {}", e.getMessage());
+            return null;
+        }
     }
 
     public boolean hasRole(String token, String role) {
-        Claims claims = extractAllClaims(token);
-        @SuppressWarnings("unchecked")
-        List<String> roles = (List<String>) claims.get("roles");
-        return roles != null && roles.contains(role);
+        if (token == null || token.isEmpty() || role == null) {
+            return false;
+        }
+        try {
+            Claims claims = extractAllClaims(token);
+            @SuppressWarnings("unchecked")
+            List<String> roles = (List<String>) claims.get("roles");
+            return roles != null && roles.contains(role);
+        } catch (Exception e) {
+            log.debug("Error checking role in token: {}", e.getMessage());
+            return false;
+        }
     }
 
     public Claims extractAllClaims(String token) {
+        if (token == null || token.isEmpty()) {
+            throw new IllegalArgumentException("Token cannot be null or empty");
+        }
         return Jwts.parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
@@ -93,8 +128,7 @@ public class JwtService {
                 .toList());
 
         // Add additional user info if available
-        if (userDetails instanceof User) {
-            User user = (User) userDetails;
+        if (userDetails instanceof User user) {
             claims.put("userId", user.getId());
             claims.put("email", user.getEmail());
             claims.put("fullName", user.getFullName());

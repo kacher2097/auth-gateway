@@ -10,42 +10,45 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MongoConfig {
 
-    @Value("${mongodb.authentication}")
+    @Value("${mongodb.authentication:}")
     private String authentication;
 
-    @Value("${mongodb.database}")
+    @Value("${mongodb.database:authen-hub}")
     private String database;
 
-    @Value("${mongodb.heartbeatFrequency}")
+    @Value("${mongodb.heartbeatFrequency:10000}")
     private int heartBeatFrequency;
 
-    @Value("${mongodb.maxIdleTime}")
+    @Value("${mongodb.maxIdleTime:300000}")
     private int maxIdleTime;
 
-    @Value("${mongodb.maxLifeTime}")
+    @Value("${mongodb.maxLifeTime:600000}")
     private int maxLifeTime;
 
-    @Value("${mongodb.maxPoolSize}")
+    @Value("${mongodb.maxPoolSize:60}")
     private int maxPoolSize;
 
-    @Value("${mongodb.maxWaitTime}")
+    @Value("${mongodb.maxWaitTime:600000}")
     private int maxWaitTime;
 
-    @Value("${mongodb.minHeartbeatFrequency}")
+    @Value("${mongodb.minHeartbeatFrequency:500}")
     private int minHeartBeatFrequency;
 
-    @Value("${mongodb.minPoolSize}")
+    @Value("${mongodb.minPoolSize:10}")
     private int minPoolSize;
 
-    @Value("${mongodb.password}")
+    @Value("${mongodb.password:}")
     private String password;
 
-    @Value("${mongodb.replicaSet}")
+    @Value("${mongodb.replicaSet:}")
     private String replicaSet;
 
-    @Value("${mongodb.serverAddresses}")
+    @Value("${mongodb.serverAddresses:127.0.0.1:27018}")
     private String serverAddresses;
 
-    @Value("${mongodb.username}")
+    @Value("${mongodb.username:}")
     private String username;
+
+    @Value("${mongodb.uri:mongodb://localhost:27017/authen-hub}")
+    private String uri;
 }

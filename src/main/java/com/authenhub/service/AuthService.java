@@ -1,6 +1,7 @@
 package com.authenhub.service;
 
 import com.authenhub.bean.*;
+import com.authenhub.config.application.JsonMapper;
 import com.authenhub.dto.AuthRequest;
 import com.authenhub.dto.AuthResponse;
 import com.authenhub.entity.PasswordResetToken;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService implements IAuthService {
 
+    private final JsonMapper jsonMapper;
     private final JwtService jwtService;
     private final EmailService emailService;
     private final UserRepository userRepository;
@@ -34,6 +36,7 @@ public class AuthService implements IAuthService {
 
     @Override
     public AuthResponse register(RegisterRequest request) {
+        log.info("Begin register new user with request {}", jsonMapper.toJson(request));
         // Kiểm tra username và email đã tồn tại
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new UsernameAlreadyExistsException();
@@ -54,7 +57,7 @@ public class AuthService implements IAuthService {
         user.setUpdatedAt(TimestampUtils.now());
 
         userRepository.save(user);
-
+        log.info("Register new user successfully with id {}", user.getId());
         // Tạo token và response
         String token = jwtService.generateToken(user);
         return AuthResponse.builder()
@@ -65,8 +68,9 @@ public class AuthService implements IAuthService {
 
     @Override
     public AuthResponse login(AuthRequest request) {
+        log.info("Begin login with request {}", jsonMapper.toJson(request));
         // Xác thực thông tin đăng nhập
-        var authentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
                         request.getPassword()
@@ -80,7 +84,7 @@ public class AuthService implements IAuthService {
         // Cập nhật thời gian đăng nhập
         user.setLastLogin(TimestampUtils.now());
         userRepository.save(user);
-
+        log.info("Login user successfully with id {}", user.getId());
         // Tạo token và response
         String token = jwtService.createToken(user);
         return AuthResponse.builder()
@@ -91,6 +95,7 @@ public class AuthService implements IAuthService {
 
     @Override
     public AuthResponse socialLogin(SocialLoginRequest request) {
+        log.info("Begin social login with request {}", jsonMapper.toJson(request));
         // Lấy thông tin user từ social provider
         var socialUserInfo = socialLoginService.getUserInfo(request.getAccessToken(), request.getProvider());
 
@@ -127,6 +132,7 @@ public class AuthService implements IAuthService {
 
     @Override
     public Object getCurrentUser(String token) {
+        log.info("Begin get current user with token {}", token);
         // Lấy username từ token
         String jwt = token.substring(7); // Bỏ "Bearer " ở đầu
         String username = jwtService.extractUsername(jwt);
@@ -290,6 +296,20 @@ public class AuthService implements IAuthService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setUpdatedAt(TimestampUtils.now());
         userRepository.save(user);
+    }
+
+    @Override
+    public AuthResponse refreshToken(String token) {
+        log.info("Begin refresh token with token {}", token);
+        String username = jwtService.extractUsername(token);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ErrorApiException("123", "User không tồn tại"));
+        String refreshToken = jwtService.createToken(user);
+        log.info("Refresh token successfully with id {}", user.getId());
+        return AuthResponse.builder()
+                .token(refreshToken)
+                .user(AuthResponse.UserInfo.fromUser(user))
+                .build();
     }
 
     private String generateResetToken() {

@@ -1,6 +1,7 @@
 package com.authenhub.controller;
 
 import com.authenhub.bean.UserUpdateRequest;
+import com.authenhub.bean.user.UserSearchResponse;
 import com.authenhub.dto.ApiResponse;
 import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
@@ -23,10 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -41,12 +39,12 @@ public class AdminController {
     private final UserService userService;
 
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse> getAllUsers() {
+    public com.authenhub.bean.common.ApiResponse<?> getAllUsers() {
         return getUsersList(null, null, null);
     }
 
     @PostMapping("/users")
-    public ResponseEntity<ApiResponse> getUsersPost(@RequestBody(required = false) Map<String, Object> params) {
+    public com.authenhub.bean.common.ApiResponse<?> getUsersPost(@RequestBody(required = false) Map<String, Object> params) {
         Integer page = params != null && params.containsKey("page") ? Integer.valueOf(params.get("page").toString()) : null;
         Integer limit = params != null && params.containsKey("limit") ? Integer.valueOf(params.get("limit").toString()) : null;
         String search = params != null && params.containsKey("search") ? params.get("search").toString() : null;
@@ -54,17 +52,25 @@ public class AdminController {
         return getUsersList(page, limit, search);
     }
 
-    private ResponseEntity<ApiResponse> getUsersList(Integer page, Integer limit, String search) {
+    private com.authenhub.bean.common.ApiResponse<?> getUsersList(Integer page, Integer limit, String search) {
         List<User> users = userRepository.findAll();
-
-        // Remove sensitive information
-        users.forEach(user -> user.setPassword(null));
-
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Users retrieved successfully")
-                .data(users)
-                .build());
+        List<UserSearchResponse> response = new ArrayList<>();
+        for (User user : users) {
+            UserSearchResponse userSearchResponse = UserSearchResponse.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .fullName(user.getFullName())
+                    .avatar(user.getAvatar())
+                    .role(user.getRoleId())
+                    .active(user.isActive())
+                    .createdAt(user.getCreatedAt())
+                    .updatedAt(user.getUpdatedAt())
+                    .build();
+            response.add(userSearchResponse);
+        }
+        log.info("Get all users successfully total {} users", response.size());
+        return com.authenhub.bean.common.ApiResponse.success(response);
     }
 
     @GetMapping("/users/{id}")

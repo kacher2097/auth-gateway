@@ -1,5 +1,6 @@
 package com.authenhub.config.application;
 
+import com.authenhub.exception.JsonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -44,11 +45,11 @@ public class JsonMapper extends ObjectMapper {
         return this;
     }
 
-    public String toJson(Object value) throws Exception {
+    public String toJson(Object value) {
         try {
             return super.writeValueAsString(value);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -56,7 +57,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(p, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -64,7 +65,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.treeToValue(p, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -72,7 +73,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(p, valueTypeRef);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -80,7 +81,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(p, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -89,7 +90,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -98,7 +99,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueTypeRef);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -107,7 +108,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -116,7 +117,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -125,7 +126,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueTypeRef);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -134,7 +135,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -143,7 +144,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(content, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -152,7 +153,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(content, valueTypeRef);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -160,7 +161,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.convertValue(content, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -169,7 +170,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(content, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -178,7 +179,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -187,7 +188,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueTypeRef);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -196,7 +197,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -205,7 +206,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -214,7 +215,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueTypeRef);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -223,7 +224,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -231,7 +232,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -240,7 +241,7 @@ public class JsonMapper extends ObjectMapper {
         try {
             return super.readValue(src, valueType);
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new JsonException(e);
         }
     }
 
@@ -248,7 +249,7 @@ public class JsonMapper extends ObjectMapper {
 //        try {
 //            return super.readTree(file);
 //        } catch (Exception e) {
-//            throw new Exception(e);
+//            throw new JsonException(e);
 //        }
 //    }
 
@@ -256,7 +257,7 @@ public class JsonMapper extends ObjectMapper {
 //        try {
 //            return super.readValue(toJson(obj), valueType);
 //        } catch (Exception e) {
-//            throw new Exception(e);
+//            throw new JsonException(e);
 //        }
 //    }
 }

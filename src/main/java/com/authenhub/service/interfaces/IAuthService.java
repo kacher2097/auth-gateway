@@ -75,4 +75,5 @@ public interface IAuthService {
      * @param request change password request
      */
     void changePassword(ChangePasswordRequest request);
+    AuthResponse refreshToken(String token);
 }

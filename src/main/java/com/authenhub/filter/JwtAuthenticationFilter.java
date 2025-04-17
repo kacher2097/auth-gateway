@@ -53,9 +53,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             jwt = getJwtFromRequest(request);
-            username = jwtService.extractUsername(jwt);
+            if (jwt == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            username = jwtService.extractUsername(jwt);
+            if (username == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
 //                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
 //                        userDetails,
@@ -63,10 +72,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 //                        userDetails.getAuthorities()
 //                );
                 UsernamePasswordAuthenticationToken authToken = getAuthorization(jwt);
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (authToken != null) {
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
 
             filterChain.doFilter(request, response);
@@ -130,8 +141,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+            String token = bearerToken.substring(7);
+            // Return null if token is empty to avoid processing empty tokens
+            return StringUtils.hasText(token) ? token : null;
         }
-        return Constant.EMPTY_STRING;
+        return null;
     }
-} 
+}

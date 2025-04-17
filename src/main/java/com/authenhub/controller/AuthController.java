@@ -1,20 +1,14 @@
 package com.authenhub.controller;
 
-import com.authenhub.bean.ChangePasswordRequest;
-import com.authenhub.bean.ForgotPasswordRequest;
-import com.authenhub.bean.OAuth2CallbackRequest;
-import com.authenhub.bean.RegisterRequest;
-import com.authenhub.bean.ResetPasswordRequest;
-import com.authenhub.bean.SocialLoginRequest;
-import com.authenhub.dto.*;
-import com.authenhub.entity.User;
+import com.authenhub.bean.*;
+import com.authenhub.dto.ApiResponse;
+import com.authenhub.dto.AuthRequest;
+import com.authenhub.dto.AuthResponse;
 import com.authenhub.filter.JwtService;
-import com.authenhub.service.AuthService;
+import com.authenhub.service.interfaces.IAuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -25,7 +19,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final IAuthService authService;
     private final JwtService jwtService;
 
     @PostMapping("/register")
@@ -47,37 +41,8 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<ApiResponse> refreshToken() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                    .success(false)
-                    .message("User not authenticated")
-                    .build());
-        }
-
-        if (!(authentication.getPrincipal() instanceof User)) {
-            return ResponseEntity.badRequest().body(ApiResponse.builder()
-                    .success(false)
-                    .message("Invalid authentication principal")
-                    .build());
-        }
-
-        User user = (User) authentication.getPrincipal();
-
-        // Tạo token mới
-        String newToken = jwtService.generateToken(user);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("token", newToken);
-        data.put("username", user.getUsername());
-
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Token refreshed successfully")
-                .data(data)
-                .build());
+    public ResponseEntity<AuthResponse> refreshToken(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(authService.refreshToken(token));
     }
 
     @GetMapping("/me")
@@ -94,11 +59,7 @@ public class AuthController {
     public ResponseEntity<Void> changePassword(
             @RequestHeader("Authorization") String token,
             @Valid @RequestBody ChangePasswordRequest request) {
-        // Extract username from token
-        String jwt = token.substring(7); // Remove "Bearer " prefix
-        String username = jwtService.extractUsername(jwt);
-
-        authService.changePassword(username, request);
+        authService.changePassword(request);
         return ResponseEntity.ok().build();
     }
 

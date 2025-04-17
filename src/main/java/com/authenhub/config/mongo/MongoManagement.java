@@ -43,8 +43,18 @@ public class MongoManagement {
     private final MongoConfig mongoConfig;
 
     private MongoClient getMongoClient() {
-        MongoClientSettings mongoSettingsProperties = getMongoClientSettings();
-        return MongoClients.create(mongoSettingsProperties);
+        // Check if we have a MongoDB URI configured
+        String mongoUri = mongoConfig.getUri();
+        if (mongoUri != null && !mongoUri.isEmpty()) {
+            // Use the URI directly if available
+            log.info("Connecting to MongoDB using URI: {}", mongoUri.replaceAll(":[^/]+@", ":****@"));
+            return MongoClients.create(mongoUri);
+        } else {
+            // Fall back to using settings
+            log.info("Connecting to MongoDB using settings");
+            MongoClientSettings mongoSettingsProperties = getMongoClientSettings();
+            return MongoClients.create(mongoSettingsProperties);
+        }
     }
 
     @Bean
@@ -62,8 +72,31 @@ public class MongoManagement {
     }
 
     private MongoDatabaseFactory getMongoDatabaseFactory() {
-        return new SimpleMongoClientDatabaseFactory(getMongoClient(),
-            mongoConfig.getDatabase());
+        String database = mongoConfig.getDatabase();
+        if (database == null || database.isEmpty()) {
+            // Extract database name from URI if not explicitly set
+            String uri = mongoConfig.getUri();
+            if (uri != null && !uri.isEmpty()) {
+                int lastSlashIndex = uri.lastIndexOf('/');
+                if (lastSlashIndex != -1 && lastSlashIndex < uri.length() - 1) {
+                    // Extract database name from URI
+                    database = uri.substring(lastSlashIndex + 1);
+                    // Remove query parameters if any
+                    int queryParamIndex = database.indexOf('?');
+                    if (queryParamIndex != -1) {
+                        database = database.substring(0, queryParamIndex);
+                    }
+                }
+            }
+
+            // If still no database name, use a default
+            if (database == null || database.isEmpty()) {
+                database = "authen-hub";
+            }
+        }
+
+        log.info("Using MongoDB database: {}", database);
+        return new SimpleMongoClientDatabaseFactory(getMongoClient(), database);
     }
 
     @Bean
@@ -77,11 +110,6 @@ public class MongoManagement {
     }
 
     private MongoClientSettings getMongoClientSettings() {
-        MongoCredential credential = MongoCredential.createCredential(
-            mongoConfig.getUsername(),
-            mongoConfig.getAuthentication(),
-            mongoConfig.getPassword().toCharArray());
-
         ConnectionPoolSettings connectionPoolSettings = ConnectionPoolSettings.builder()
             .minSize(mongoConfig.getMinPoolSize())
             .maxSize(mongoConfig.getMaxPoolSize())
@@ -95,34 +123,63 @@ public class MongoManagement {
             .minHeartbeatFrequency(mongoConfig.getMinHeartBeatFrequency(), TimeUnit.MILLISECONDS)
             .build();
 
-
-        return MongoClientSettings.builder()
-            .credential(credential)
+        MongoClientSettings.Builder settingsBuilder = MongoClientSettings.builder()
             .applyToClusterSettings(builder -> {
                 builder.hosts(genAddress());
-                if (Objects.nonNull(mongoConfig.getReplicaSet())) {
+                if (Objects.nonNull(mongoConfig.getReplicaSet()) && !mongoConfig.getReplicaSet().isEmpty()) {
                     builder.requiredReplicaSetName(mongoConfig.getReplicaSet());
                 }
             })
             .applyToConnectionPoolSettings(builder -> builder.applySettings(connectionPoolSettings))
-            .applyToServerSettings(builder -> builder.applySettings(serverSettings))
-            .build();
+            .applyToServerSettings(builder -> builder.applySettings(serverSettings));
+
+        // Add credentials only if username and authentication database are provided
+        if (Objects.nonNull(mongoConfig.getUsername()) && !mongoConfig.getUsername().isEmpty()
+            && Objects.nonNull(mongoConfig.getAuthentication()) && !mongoConfig.getAuthentication().isEmpty()
+            && Objects.nonNull(mongoConfig.getPassword()) && !mongoConfig.getPassword().isEmpty()) {
+
+            MongoCredential credential = MongoCredential.createCredential(
+                mongoConfig.getUsername(),
+                mongoConfig.getAuthentication(),
+                mongoConfig.getPassword().toCharArray());
+
+            settingsBuilder.credential(credential);
+        }
+
+        return settingsBuilder.build();
     }
 
     private List<ServerAddress> genAddress() {
-        String[] hostPorts = mongoConfig.getServerAddresses().split(",");
+        String serverAddresses = mongoConfig.getServerAddresses();
+        if (serverAddresses == null || serverAddresses.isEmpty()) {
+            // Default to localhost:27017 if no server addresses are provided
+            return List.of(new ServerAddress("localhost", 27017));
+        }
+
+        String[] hostPorts = serverAddresses.split(",");
         List<ServerAddress> listAddress = new ArrayList<>();
-        String[] strHostPort;
-        String host;
-        String port;
 
         for (String hostPort : hostPorts) {
-            strHostPort = hostPort.split(":");
-            host = strHostPort[0];
-            port = strHostPort[1];
-            final ServerAddress address = new ServerAddress(host, Integer.parseInt(port));
-            listAddress.add(address);
+            if (hostPort != null && !hostPort.isEmpty() && hostPort.contains(":")) {
+                String[] strHostPort = hostPort.split(":");
+                if (strHostPort.length == 2) {
+                    String host = strHostPort[0];
+                    String port = strHostPort[1];
+                    try {
+                        final ServerAddress address = new ServerAddress(host, Integer.parseInt(port));
+                        listAddress.add(address);
+                    } catch (NumberFormatException e) {
+                        log.error("Invalid port number in MongoDB server address: {}", hostPort, e);
+                    }
+                }
+            }
         }
+
+        // If no valid addresses were found, default to localhost:27017
+        if (listAddress.isEmpty()) {
+            return List.of(new ServerAddress("localhost", 27017));
+        }
+
         return listAddress;
     }
 }

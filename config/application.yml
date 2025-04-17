@@ -23,6 +23,7 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27018/authen-hub
+      database: authen-hub
       auto-index-creation: true
       field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
   rsocket:
@@ -157,8 +158,10 @@ datasource:
   entity-bean-package: com.authenhub.entity
 
 mongodb:
-  authentication: admin
-  database: dbfm
+  uri: mongodb://localhost:27018/authen-hub
+  database: authen-hub
+  auto-index-creation: true
+  field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
   heartbeatFrequency: 10000
   maxIdleTime: 300000
   maxLifeTime: 600000
@@ -166,14 +169,6 @@ mongodb:
   maxWaitTime: 600000
   minHeartbeatFrequency: 500
   minPoolSize: 10
-  password: dbfm
-  replicaSet: gtgt-rs01
-  serverAddresses: 10.22.19.155:27017,10.22.19.155:27017,10.22.19.155:27017
-  username: dbfm
-
-  uri: mongodb://localhost:27018/authen-hub
-  auto-index-creation: true
-  field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
 
 # Mail configuration
 mail:
