@@ -27,7 +27,7 @@ public class FreeProxyController {
     private final FreeProxyService proxyService;
     private final JwtService jwtService;
 
-    @PostMapping("/list")
+    @PostMapping
     public ResponseEntity<ApiResponse> getAllProxiesPost() {
         List<FreeProxyDto.Response> proxies = proxyService.getAllProxies();
         return ResponseEntity.ok(ApiResponse.builder()
@@ -72,7 +72,7 @@ public class FreeProxyController {
         return getProxyById(id);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<ApiResponse> createProxy(
             @Valid @RequestBody FreeProxyDto.Request request,
             @RequestHeader("Authorization") String token) {

@@ -44,7 +44,6 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // For backward compatibility, include the legacy role
         Set<GrantedAuthority> authorities = new HashSet<>();
         if (role != null) {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
@@ -74,41 +73,6 @@ public class User implements UserDetails {
                 authorities.add(new SimpleGrantedAuthority("settings:update"));
             }
         }
-
-        // Add authorities from the new roles system
-//        if (roleIds != null && !roleIds.isEmpty()) {
-//            // Thêm roleIds với tiền tố ROLE_
-//            authorities.addAll(roleIds.stream()
-//                    .map(roleId -> new SimpleGrantedAuthority("ROLE_" + roleId))
-//                    .collect(Collectors.toSet()));
-//
-//            // Nếu có roleId chứa "admin", thêm tất cả các quyền
-//            boolean hasAdminRole = roleIds.stream()
-//                    .anyMatch(roleId -> roleId.toLowerCase().contains("admin"));
-//
-//            if (hasAdminRole) {
-//                authorities.add(new SimpleGrantedAuthority("permission:read"));
-//                authorities.add(new SimpleGrantedAuthority("permission:create"));
-//                authorities.add(new SimpleGrantedAuthority("permission:update"));
-//                authorities.add(new SimpleGrantedAuthority("permission:delete"));
-//                authorities.add(new SimpleGrantedAuthority("role:read"));
-//                authorities.add(new SimpleGrantedAuthority("role:create"));
-//                authorities.add(new SimpleGrantedAuthority("role:update"));
-//                authorities.add(new SimpleGrantedAuthority("role:delete"));
-//                authorities.add(new SimpleGrantedAuthority("user:read"));
-//                authorities.add(new SimpleGrantedAuthority("user:create"));
-//                authorities.add(new SimpleGrantedAuthority("user:update"));
-//                authorities.add(new SimpleGrantedAuthority("user:delete"));
-//                authorities.add(new SimpleGrantedAuthority("proxy:read"));
-//                authorities.add(new SimpleGrantedAuthority("proxy:create"));
-//                authorities.add(new SimpleGrantedAuthority("proxy:update"));
-//                authorities.add(new SimpleGrantedAuthority("proxy:delete"));
-//                authorities.add(new SimpleGrantedAuthority("analytics:view"));
-//                authorities.add(new SimpleGrantedAuthority("analytics:export"));
-//                authorities.add(new SimpleGrantedAuthority("settings:read"));
-//                authorities.add(new SimpleGrantedAuthority("settings:update"));
-//            }
-//        }
 
         return authorities;
     }

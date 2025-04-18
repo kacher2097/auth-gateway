@@ -3,6 +3,7 @@ package com.authenhub.service;
 import com.authenhub.dto.FreeProxyDto;
 import com.authenhub.entity.FreeProxy;
 import com.authenhub.entity.User;
+import com.authenhub.filter.JwtService;
 import com.authenhub.repository.FreeProxyRepository;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.service.interfaces.IFreeProxyService;
@@ -15,10 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
+import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +29,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FreeProxyService implements IFreeProxyService {
 
+
+    private final JwtService jwtService;
+    private final UserContext userContext;
     private final UserRepository userRepository;
     private final FreeProxyRepository proxyRepository;
 
@@ -53,10 +57,13 @@ public class FreeProxyService implements IFreeProxyService {
     }
 
     @Override
-    public FreeProxyDto.Response createProxy(FreeProxyDto.Request request, String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
+    public FreeProxyDto.Response createProxy(FreeProxyDto.Request request, String token) {
+        log.info("Token get form header {}", token);
+//        String usernameFromToken = userContext.getCurrentUsername();
+//        log.info("Username from token: {}", usernameFromToken);
+        // Extract username from token
+        User user = userContext.getCurrentUser();
+        log.info("Current user get by context {}", user.getFullName());
         FreeProxy proxy = new FreeProxy();
         proxy.setIpAddress(request.getIpAddress());
         proxy.setPort(request.getPort());
@@ -174,30 +181,55 @@ public class FreeProxyService implements IFreeProxyService {
     }
 
     private FreeProxyDto.CheckResult checkProxy(FreeProxy proxy) {
-        boolean isWorking = false;
+        boolean isWorking;
         int responseTime = 0;
         Timestamp checkedAt = TimestampUtils.now();
 
         try {
             long startTime = System.currentTimeMillis();
+            Proxy javaProxy = configureProxy(proxy);
+            HttpClient client = HttpClient.newBuilder()
+                    .proxy(ProxySelector.of((InetSocketAddress) javaProxy.address()))
+                    .connectTimeout(java.time.Duration.ofSeconds(10))
+                    .build();
 
-            // Create proxy
-            Proxy javaProxy = createJavaProxy(proxy);
+            // Create HTTP request to a test URL
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(new URI("https://api.ipify.org"))
+                    .timeout(java.time.Duration.ofSeconds(10))
+                    .GET()
+                    .build();
 
-            // Test connection with timeout
-            URL url = new URL("https://www.google.com");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection(javaProxy);
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-            connection.setRequestMethod("GET");
+            // Send request and measure response
+            HttpResponse<String> httpResponse = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
-            int responseCode = connection.getResponseCode();
-            long endTime = System.currentTimeMillis();
+            // Check if response is successful
+            if (httpResponse.statusCode() == 200) {
+                return FreeProxyDto.CheckResult.builder()
+                        .id(proxy.getId())
+                        .isWorking(true)
+                        .responseTimeMs(System.currentTimeMillis() - startTime)
+                        .checkedAt(checkedAt)
+                        .build();
 
-            responseTime = (int) (endTime - startTime);
-            isWorking = (responseCode >= 200 && responseCode < 300);
+            } else {
+                return FreeProxyDto.CheckResult.builder()
+                        .id(proxy.getId())
+                        .isWorking(false)
+                        .responseTimeMs(System.currentTimeMillis() - startTime)
+                        .checkedAt(checkedAt)
+                        .build();
+//                response.setIsWorking(false);
+//                response.setErrorMessage("Unexpected status code: " + httpResponse.statusCode());
+            }
 
-            connection.disconnect();
+//            int responseCode = connection.getResponseCode();
+//            long endTime = System.currentTimeMillis();
+//
+//            responseTime = (int) (endTime - startTime);
+//            isWorking = (responseCode >= 200 && responseCode < 300);
+//
+//            connection.disconnect();
         } catch (Exception e) {
             log.error("Error checking proxy: {}", e.getMessage());
             isWorking = false;
@@ -248,8 +280,7 @@ public class FreeProxyService implements IFreeProxyService {
         Proxy.Type proxyType;
 
         switch (proxy.getProtocol().toUpperCase()) {
-            case "SOCKS4":
-            case "SOCKS5":
+            case "SOCKS4", "SOCKS5":
                 proxyType = Proxy.Type.SOCKS;
                 break;
             case "HTTP":
@@ -260,6 +291,22 @@ public class FreeProxyService implements IFreeProxyService {
         }
 
         return new Proxy(proxyType, new InetSocketAddress(proxy.getIpAddress(), proxy.getPort()));
+    }
+
+    private Proxy configureProxy(FreeProxy request) throws IllegalArgumentException {
+        InetSocketAddress address = new InetSocketAddress(request.getIpAddress(), request.getPort());
+        String protocol = request.getProtocol().toUpperCase();
+
+        switch (protocol) {
+            case "HTTP":
+            case "HTTPS":
+                return new Proxy(Proxy.Type.HTTP, address);
+            case "SOCKS4":
+            case "SOCKS5":
+                return new Proxy(Proxy.Type.SOCKS, address);
+            default:
+                throw new IllegalArgumentException("Unsupported protocol: " + protocol);
+        }
     }
 
 //    public FreeProxyDto.ImportResult importProxiesFromFile(MultipartFile file, String fileType, String username) {

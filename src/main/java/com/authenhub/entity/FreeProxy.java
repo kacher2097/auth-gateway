@@ -17,7 +17,7 @@ public class FreeProxy {
     private String country;
     private String city;
     private boolean isActive;
-    private int responseTimeMs;
+    private long responseTimeMs;
     private Timestamp lastChecked;
     private Timestamp createdAt;
     private Timestamp updatedAt;

@@ -6,10 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -20,15 +16,15 @@ public class FreeProxyDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Request {
-        @NotBlank(message = "IP address is required")
+//        @NotBlank(message = "IP address is required")
         private String ipAddress;
 
-        @NotNull(message = "Port is required")
-        @Min(value = 1, message = "Port must be greater than 0")
-        @Max(value = 65535, message = "Port must be less than 65536")
+//        @NotNull(message = "Port is required")
+//        @Min(value = 1, message = "Port must be greater than 0")
+//        @Max(value = 65535, message = "Port must be less than 65536")
         private Integer port;
 
-        @NotBlank(message = "Protocol is required")
+//        @NotBlank(message = "Protocol is required")
         private String protocol;
 
         private String country;
@@ -48,7 +44,7 @@ public class FreeProxyDto {
         private String country;
         private String city;
         private boolean isActive;
-        private int responseTimeMs;
+        private long responseTimeMs;
         private Timestamp lastChecked;
         private Timestamp createdAt;
         private Timestamp updatedAt;
@@ -87,7 +83,7 @@ public class FreeProxyDto {
     public static class CheckResult {
         private String id;
         private boolean isWorking;
-        private int responseTimeMs;
+        private long responseTimeMs;
         private Timestamp checkedAt;
     }
 

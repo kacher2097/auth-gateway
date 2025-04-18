@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.authenhub.entity.User;
+import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.Date;
@@ -29,15 +30,7 @@ public class JwtService {
     private long jwtExpiration;
 
     public String extractUsername(String token) {
-        if (token == null || token.isEmpty()) {
-            return null;
-        }
-        try {
-            return extractClaim(token, Claims::getSubject);
-        } catch (Exception e) {
-            log.debug("Error extracting username from token: {}", e.getMessage());
-            return null;
-        }
+        return extractClaim(token, Claims::getSubject);
     }
 
     public Date extractExpiration(String token) {
@@ -45,60 +38,34 @@ public class JwtService {
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        if (token == null || token.isEmpty()) {
-            return null;
-        }
-        try {
-            final Claims claims = extractAllClaims(token);
-            return claimsResolver.apply(claims);
-        } catch (Exception e) {
-            log.debug("Error extracting claim from token: {}", e.getMessage());
-            return null;
-        }
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
     }
 
     public String extractRole(String token) {
-        if (token == null || token.isEmpty()) {
-            return null;
+        Claims claims = extractAllClaims(token);
+        @SuppressWarnings("unchecked")
+        List<String> roles = (List<String>) claims.get("roles");
+        if (roles != null && !roles.isEmpty()) {
+            // Return the first role (assuming a user has only one role)
+            return roles.get(0);
         }
-        try {
-            Claims claims = extractAllClaims(token);
-            @SuppressWarnings("unchecked")
-            List<String> roles = (List<String>) claims.get("roles");
-            if (roles != null && !roles.isEmpty()) {
-                // Return the first role (assuming a user has only one role)
-                return roles.get(0);
-            }
-            return null;
-        } catch (Exception e) {
-            log.debug("Error extracting role from token: {}", e.getMessage());
-            return null;
-        }
+        return null;
     }
 
     public boolean hasRole(String token, String role) {
-        if (token == null || token.isEmpty() || role == null) {
-            return false;
-        }
-        try {
-            Claims claims = extractAllClaims(token);
-            @SuppressWarnings("unchecked")
-            List<String> roles = (List<String>) claims.get("roles");
-            return roles != null && roles.contains(role);
-        } catch (Exception e) {
-            log.debug("Error checking role in token: {}", e.getMessage());
-            return false;
-        }
+        Claims claims = extractAllClaims(token);
+        @SuppressWarnings("unchecked")
+        List<String> roles = (List<String>) claims.get("roles");
+        return roles != null && roles.contains(role);
     }
 
     public Claims extractAllClaims(String token) {
-        if (token == null || token.isEmpty()) {
-            throw new IllegalArgumentException("Token cannot be null or empty");
-        }
+        final String finalToken = getJwtFromRequest(token);
         return Jwts.parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(finalToken)
                 .getBody();
     }
 
@@ -176,6 +143,15 @@ public class JwtService {
 //                .signWith(getSigningKey())
 //                .compact();
 //    }
+
+    private String getJwtFromRequest(String tokenWithBearer) {
+        if (StringUtils.hasText(tokenWithBearer) && tokenWithBearer.startsWith("Bearer ")) {
+            String token = tokenWithBearer.substring(7).trim();
+            log.debug("Extracted token: {}", token);
+            return StringUtils.hasText(token) ? token : null;
+        }
+        return null;
+    }
 
     private Key getSignKey() {
         byte[] keyBytes = secretKey.getBytes();

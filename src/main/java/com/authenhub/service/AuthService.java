@@ -134,8 +134,7 @@ public class AuthService implements IAuthService {
     public Object getCurrentUser(String token) {
         log.info("Begin get current user with token {}", token);
         // Lấy username từ token
-        String jwt = token.substring(7); // Bỏ "Bearer " ở đầu
-        String username = jwtService.extractUsername(jwt);
+        String username = jwtService.extractUsername(token);
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 //        Role role = roleRepository.findById(user.getRoleId()).orElse(null);

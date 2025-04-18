@@ -7,7 +7,7 @@ import com.authenhub.entity.User;
  * Interface for user management service operations
  */
 public interface IUserManagementService {
-    
+
     /**
      * Update user
      *
@@ -16,7 +16,7 @@ public interface IUserManagementService {
      * @return updated user
      */
     User updateUser(String userId, UserUpdateRequest request);
-    
+
     /**
      * Set user active status
      *
@@ -25,7 +25,7 @@ public interface IUserManagementService {
      * @return updated user
      */
     User setUserActiveStatus(String userId, boolean active);
-    
+
     /**
      * Set user role
      *
@@ -34,4 +34,11 @@ public interface IUserManagementService {
      * @return updated user
      */
     User setUserRole(String userId, User.Role role);
+
+    /**
+     * Get the current authenticated user
+     *
+     * @return the current user or null if not authenticated
+     */
+    User getCurrentUser();
 }
