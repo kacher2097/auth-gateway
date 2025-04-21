@@ -4,12 +4,12 @@ import com.authenhub.bean.*;
 import com.authenhub.config.application.JsonMapper;
 import com.authenhub.dto.AuthRequest;
 import com.authenhub.dto.AuthResponse;
-import com.authenhub.entity.PasswordResetToken;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.PasswordResetToken;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.exception.*;
 import com.authenhub.filter.JwtService;
-import com.authenhub.repository.PasswordResetTokenRepository;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.repository.adapter.PasswordResetTokenRepositoryAdapter;
+import com.authenhub.repository.adapter.UserRepositoryAdapter;
 import com.authenhub.service.SocialLoginService.SocialUserInfo;
 import com.authenhub.service.interfaces.IAuthService;
 import com.authenhub.utils.TimestampUtils;
@@ -28,11 +28,11 @@ public class AuthService implements IAuthService {
     private final JsonMapper jsonMapper;
     private final JwtService jwtService;
     private final EmailService emailService;
-    private final UserRepository userRepository;
+    private final UserRepositoryAdapter userRepository;
     private final PasswordEncoder passwordEncoder;
     private final SocialLoginService socialLoginService;
     private final AuthenticationManager authenticationManager;
-    private final PasswordResetTokenRepository tokenRepository;
+    private final PasswordResetTokenRepositoryAdapter tokenRepository;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -46,12 +46,12 @@ public class AuthService implements IAuthService {
         }
 
         // Tạo user mới
-        var user = new com.authenhub.entity.User();
+        var user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
-        user.setRole(com.authenhub.entity.User.Role.USER);
+        user.setRole(User.Role.USER);
         user.setActive(true);
         user.setCreatedAt(TimestampUtils.now());
         user.setUpdatedAt(TimestampUtils.now());
@@ -134,8 +134,7 @@ public class AuthService implements IAuthService {
     public Object getCurrentUser(String token) {
         log.info("Begin get current user with token {}", token);
         // Lấy username từ token
-        String jwt = token.substring(7); // Bỏ "Bearer " ở đầu
-        String username = jwtService.extractUsername(jwt);
+        String username = jwtService.extractUsername(token);
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 //        Role role = roleRepository.findById(user.getRoleId()).orElse(null);

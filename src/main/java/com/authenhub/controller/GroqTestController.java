@@ -5,6 +5,8 @@ import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.service.interfaces.AiService;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,8 +20,14 @@ public class GroqTestController {
         this.aiService = aiService;
     }
 
+    @MessageMapping("/chat")
+    @SendTo("/topic/messages")
+    public ApiResponse<?> handleChatMessage(AiPromptRequest request) {
+        return aiService.getAnswer(request);
+    }
+
     @GetMapping("/question")
-    public String question(@RequestParam(name = "prompt") String prompt){
+    public String question(@RequestParam(name = "prompt") String prompt) {
         return chatModel.call(prompt);
     }
 
@@ -36,7 +44,7 @@ public class GroqTestController {
 //    }
 
     @PostMapping("/get-answer")
-    public ApiResponse<?> question2(@RequestBody AiPromptRequest request){
+    public ApiResponse<?> question2(@RequestBody AiPromptRequest request) {
         return aiService.getAnswer(request);
     }
 }

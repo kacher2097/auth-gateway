@@ -1,6 +1,6 @@
 package com.authenhub.service.interfaces;
 
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 
 import java.sql.Timestamp;
 import java.util.List;

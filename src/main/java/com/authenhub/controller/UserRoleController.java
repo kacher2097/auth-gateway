@@ -1,17 +1,13 @@
 package com.authenhub.controller;
 
 import com.authenhub.dto.ApiResponse;
-import com.authenhub.dto.RoleDto;
-import com.authenhub.entity.Role;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.Role;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.service.UserRoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users/{userId}/roles")

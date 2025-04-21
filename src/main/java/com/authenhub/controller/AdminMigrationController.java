@@ -1,8 +1,8 @@
 package com.authenhub.controller;
 
 import com.authenhub.dto.ApiResponse;
-import com.authenhub.entity.Role;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.Role;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.repository.RoleRepository;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.service.UserRoleService;
@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 @Slf4j
 @RestController

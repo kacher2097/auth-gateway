@@ -1,12 +1,14 @@
 package com.authenhub.service;
 
-import com.authenhub.entity.User;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.config.DatabaseSwitcherConfig;
+import com.authenhub.entity.mongo.User;
+import com.authenhub.repository.adapter.UserRepositoryAdapter;
 import com.authenhub.service.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -16,8 +18,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService implements IUserService {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryAdapter userRepository;
     private final MongoTemplate mongoTemplate;
+    private final JdbcTemplate jdbcTemplate;
+    private final DatabaseSwitcherConfig databaseConfig;
 
     /**
      * Count users created between two dates
@@ -28,17 +32,34 @@ public class UserService implements IUserService {
      */
     @Override
     public long countUsersByCreatedAtBetween(Timestamp start, Timestamp end) {
-        Query query = new Query();
+        if (databaseConfig.isMongoActive()) {
+            Query query = new Query();
 
-        if (start != null && end != null) {
-            query.addCriteria(Criteria.where("createdAt").gte(start).lte(end));
-        } else if (start != null) {
-            query.addCriteria(Criteria.where("createdAt").gte(start));
-        } else if (end != null) {
-            query.addCriteria(Criteria.where("createdAt").lte(end));
+            if (start != null && end != null) {
+                query.addCriteria(Criteria.where("createdAt").gte(start).lte(end));
+            } else if (start != null) {
+                query.addCriteria(Criteria.where("createdAt").gte(start));
+            } else if (end != null) {
+                query.addCriteria(Criteria.where("createdAt").lte(end));
+            }
+
+            return mongoTemplate.count(query, User.class);
+        } else {
+            StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM users WHERE 1=1");
+
+            if (start != null && end != null) {
+                sql.append(" AND created_at >= ? AND created_at <= ?");
+                return jdbcTemplate.queryForObject(sql.toString(), Long.class, start, end);
+            } else if (start != null) {
+                sql.append(" AND created_at >= ?");
+                return jdbcTemplate.queryForObject(sql.toString(), Long.class, start);
+            } else if (end != null) {
+                sql.append(" AND created_at <= ?");
+                return jdbcTemplate.queryForObject(sql.toString(), Long.class, end);
+            } else {
+                return jdbcTemplate.queryForObject(sql.toString(), Long.class);
+            }
         }
-
-        return mongoTemplate.count(query, User.class);
     }
 
     /**
@@ -61,7 +82,12 @@ public class UserService implements IUserService {
      */
     @Override
     public long countUsersByActive(boolean active) {
-        return userRepository.countByActive(active);
+        if (databaseConfig.isMongoActive()) {
+            return userRepository.countByActive(active);
+        } else {
+            String sql = "SELECT COUNT(*) FROM users WHERE active = ?";
+            return jdbcTemplate.queryForObject(sql, Long.class, active);
+        }
     }
 
     /**
@@ -72,7 +98,12 @@ public class UserService implements IUserService {
      */
     @Override
     public long countUsersByRole(User.Role role) {
-        return userRepository.countByRole(role);
+        if (databaseConfig.isMongoActive()) {
+            return userRepository.countByRole(role);
+        } else {
+            String sql = "SELECT COUNT(*) FROM users WHERE role = ?";
+            return jdbcTemplate.queryForObject(sql, Long.class, role.name());
+        }
     }
 
     /**
@@ -92,6 +123,11 @@ public class UserService implements IUserService {
      */
     @Override
     public long countUsersBySocialLogin() {
-        return userRepository.countBySocialLogin();
+        if (databaseConfig.isMongoActive()) {
+            return userRepository.countBySocialLogin();
+        } else {
+            String sql = "SELECT COUNT(*) FROM users WHERE social_provider IS NOT NULL";
+            return jdbcTemplate.queryForObject(sql, Long.class);
+        }
     }
 }

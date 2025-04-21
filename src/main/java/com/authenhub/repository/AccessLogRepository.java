@@ -1,6 +1,6 @@
 package com.authenhub.repository;
 
-import com.authenhub.entity.AccessLog;
+import com.authenhub.entity.mongo.AccessLog;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 

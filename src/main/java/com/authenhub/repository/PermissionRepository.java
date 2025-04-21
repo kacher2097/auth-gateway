@@ -1,6 +1,6 @@
 package com.authenhub.repository;
 
-import com.authenhub.entity.Permission;
+import com.authenhub.entity.mongo.Permission;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

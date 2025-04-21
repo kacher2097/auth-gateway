@@ -136,6 +136,17 @@ rest:
   socket: {timeout: 60000}
 pool: {max: 10}
 
+# Database switcher configuration
+database:
+  # Type of database to use: mongodb or postgresql
+  type: postgresql
+  # Enable automatic data migration when switching database types
+  enable-auto-migration: false
+  # Enable detailed migration logs
+  detailed-migration-logs: false
+  # Batch size for data migration operations
+  migration-batch-size: 100
+
 datasource:
   url: jdbc:postgresql://localhost:5432/postgres
   username: postgres

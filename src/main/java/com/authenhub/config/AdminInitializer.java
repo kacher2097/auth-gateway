@@ -1,6 +1,6 @@
 package com.authenhub.config;
 
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
 
 @Component
 @RequiredArgsConstructor

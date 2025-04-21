@@ -1,6 +1,6 @@
 package com.authenhub.repository;
 
-import com.authenhub.entity.FreeProxy;
+import com.authenhub.entity.mongo.FreeProxy;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;

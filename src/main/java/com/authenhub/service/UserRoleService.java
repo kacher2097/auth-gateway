@@ -1,7 +1,7 @@
 package com.authenhub.service;
 
-import com.authenhub.entity.Role;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.Role;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.exception.ResourceNotFoundException;
 import com.authenhub.repository.RoleRepository;
 import com.authenhub.repository.UserRepository;

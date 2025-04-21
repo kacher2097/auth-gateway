@@ -1,7 +1,7 @@
 package com.authenhub.config.security;
 
 import com.authenhub.dto.AuthResponse;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.utils.TimestampUtils;

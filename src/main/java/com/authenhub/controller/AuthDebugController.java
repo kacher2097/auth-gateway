@@ -1,7 +1,7 @@
 package com.authenhub.controller;
 
 import com.authenhub.dto.ApiResponse;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.filter.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +32,7 @@ public class AuthDebugController {
         data.put("principal", authentication.getPrincipal().getClass().getName());
         data.put("authenticated", authentication.isAuthenticated());
 
-        if (authentication.getPrincipal() instanceof User) {
-            User user = (User) authentication.getPrincipal();
+        if (authentication.getPrincipal() instanceof User user) {
             data.put("username", user.getUsername());
             data.put("legacyRole", user.getRole());
             data.put("roleIds", user.getRoleId());

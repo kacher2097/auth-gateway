@@ -1,7 +1,7 @@
 package com.authenhub.service;
 
 import com.authenhub.dto.PermissionDto;
-import com.authenhub.entity.Permission;
+import com.authenhub.entity.mongo.Permission;
 import com.authenhub.exception.ResourceAlreadyExistsException;
 import com.authenhub.exception.ResourceNotFoundException;
 import com.authenhub.repository.PermissionRepository;

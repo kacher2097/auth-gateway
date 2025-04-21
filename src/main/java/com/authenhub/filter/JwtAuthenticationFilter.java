@@ -2,8 +2,10 @@ package com.authenhub.filter;
 
 import com.authenhub.constant.Constant;
 import com.authenhub.constant.JwtConstant;
-import com.authenhub.entity.Permission;
+import com.authenhub.entity.mongo.Permission;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.repository.PermissionRepository;
+import com.authenhub.repository.UserRepository;
 import com.authenhub.utils.Utils;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import io.jsonwebtoken.Claims;
@@ -35,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final PermissionRepository permissionRepository;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -53,37 +56,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             jwt = getJwtFromRequest(request);
-            if (jwt == null) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
             username = jwtService.extractUsername(jwt);
-            if (username == null) {
-                filterChain.doFilter(request, response);
-                return;
-            }
 
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
-
-//                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-//                        userDetails,
-//                        null,
-//                        userDetails.getAuthorities()
-//                );
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UsernamePasswordAuthenticationToken authToken = getAuthorization(jwt);
-                if (authToken != null) {
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
 
             filterChain.doFilter(request, response);
         } catch (Exception ex) {
             log.error("Function doFilterInternal has exception: ", ex);
-//            response(response, BaseResponse.of(BaseResponseCode.FORBIDDEN));
         } finally {
             log.info(
                     "Request to {} with ip=[{}] finish in {} ms",
@@ -98,8 +83,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public UsernamePasswordAuthenticationToken getAuthorization(String token) {
         try {
-            log.debug("Function getAuthentication start -> input data=[token=[{}]]", token);
-
             Claims claims = jwtService.extractAllClaims(token);
             if (Objects.isNull(claims)) {
                 log.info("Function getAuthentication FAIL -> Claims is empty!");
@@ -121,16 +104,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return null;
             }
 
+            // Get user from repository
+            User user = userRepository.findByUsername(subject).orElse(null);
+            if (user == null) {
+                log.debug("User not found for username: {}", subject);
+                return null;
+            }
+
+            // Get permissions
             Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
             String userId = claims.get(JwtConstant.USER_ID_FIELD, String.class);
             String roleId = claims.get(JwtConstant.JWT_TOKEN_CLAIM_ROLE_ID, String.class);
+
+            // Verify that the user ID in the token matches the user from the database
+            if (!user.getId().equals(userId)) {
+                log.debug("User ID mismatch: {} vs {}", user.getId(), userId);
+                return null;
+            }
+
             List<Permission> lstPermission = permissionRepository.findAllById(roleId);
             List<String> lstFunctionAction = lstPermission.stream().map(Permission::getName).toList();
+            log.debug("Found {} permissions for user {}", lstPermission.size(), subject);
 
             lstFunctionAction.forEach(permission -> grantedAuthorities.add(new SimpleGrantedAuthority(permission)));
+
+            // Create authentication token with the full User object as principal
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    subject, token, grantedAuthorities);
-            log.info("Function getAuthentication end!");
+                    user, token, grantedAuthorities);
+            log.debug("Authentication token created successfully for user: {}", subject);
             return authentication;
         } catch (Exception ex) {
             log.error("Function getAuthentication has exception: ", ex);
@@ -141,10 +142,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            String token = bearerToken.substring(7);
-            // Return null if token is empty to avoid processing empty tokens
-            return StringUtils.hasText(token) ? token : null;
+            return bearerToken;
         }
-        return null;
+        return Constant.EMPTY_STRING;
     }
 }
