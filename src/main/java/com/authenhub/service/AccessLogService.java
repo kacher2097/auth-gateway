@@ -1,7 +1,9 @@
 package com.authenhub.service;
 
-import com.authenhub.entity.AccessLog;
-import com.authenhub.repository.AccessLogRepository;
+import com.authenhub.entity.mongo.AccessLog;
+import com.authenhub.config.DatabaseSwitcherConfig;
+import com.authenhub.repository.adapter.AccessLogRepositoryAdapter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import com.authenhub.service.interfaces.IAccessLogService;
 import com.authenhub.utils.TimestampUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,8 +34,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AccessLogService implements IAccessLogService {
 
-    private final AccessLogRepository accessLogRepository;
+    private final AccessLogRepositoryAdapter accessLogRepository;
     private final MongoTemplate mongoTemplate;
+    private final JdbcTemplate jdbcTemplate;
+    private final DatabaseSwitcherConfig databaseConfig;
 
     @Override
     public void logAccess(HttpServletRequest request, int statusCode, long startTime) {
@@ -156,40 +160,53 @@ public class AccessLogService implements IAccessLogService {
      */
     @Override
     public List<Map<String, Object>> countByDay(Timestamp start, Timestamp end) {
-        // Create match operation
-        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
+        if (databaseConfig.isMongoActive()) {
+            // Create match operation
+            MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
 
-        // Create projection operation to extract date
-        ProjectionOperation projectOperation = Aggregation.project()
-                .andExpression("timestamp").as("date");
+            // Create projection operation to extract date
+            ProjectionOperation projectOperation = Aggregation.project()
+                    .andExpression("timestamp").as("date");
 
-        // Create group operation
-//        GroupOperation groupOperation = Aggregation.group(DateOperators.DateToString.dateOf("date").toString("%Y-%m-%d"))
-//                .count().as("count");
+            // Create sort operation
+            SortOperation sortOperation = Aggregation.sort(org.springframework.data.domain.Sort.Direction.ASC, "_id");
 
-        // Create sort operation
-        SortOperation sortOperation = Aggregation.sort(org.springframework.data.domain.Sort.Direction.ASC, "_id");
+            // Create aggregation
+            Aggregation aggregation = Aggregation.newAggregation(
+                    matchOperation,
+                    projectOperation,
+                    sortOperation
+            );
 
-        // Create aggregation
-        Aggregation aggregation = Aggregation.newAggregation(
-                matchOperation,
-                projectOperation,
-                sortOperation
-        );
+            // Execute aggregation
+            AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
 
-        // Execute aggregation
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
+            // Convert results to List<Map<String, Object>>
+            List<Map<String, Object>> dailyCounts = new ArrayList<>();
+            for (Map result : results.getMappedResults()) {
+                Map<String, Object> dailyCount = new HashMap<>();
+                dailyCount.put("_id", result.get("_id"));
+                dailyCount.put("count", result.get("count"));
+                dailyCounts.add(dailyCount);
+            }
 
-        // Convert results to List<Map<String, Object>>
-        List<Map<String, Object>> dailyCounts = new ArrayList<>();
-        for (Map result : results.getMappedResults()) {
-            Map<String, Object> dailyCount = new HashMap<>();
-            dailyCount.put("_id", result.get("_id"));
-            dailyCount.put("count", result.get("count"));
-            dailyCounts.add(dailyCount);
+            return dailyCounts;
+        } else {
+            // PostgreSQL implementation
+            String sql = ""
+                    + "SELECT TO_CHAR(timestamp, 'YYYY-MM-DD') as date, COUNT(*) as count "
+                    + "FROM access_logs "
+                    + "WHERE timestamp BETWEEN ? AND ? "
+                    + "GROUP BY TO_CHAR(timestamp, 'YYYY-MM-DD') "
+                    + "ORDER BY date ASC";
+
+            return jdbcTemplate.query(sql, (rs, rowNum) -> {
+                Map<String, Object> dayCount = new HashMap<>();
+                dayCount.put("date", rs.getString("date"));
+                dayCount.put("count", rs.getLong("count"));
+                return dayCount;
+            }, start, end);
         }
-
-        return dailyCounts;
     }
 
     /**

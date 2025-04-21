@@ -3,7 +3,7 @@ package com.authenhub.service.payment;
 import com.authenhub.bean.payment.PaymentRequest;
 import com.authenhub.bean.payment.PaymentResponse;
 import com.authenhub.dto.PaymentMethodDto;
-import com.authenhub.entity.PaymentMethod;
+import com.authenhub.entity.mongo.PaymentMethod;
 import com.authenhub.repository.PaymentMethodRepository;
 import com.authenhub.service.interfaces.IPaymentMethodService;
 import com.authenhub.service.payment.provider.PaymentProvider;

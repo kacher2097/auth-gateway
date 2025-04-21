@@ -1,6 +1,6 @@
 package com.authenhub.security;
 
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.service.UserRoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.PermissionEvaluator;

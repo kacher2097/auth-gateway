@@ -2,12 +2,12 @@ package com.authenhub.controller;
 
 import com.authenhub.dto.ApiResponse;
 import com.authenhub.dto.request.DateRangeRequest;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.service.interfaces.IAccessLogService;
 import com.authenhub.service.interfaces.IUserService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
@@ -38,8 +38,8 @@ public class AnalyticsController {
         data.put("totalUsers", userService.countTotalUsers());
         data.put("activeUsers", userService.countUsersByActive(true));
         data.put("inactiveUsers", userService.countUsersByActive(false));
-        data.put("adminUsers", userService.countUsersByRole(com.authenhub.entity.User.Role.ADMIN));
-        data.put("regularUsers", userService.countUsersByRole(com.authenhub.entity.User.Role.USER));
+        data.put("adminUsers", userService.countUsersByRole(User.Role.ADMIN));
+        data.put("regularUsers", userService.countUsersByRole(User.Role.USER));
         data.put("socialLoginUsers", userService.countUsersBySocialLogin());
         
         return ResponseEntity.ok(ApiResponse.builder()

@@ -1,8 +1,8 @@
 package com.authenhub.config.security;
 
-import com.authenhub.entity.Permission;
-import com.authenhub.entity.Role;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.Permission;
+import com.authenhub.entity.mongo.Role;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.repository.PermissionRepository;
 import com.authenhub.repository.RoleRepository;
 import com.authenhub.repository.UserRepository;

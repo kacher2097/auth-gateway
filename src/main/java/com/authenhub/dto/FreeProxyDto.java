@@ -1,6 +1,6 @@
 package com.authenhub.dto;
 
-import com.authenhub.entity.FreeProxy;
+import com.authenhub.entity.mongo.FreeProxy;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

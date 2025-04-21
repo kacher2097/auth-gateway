@@ -10,7 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;

@@ -1,6 +1,6 @@
 package com.authenhub.service;
 
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

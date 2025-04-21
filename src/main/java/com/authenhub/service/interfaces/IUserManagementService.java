@@ -1,7 +1,7 @@
 package com.authenhub.service.interfaces;
 
 import com.authenhub.bean.UserUpdateRequest;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 
 /**
  * Interface for user management service operations

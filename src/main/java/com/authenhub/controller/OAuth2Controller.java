@@ -1,7 +1,7 @@
 package com.authenhub.controller;
 
 import com.authenhub.dto.AuthResponse;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.utils.TimestampUtils;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
 import java.util.Map;
 
 @RestController

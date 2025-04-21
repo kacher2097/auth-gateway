@@ -1,8 +1,8 @@
 package com.authenhub.service;
 
 import com.authenhub.dto.FreeProxyDto;
-import com.authenhub.entity.FreeProxy;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.FreeProxy;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.FreeProxyRepository;
 import com.authenhub.repository.UserRepository;

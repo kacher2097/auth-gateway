@@ -1,6 +1,6 @@
 package com.authenhub.dto;
 
-import com.authenhub.entity.Role;
+import com.authenhub.entity.mongo.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

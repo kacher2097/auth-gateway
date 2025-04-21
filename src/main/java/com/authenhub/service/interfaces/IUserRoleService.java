@@ -1,7 +1,7 @@
 package com.authenhub.service.interfaces;
 
-import com.authenhub.entity.Role;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.Role;
+import com.authenhub.entity.mongo.User;
 
 /**
  * Interface for user role service operations

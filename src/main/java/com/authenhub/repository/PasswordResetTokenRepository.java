@@ -1,6 +1,6 @@
 package com.authenhub.repository;
 
-import com.authenhub.entity.PasswordResetToken;
+import com.authenhub.entity.mongo.PasswordResetToken;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;

@@ -64,6 +64,7 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/public/**").permitAll()
                                 .requestMatchers("/admin/**").permitAll()
+                                .requestMatchers("/api/**").permitAll()
                                 .requestMatchers("/api/proxies/active").permitAll()
                                 .requestMatchers("/api/proxies").authenticated()
                                 .requestMatchers("/api/proxies/**").authenticated()

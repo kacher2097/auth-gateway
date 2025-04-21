@@ -2,7 +2,7 @@ package com.authenhub.controller;
 
 import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.dto.ApiResponse;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.service.UserContext;
 import com.authenhub.service.interfaces.IUserManagementService;
 import lombok.RequiredArgsConstructor;

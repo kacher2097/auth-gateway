@@ -3,7 +3,7 @@ package com.authenhub.controller;
 import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.bean.user.UserSearchResponse;
 import com.authenhub.dto.ApiResponse;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.service.AccessLogService;

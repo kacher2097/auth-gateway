@@ -2,8 +2,8 @@ package com.authenhub.filter;
 
 import com.authenhub.constant.Constant;
 import com.authenhub.constant.JwtConstant;
-import com.authenhub.entity.Permission;
-import com.authenhub.entity.User;
+import com.authenhub.entity.mongo.Permission;
+import com.authenhub.entity.mongo.User;
 import com.authenhub.repository.PermissionRepository;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.utils.Utils;
@@ -83,8 +83,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public UsernamePasswordAuthenticationToken getAuthorization(String token) {
         try {
-            log.debug("Function getAuthentication start -> input data=[token=[{}]]", token);
-
             Claims claims = jwtService.extractAllClaims(token);
             if (Objects.isNull(claims)) {
                 log.info("Function getAuthentication FAIL -> Claims is empty!");

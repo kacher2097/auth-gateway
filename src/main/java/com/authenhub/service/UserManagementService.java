@@ -1,8 +1,8 @@
 package com.authenhub.service;
 
 import com.authenhub.bean.UserUpdateRequest;
-import com.authenhub.entity.User;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.entity.mongo.User;
+import com.authenhub.repository.adapter.UserRepositoryAdapter;
 import com.authenhub.security.UserSecurity;
 import com.authenhub.service.interfaces.IUserManagementService;
 import com.authenhub.utils.TimestampUtils;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserManagementService implements IUserManagementService {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryAdapter userRepository;
     private final UserContext userContext;
     private final UserSecurity userSecurity;
     private final UserActivityService userActivityService;

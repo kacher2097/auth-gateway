@@ -1,6 +1,6 @@
 package com.authenhub.dto;
 
-import com.authenhub.entity.PaymentMethod;
+import com.authenhub.entity.mongo.PaymentMethod;
 import com.authenhub.utils.TimestampUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

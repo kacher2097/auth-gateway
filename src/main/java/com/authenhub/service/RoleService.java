@@ -2,12 +2,12 @@ package com.authenhub.service;
 
 import com.authenhub.dto.PermissionDto;
 import com.authenhub.dto.RoleDto;
-import com.authenhub.entity.Permission;
-import com.authenhub.entity.Role;
+import com.authenhub.entity.mongo.Permission;
+import com.authenhub.entity.mongo.Role;
 import com.authenhub.exception.ResourceAlreadyExistsException;
 import com.authenhub.exception.ResourceNotFoundException;
-import com.authenhub.repository.PermissionRepository;
-import com.authenhub.repository.RoleRepository;
+import com.authenhub.repository.adapter.PermissionRepositoryAdapter;
+import com.authenhub.repository.adapter.RoleRepositoryAdapter;
 import com.authenhub.service.interfaces.IRoleService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RoleService implements IRoleService {
 
-    private final RoleRepository roleRepository;
-    private final PermissionRepository permissionRepository;
+    private final RoleRepositoryAdapter roleRepository;
+    private final PermissionRepositoryAdapter permissionRepository;
 
     @Override
     public List<RoleDto.Response> getAllRoles() {
