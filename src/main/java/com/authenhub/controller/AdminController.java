@@ -3,8 +3,10 @@ package com.authenhub.controller;
 import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.bean.user.UserSearchResponse;
 import com.authenhub.dto.ApiResponse;
+import com.authenhub.entity.Role;
 import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
+import com.authenhub.repository.RoleRepository;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.service.AccessLogService;
 import com.authenhub.service.UserManagementService;
@@ -37,6 +39,7 @@ public class AdminController {
     private final UserManagementService userManagementService;
     private final AccessLogService accessLogService;
     private final UserService userService;
+    private final RoleRepository roleRepository;
 
     @GetMapping("/users")
     public com.authenhub.bean.common.ApiResponse<?> getAllUsers() {
@@ -66,7 +69,9 @@ public class AdminController {
                     .active(user.isActive())
                     .createdAt(user.getCreatedAt())
                     .updatedAt(user.getUpdatedAt())
+                    .lastLogin(user.getLastLogin())
                     .build();
+            roleRepository.findById(user.getRoleId()).ifPresent(role -> userSearchResponse.setRole(role.getDisplayName()));
             response.add(userSearchResponse);
         }
         log.info("Get all users successfully total {} users", response.size());

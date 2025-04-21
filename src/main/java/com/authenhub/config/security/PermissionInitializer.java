@@ -29,9 +29,9 @@ public class PermissionInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        initializePermissions();
-        initializeRoles();
-        updateAdminUser();
+//        initializePermissions();
+//        initializeRoles();
+//        updateAdminUser();
     }
 
     private void initializePermissions() {
