@@ -20,14 +20,12 @@ public class RoleDto {
     public static class Request {
         @NotBlank(message = "Name is required")
         private String name;
-        
-        @NotBlank(message = "Display name is required")
+
         private String displayName;
-        
         private String description;
         
         @NotEmpty(message = "At least one permission is required")
-        private Set<String> permissionIds;
+        private Set<String> permissions;
     }
     
     @Data

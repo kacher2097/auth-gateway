@@ -4,6 +4,7 @@ import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.dto.ApiResponse;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.service.UserContext;
+import com.authenhub.service.UserRoleService;
 import com.authenhub.service.interfaces.IUserManagementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +22,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserManagementController {
 
-    private final IUserManagementService userManagementService;
     private final UserContext userContext;
+    private final UserRoleService userRoleService;
+    private final IUserManagementService userManagementService;
 
     /**
      * Get the current user's profile
@@ -226,5 +228,61 @@ public class UserManagementController {
                             .message("Error updating user role: " + e.getMessage())
                             .build());
         }
+    }
+
+    @PutMapping("/{userId}/roles/assign")
+    public ResponseEntity<ApiResponse> assignRoleToUser(
+            @PathVariable String userId,
+            @RequestParam String roleId) {
+
+        User updatedUser = userRoleService.assignRolesToUser(userId, roleId);
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Role assigned to user successfully")
+                .data(updatedUser)
+                .build());
+    }
+
+    /**
+     * Add role to user
+     *
+     * @param userId user id
+     * @param roleId role id
+     * @return updated user
+     */
+    @PutMapping("/{userId}/roles/add")
+    public ResponseEntity<ApiResponse> addRoleToUser(
+            @PathVariable String userId,
+            @RequestParam String roleId) {
+
+        User updatedUser = userRoleService.addRolesToUser(userId, roleId);
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Role added to user successfully")
+                .data(updatedUser)
+                .build());
+    }
+
+    /**
+     * Remove role from user
+     *
+     * @param userId user id
+     * @param roleId role id
+     * @return updated user
+     */
+    @PutMapping("/{userId}/roles/remove")
+    public ResponseEntity<ApiResponse> removeRoleFromUser(
+            @PathVariable String userId,
+            @RequestParam String roleId) {
+
+        User updatedUser = userRoleService.removeRolesFromUser(userId, roleId);
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Role removed from user successfully")
+                .data(updatedUser)
+                .build());
     }
 }

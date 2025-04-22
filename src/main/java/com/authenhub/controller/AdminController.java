@@ -5,6 +5,7 @@ import com.authenhub.bean.user.UserSearchResponse;
 import com.authenhub.dto.ApiResponse;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.filter.JwtService;
+import com.authenhub.repository.RoleRepository;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.service.AccessLogService;
 import com.authenhub.service.UserManagementService;

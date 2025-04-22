@@ -3,8 +3,10 @@ package com.authenhub.filter;
 import com.authenhub.constant.Constant;
 import com.authenhub.constant.JwtConstant;
 import com.authenhub.entity.mongo.Permission;
+import com.authenhub.entity.mongo.Role;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.repository.PermissionRepository;
+import com.authenhub.repository.RoleRepository;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.utils.Utils;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
@@ -29,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -38,6 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final PermissionRepository permissionRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     protected void doFilterInternal(
@@ -121,10 +125,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.debug("User ID mismatch: {} vs {}", user.getId(), userId);
                 return null;
             }
+            Role role = roleRepository.findById(roleId).orElse(null);
+            if (role == null) {
+                log.debug("Role not found for id: {}", roleId);
+                return null;
+            }
 
-            List<Permission> lstPermission = permissionRepository.findAllById(roleId);
-            List<String> lstFunctionAction = lstPermission.stream().map(Permission::getName).toList();
-            log.debug("Found {} permissions for user {}", lstPermission.size(), subject);
+            Set<String> lstPermissionId = role.getPermissionIds();
+            Set<String> lstFunctionAction = lstPermissionId.stream().map(permissionId -> {
+                Permission permission = permissionRepository.findById(permissionId).orElse(null);
+                if (permission == null) {
+                    log.debug("Permission not found for id: {}", permissionId);
+                    return null;
+                }
+                return permission.getName();
+            }).collect(Collectors.toSet());
+            log.debug("Found {} permissions for user {}", lstFunctionAction.size(), subject);
 
             lstFunctionAction.forEach(permission -> grantedAuthorities.add(new SimpleGrantedAuthority(permission)));
 

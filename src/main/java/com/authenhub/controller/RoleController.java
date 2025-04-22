@@ -14,14 +14,14 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/admin/roles")
 @RequiredArgsConstructor
 public class RoleController {
 
     private final RoleService roleService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('role:read')")
+//    @PreAuthorize("hasAuthority('role:read')")
     public ResponseEntity<ApiResponse> getAllRoles() {
         List<RoleDto.Response> roles = roleService.getAllRoles();
         return ResponseEntity.ok(ApiResponse.builder()
@@ -32,7 +32,7 @@ public class RoleController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('role:read')")
+//    @PreAuthorize("hasAuthority('role:read')")
     public ResponseEntity<ApiResponse> getRoleById(@PathVariable String id) {
         RoleDto.Response role = roleService.getRoleById(id);
         return ResponseEntity.ok(ApiResponse.builder()
@@ -43,7 +43,7 @@ public class RoleController {
     }
 
     @GetMapping("/{id}/permissions")
-    @PreAuthorize("hasAuthority('role:read')")
+//    @PreAuthorize("hasAuthority('role:read')")
     public ResponseEntity<ApiResponse> getRoleWithPermissions(@PathVariable String id) {
         RoleDto.DetailedResponse role = roleService.getRoleWithPermissions(id);
         return ResponseEntity.ok(ApiResponse.builder()
@@ -54,7 +54,7 @@ public class RoleController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('role:create')")
+//    @PreAuthorize("hasAuthority('role:create')")
     public ResponseEntity<ApiResponse> createRole(@Valid @RequestBody RoleDto.Request request) {
         RoleDto.Response role = roleService.createRole(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.builder()
@@ -65,7 +65,7 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('role:update')")
+//    @PreAuthorize("hasAuthority('role:update')")
     public ResponseEntity<ApiResponse> updateRole(
             @PathVariable String id,
             @Valid @RequestBody RoleDto.Request request) {
@@ -78,7 +78,7 @@ public class RoleController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('role:delete')")
+//    @PreAuthorize("hasAuthority('role:delete')")
     public ResponseEntity<ApiResponse> deleteRole(@PathVariable String id) {
         roleService.deleteRole(id);
         return ResponseEntity.ok(ApiResponse.builder()
@@ -88,7 +88,7 @@ public class RoleController {
     }
 
     @PostMapping("/{id}/permissions")
-    @PreAuthorize("hasAuthority('role:update')")
+//    @PreAuthorize("hasAuthority('role:update')")
     public ResponseEntity<ApiResponse> addPermissionsToRole(
             @PathVariable String id,
             @RequestBody Set<String> permissionIds) {
@@ -101,7 +101,7 @@ public class RoleController {
     }
 
     @DeleteMapping("/{id}/permissions")
-    @PreAuthorize("hasAuthority('role:update')")
+//    @PreAuthorize("hasAuthority('role:update')")
     public ResponseEntity<ApiResponse> removePermissionsFromRole(
             @PathVariable String id,
             @RequestBody Set<String> permissionIds) {

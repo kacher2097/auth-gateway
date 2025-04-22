@@ -2,6 +2,7 @@ package com.authenhub.repository.jpa;
 
 import com.authenhub.entity.AccessLog;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +10,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Repository
-public interface AccessLogJpaRepository extends JpaRepository<AccessLog, Long> {
+public interface AccessLogJpaRepository extends JpaRepository<AccessLog, Long>, JpaSpecificationExecutor<AccessLog> {
     @Query("SELECT COUNT(a) FROM AccessLog a WHERE a.timestamp >= ?1 AND a.timestamp <= ?2")
     long countByDateRange(Timestamp start, Timestamp end);
 

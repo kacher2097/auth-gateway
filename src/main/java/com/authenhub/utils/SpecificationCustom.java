@@ -197,23 +197,23 @@ public class SpecificationCustom {
      * @param <T> entity type
      * @return specification for counting by date range
      */
-    public static <T> Specification<T> countByDateRange(String timestampField, Timestamp start, Timestamp end) {
-        return (root, query, cb) -> {
-            if (start == null || end == null) {
-                return cb.conjunction();
-            }
-
-            // Set count query
-            if (Long.class != query.getResultType()) {
-                query.select(cb.count(root));
-            }
-
-            return cb.and(
-                    cb.greaterThanOrEqualTo(root.get(timestampField), start),
-                    cb.lessThanOrEqualTo(root.get(timestampField), end)
-            );
-        };
-    }
+//    public static <T> Specification<T> countByDateRange(String timestampField, Timestamp start, Timestamp end) {
+//        return (root, query, cb) -> {
+//            if (start == null || end == null) {
+//                return cb.conjunction();
+//            }
+//
+//            // Set count query
+//            if (Long.class != query.getResultType()) {
+//                query.select(cb.count(root));
+//            }
+//
+//            return cb.and(
+//                    cb.greaterThanOrEqualTo(root.get(timestampField), start),
+//                    cb.lessThanOrEqualTo(root.get(timestampField), end)
+//            );
+//        };
+//    }
 
     /**
      * Count entities within a date range and with endpoint containing a pattern.
@@ -227,25 +227,25 @@ public class SpecificationCustom {
      * @param <T> entity type
      * @return specification for counting by date range and endpoint pattern
      */
-    public static <T> Specification<T> countByEndpointContaining(String timestampField, String endpointField,
-                                                                 Timestamp start, Timestamp end, String endpointPattern) {
-        return (root, query, cb) -> {
-            if (start == null || end == null || StringUtils.isBlank(endpointPattern)) {
-                return cb.conjunction();
-            }
-
-            // Set count query
-            if (Long.class != query.getResultType()) {
-                query.select(cb.count(root));
-            }
-
-            return cb.and(
-                    cb.greaterThanOrEqualTo(root.get(timestampField), start),
-                    cb.lessThanOrEqualTo(root.get(timestampField), end),
-                    cb.like(root.get(endpointField), "%" + endpointPattern + "%")
-            );
-        };
-    }
+//    public static <T> Specification<T> countByEndpointContaining(String timestampField, String endpointField,
+//                                                                 Timestamp start, Timestamp end, String endpointPattern) {
+//        return (root, query, cb) -> {
+//            if (start == null || end == null || StringUtils.isBlank(endpointPattern)) {
+//                return cb.conjunction();
+//            }
+//
+//            // Set count query
+//            if (Long.class != query.getResultType()) {
+//                query.select(cb.count(root));
+//            }
+//
+//            return cb.and(
+//                    cb.greaterThanOrEqualTo(root.get(timestampField), start),
+//                    cb.lessThanOrEqualTo(root.get(timestampField), end),
+//                    cb.like(root.get(endpointField), "%" + endpointPattern + "%")
+//            );
+//        };
+//    }
 
     /**
      * Count entities within a date range, with specific endpoint and status code.
@@ -261,27 +261,27 @@ public class SpecificationCustom {
      * @param <T> entity type
      * @return specification for counting by date range, endpoint and status code
      */
-    public static <T> Specification<T> countByEndpointAndStatusCode(String timestampField, String endpointField,
-                                                                    String statusCodeField, Timestamp start, Timestamp end,
-                                                                    String endpoint, int statusCode) {
-        return (root, query, cb) -> {
-            if (start == null || end == null || StringUtils.isBlank(endpoint)) {
-                return cb.conjunction();
-            }
-
-            // Set count query
-            if (Long.class != query.getResultType()) {
-                query.select(cb.count(root));
-            }
-
-            return cb.and(
-                    cb.greaterThanOrEqualTo(root.get(timestampField), start),
-                    cb.lessThanOrEqualTo(root.get(timestampField), end),
-                    cb.equal(root.get(endpointField), endpoint),
-                    cb.equal(root.get(statusCodeField), statusCode)
-            );
-        };
-    }
+//    public static <T> Specification<T> countByEndpointAndStatusCode(String timestampField, String endpointField,
+//                                                                    String statusCodeField, Timestamp start, Timestamp end,
+//                                                                    String endpoint, int statusCode) {
+//        return (root, query, cb) -> {
+//            if (start == null || end == null || StringUtils.isBlank(endpoint)) {
+//                return cb.conjunction();
+//            }
+//
+//            // Set count query
+//            if (Long.class != query.getResultType()) {
+//                query.select(cb.count(root));
+//            }
+//
+//            return cb.and(
+//                    cb.greaterThanOrEqualTo(root.get(timestampField), start),
+//                    cb.lessThanOrEqualTo(root.get(timestampField), end),
+//                    cb.equal(root.get(endpointField), endpoint),
+//                    cb.equal(root.get(statusCodeField), statusCode)
+//            );
+//        };
+//    }
 
     /**
      * Create a specification that applies a count transformation to the query.
@@ -291,12 +291,12 @@ public class SpecificationCustom {
      * @param <T> entity type
      * @return a specification that counts entities matching the criteria
      */
-    public static <T> Specification<T> count(Specification<T> spec) {
-        return (root, query, cb) -> {
-            query.select(cb.count(root));
-            return spec.toPredicate(root, query, cb);
-        };
-    }
+//    public static <T> Specification<T> count(Specification<T> spec) {
+//        return (root, query, cb) -> {
+//            query.select(cb.count(root));
+//            return spec.toPredicate(root, query, cb);
+//        };
+//    }
 
     /**
      * Create a specification for a general date range query with multiple conditions.

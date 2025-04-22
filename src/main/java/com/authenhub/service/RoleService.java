@@ -73,14 +73,14 @@ public class RoleService implements IRoleService {
         }
 
         // Validate that all permission IDs exist
-        validatePermissionIds(request.getPermissionIds());
+        validatePermissionIds(request.getPermissions());
 
         Role role = Role.builder()
                 .name(request.getName())
                 .displayName(request.getDisplayName())
                 .description(request.getDescription())
                 .isSystem(false) // Only system can create system roles
-                .permissionIds(request.getPermissionIds())
+                .permissionIds(request.getPermissions())
                 .createdAt(TimestampUtils.now())
                 .updatedAt(TimestampUtils.now())
                 .build();
@@ -106,12 +106,12 @@ public class RoleService implements IRoleService {
         }
 
         // Validate that all permission IDs exist
-        validatePermissionIds(request.getPermissionIds());
+        validatePermissionIds(request.getPermissions());
 
         role.setName(request.getName());
         role.setDisplayName(request.getDisplayName());
         role.setDescription(request.getDescription());
-        role.setPermissionIds(request.getPermissionIds());
+        role.setPermissionIds(request.getPermissions());
         role.setUpdatedAt(TimestampUtils.now());
 
         Role updatedRole = roleRepository.save(role);
@@ -177,7 +177,7 @@ public class RoleService implements IRoleService {
     @Override
     public void validatePermissionIds(Set<String> permissionIds) {
         for (String permissionId : permissionIds) {
-            if (!permissionRepository.existsById(permissionId)) {
+            if (!permissionRepository.existsByName(permissionId)) {
                 throw new ResourceNotFoundException("Permission not found with id: " + permissionId);
             }
         }

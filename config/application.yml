@@ -139,7 +139,7 @@ pool: {max: 10}
 # Database switcher configuration
 database:
   # Type of database to use: mongodb or postgresql
-  type: postgresql
+  type: mongodb
   # Enable automatic data migration when switching database types
   enable-auto-migration: false
   # Enable detailed migration logs
