@@ -1,8 +1,8 @@
 package com.authenhub.controller;
 
 import com.authenhub.bean.UserUpdateRequest;
+import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.bean.user.UserSearchResponse;
-import com.authenhub.dto.ApiResponse;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.RoleRepository;
@@ -78,143 +78,97 @@ public class AdminController {
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<ApiResponse> getUserById(@PathVariable String id) {
+    public ApiResponse<?> getUserById(@PathVariable String id) {
         return getUserByIdInternal(id);
     }
 
     @PostMapping("/users/{id}")
-    public ResponseEntity<ApiResponse> getUserByIdPost(@PathVariable String id) {
+    public ApiResponse<?> getUserByIdPost(@PathVariable String id) {
         return getUserByIdInternal(id);
     }
 
-    private ResponseEntity<ApiResponse> getUserByIdInternal(String id) {
+    private ApiResponse<?> getUserByIdInternal(String id) {
         Optional<User> userOpt = userRepository.findById(id);
 
         if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ApiResponse.error("404", "User not found");
         }
 
         User user = userOpt.get();
         user.setPassword(null); // Remove sensitive information
 
-        ApiResponse response = ApiResponse.builder()
-                .success(true)
-                .message("User retrieved successfully")
-                .data(user)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(user);
     }
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<ApiResponse> updateUser(
+    public ApiResponse<?> updateUser(
             @PathVariable String id,
             @Valid @RequestBody UserUpdateRequest request
     ) {
         User updatedUser = userManagementService.updateUser(id, request);
         updatedUser.setPassword(null); // Remove sensitive information
 
-        ApiResponse response = ApiResponse.builder()
-                .success(true)
-                .message("User updated successfully")
-                .data(updatedUser)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(updatedUser);
     }
 
     @PutMapping("/users/{id}/activate")
-    public ResponseEntity<ApiResponse> activateUser(@PathVariable String id) {
+    public ApiResponse<?> activateUser(@PathVariable String id) {
         User user = userManagementService.setUserActiveStatus(id, true);
-
-        ApiResponse response = ApiResponse.builder()
-                .success(true)
-                .message("User activated successfully")
-                .data(user)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(user);
     }
 
     @PutMapping("/users/{id}/deactivate")
-    public ResponseEntity<ApiResponse> deactivateUser(@PathVariable String id) {
+    public ApiResponse<?> deactivateUser(@PathVariable String id) {
         User user = userManagementService.setUserActiveStatus(id, false);
-
-        ApiResponse response = ApiResponse.builder()
-                .success(true)
-                .message("User deactivated successfully")
-                .data(user)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(user);
     }
 
     @PutMapping("/users/{id}/promote-to-admin")
-    public ResponseEntity<ApiResponse> promoteToAdmin(@PathVariable String id) {
+    public ApiResponse<?> promoteToAdmin(@PathVariable String id) {
         User user = userManagementService.setUserRole(id, User.Role.ADMIN);
-
-        ApiResponse response = ApiResponse.builder()
-                .success(true)
-                .message("User promoted to admin successfully")
-                .data(user)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(user);
     }
 
     @PutMapping("/users/{id}/demote-to-user")
-    public ResponseEntity<ApiResponse> demoteToUser(@PathVariable String id) {
+    public ApiResponse<?> demoteToUser(@PathVariable String id) {
         User user = userManagementService.setUserRole(id, User.Role.USER);
-
-        ApiResponse response = ApiResponse.builder()
-                .success(true)
-                .message("User demoted to regular user successfully")
-                .data(user)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(user);
     }
 
     @GetMapping("/dashboard")
-    public ResponseEntity<ApiResponse> getDashboardData() {
+    public ApiResponse<?> getDashboardData() {
         return getDashboardDataInternal();
     }
 
     @PostMapping("/dashboard")
-    public ResponseEntity<ApiResponse> getDashboardDataPost() {
+    public ApiResponse<?> getDashboardDataPost() {
         return getDashboardDataInternal();
     }
 
-    private ResponseEntity<ApiResponse> getDashboardDataInternal() {
+    private ApiResponse<?> getDashboardDataInternal() {
         long userCount = userRepository.count();
         long adminCount = userRepository.countByRole(User.Role.ADMIN);
         long regularUserCount = userRepository.countByRole(User.Role.USER);
 
-        ApiResponse response = ApiResponse.builder()
-                .success(true)
-                .message("Dashboard data retrieved successfully")
-                .data(new DashboardData(userCount, adminCount, regularUserCount))
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(new DashboardData(userCount, adminCount, regularUserCount));
     }
 
     @GetMapping("/statistics")
-    public ResponseEntity<ApiResponse> getStatistics(
+    public ApiResponse<?> getStatistics(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
         return getStatisticsInternal(startDate, endDate);
     }
 
     @PostMapping("/statistics")
-    public ResponseEntity<ApiResponse> getStatisticsPost(@RequestBody(required = false) Map<String, Object> params) {
+    public ApiResponse<?> getStatisticsPost(@RequestBody(required = false) Map<String, Object> params) {
         String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
         String endDate = params != null && params.containsKey("endDate") ? params.get("endDate").toString() : null;
 
         return getStatisticsInternal(startDate, endDate);
     }
 
-    private ResponseEntity<ApiResponse> getStatisticsInternal(String startDateStr, String endDateStr) {
+    private ApiResponse<?> getStatisticsInternal(String startDateStr, String endDateStr) {
         try {
             // Parse dates or use defaults
             Timestamp startDate;
@@ -250,33 +204,29 @@ public class AdminController {
             statistics.put("successfulLogins", accessStats.getOrDefault("successfulLogins", 0));
             statistics.put("failedLogins", accessStats.getOrDefault("failedLogins", 0));
 
-            return ResponseEntity.ok(ApiResponse.builder()
-                    .success(true)
-                    .message("Statistics retrieved successfully")
-                    .data(statistics)
-                    .build());
+            return ApiResponse.success(statistics);
         } catch (Exception e) {
             log.error("Error getting statistics", e);
-            return ResponseEntity.badRequest().build();
+            return ApiResponse.error("400", "Error getting statistics: " + e.getMessage());
         }
     }
 
     @GetMapping("/login-activity")
-    public ResponseEntity<ApiResponse> getLoginActivity(
+    public ApiResponse<?> getLoginActivity(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
         return getLoginActivityInternal(startDate, endDate);
     }
 
     @PostMapping("/login-activity")
-    public ResponseEntity<ApiResponse> getLoginActivityPost(@RequestBody(required = false) Map<String, Object> params) {
+    public ApiResponse<?> getLoginActivityPost(@RequestBody(required = false) Map<String, Object> params) {
         String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
         String endDate = params != null && params.containsKey("endDate") ? params.get("endDate").toString() : null;
 
         return getLoginActivityInternal(startDate, endDate);
     }
 
-    private ResponseEntity<ApiResponse> getLoginActivityInternal(String startDateStr, String endDateStr) {
+    private ApiResponse<?> getLoginActivityInternal(String startDateStr, String endDateStr) {
         // Parse dates or use defaults
         Timestamp startDate;
         Timestamp endDate;
@@ -297,11 +247,7 @@ public class AdminController {
         // Get login activity from access logs
         List<Map<String, Object>> loginActivity = accessLogService.getLoginActivity(startDate, endDate);
 
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Login activity retrieved successfully")
-                .data(loginActivity)
-                .build());
+        return ApiResponse.success(loginActivity);
     }
 
     private static class DashboardData {

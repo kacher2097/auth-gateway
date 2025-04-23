@@ -30,6 +30,7 @@ public class JwtService {
     private long jwtExpiration;
 
     public String extractUsername(String token) {
+        log.debug("Extracting username from token: {}", token);
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -39,11 +40,15 @@ public class JwtService {
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+        return claims != null ? claimsResolver.apply(claims) : null;
     }
 
     public String extractRole(String token) {
         Claims claims = extractAllClaims(token);
+        if (claims == null) {
+            return null;
+        }
+
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) claims.get("roles");
         if (roles != null && !roles.isEmpty()) {
@@ -55,18 +60,37 @@ public class JwtService {
 
     public boolean hasRole(String token, String role) {
         Claims claims = extractAllClaims(token);
+        if (claims == null) {
+            return false;
+        }
+
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) claims.get("roles");
         return roles != null && roles.contains(role);
     }
 
     public Claims extractAllClaims(String token) {
-        final String finalToken = getJwtFromRequest(token);
-        return Jwts.parserBuilder()
-                .setSigningKey(getSignKey())
-                .build()
-                .parseClaimsJws(finalToken)
-                .getBody();
+        if (token == null || token.isEmpty()) {
+            log.warn("Attempted to extract claims from null or empty token");
+            return null;
+        }
+
+        try {
+            final String finalToken = getJwtFromRequest(token);
+            if (finalToken == null || finalToken.isEmpty()) {
+                log.warn("Token after processing is null or empty");
+                return null;
+            }
+
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSignKey())
+                    .build()
+                    .parseClaimsJws(finalToken)
+                    .getBody();
+        } catch (Exception e) {
+            log.error("Error extracting claims from token: {}", e.getMessage());
+            return null;
+        }
     }
 
     private Boolean isTokenExpired(String token) {
@@ -145,10 +169,15 @@ public class JwtService {
 //    }
 
     private String getJwtFromRequest(String tokenWithBearer) {
-        if (StringUtils.hasText(tokenWithBearer) && tokenWithBearer.startsWith("Bearer ")) {
-            String token = tokenWithBearer.substring(7).trim();
-            log.debug("Extracted token: {}", token);
-            return StringUtils.hasText(token) ? token : null;
+        if (StringUtils.hasText(tokenWithBearer)) {
+            if (tokenWithBearer.startsWith("Bearer ")) {
+                String token = tokenWithBearer.substring(7).trim();
+                log.debug("Extracted token: {}", token);
+                return StringUtils.hasText(token) ? token : null;
+            } else {
+                // Nếu token không bắt đầu bằng "Bearer ", có thể nó đã được xử lý trước đó
+                return tokenWithBearer.trim();
+            }
         }
         return null;
     }

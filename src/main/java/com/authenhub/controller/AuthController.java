@@ -1,7 +1,7 @@
 package com.authenhub.controller;
 
 import com.authenhub.bean.*;
-import com.authenhub.dto.ApiResponse;
+import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.dto.AuthRequest;
 import com.authenhub.dto.AuthResponse;
 import com.authenhub.filter.JwtService;
@@ -23,60 +23,60 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    public ApiResponse<?> register(@Valid @RequestBody RegisterRequest request) {
+        return ApiResponse.success(authService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ApiResponse<?> login(@Valid @RequestBody AuthRequest request) {
+        return ApiResponse.success(authService.login(request));
     }
 
     @PostMapping("/social-login")
-    public ResponseEntity<AuthResponse> socialLogin(@Valid @RequestBody SocialLoginRequest request) {
+    public ApiResponse<?> socialLogin(@Valid @RequestBody SocialLoginRequest request) {
 //        if (!rateLimiter.tryAcquire()) {
-//            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+//            return ApiResponse.error("429", "Too many requests");
 //        }
-        return ResponseEntity.ok(authService.socialLogin(request));
+        return ApiResponse.success(authService.socialLogin(request));
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponse> refreshToken(@RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(authService.refreshToken(token));
+    public ApiResponse<?> refreshToken(@RequestHeader("Authorization") String token) {
+        return ApiResponse.success(authService.refreshToken(token));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<Object> getCurrentUser(@RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(authService.getCurrentUser(token));
+    public ApiResponse<?> getCurrentUser(@RequestHeader("Authorization") String token) {
+        return ApiResponse.success(authService.getCurrentUser(token));
     }
 
     @PostMapping("/oauth2/callback")
-    public ResponseEntity<AuthResponse> oauthCallback(@Valid @RequestBody OAuth2CallbackRequest request) {
-        return ResponseEntity.ok(authService.handleOAuth2Callback(request));
+    public ApiResponse<?> oauthCallback(@Valid @RequestBody OAuth2CallbackRequest request) {
+        return ApiResponse.success(authService.handleOAuth2Callback(request));
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<Void> changePassword(
+    public ApiResponse<?> changePassword(
             @RequestHeader("Authorization") String token,
             @Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(request);
-        return ResponseEntity.ok().build();
+        return ApiResponse.success(null);
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public ApiResponse<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request);
-        return ResponseEntity.ok().build();
+        return ApiResponse.success(null);
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ApiResponse<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
-        return ResponseEntity.ok().build();
+        return ApiResponse.success(null);
     }
 
     @GetMapping("/check-role")
-    public ResponseEntity<ApiResponse> checkRole(@RequestHeader("Authorization") String token) {
+    public ApiResponse<?> checkRole(@RequestHeader("Authorization") String token) {
         // Extract token from Authorization header
         String jwt = token.substring(7); // Remove "Bearer " prefix
 
@@ -88,12 +88,6 @@ public class AuthController {
         data.put("role", role);
         data.put("isAdmin", isAdmin);
 
-        ApiResponse response = ApiResponse.builder()
-                .success(true)
-                .message("Role check successful")
-                .data(data)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(data);
     }
 }

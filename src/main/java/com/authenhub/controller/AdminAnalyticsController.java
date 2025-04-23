@@ -1,11 +1,10 @@
 package com.authenhub.controller;
 
 import com.authenhub.bean.AccessStatsRequest;
-import com.authenhub.dto.ApiResponse;
+import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.service.AccessLogService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
@@ -19,7 +18,7 @@ public class AdminAnalyticsController {
     private final AccessLogService accessLogService;
 
     @PostMapping("/access-stats")
-    public ResponseEntity<ApiResponse> getAccessStats(@RequestBody AccessStatsRequest request) {
+    public ApiResponse<?> getAccessStats(@RequestBody AccessStatsRequest request) {
         Timestamp startDate = request.getStartDate();
         Timestamp endDate = request.getEndDate();
 
@@ -33,31 +32,25 @@ public class AdminAnalyticsController {
         }
         Map<String, Object> stats = accessLogService.getAccessStats(startDate, endDate);
 
-        ApiResponse response = ApiResponse.builder()
-                .success(true)
-                .message("Access statistics retrieved successfully")
-                .data(stats)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(stats);
     }
 
     @GetMapping("/traffic")
-    public ResponseEntity<ApiResponse> getTrafficData(
+    public ApiResponse<?> getTrafficData(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
         return getTrafficDataInternal(startDate, endDate);
     }
 
     @PostMapping("/traffic")
-    public ResponseEntity<ApiResponse> getTrafficDataPost(@RequestBody(required = false) Map<String, Object> params) {
+    public ApiResponse<?> getTrafficDataPost(@RequestBody(required = false) Map<String, Object> params) {
         String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
         String endDate = params != null && params.containsKey("endDate") ? params.get("endDate").toString() : null;
 
         return getTrafficDataInternal(startDate, endDate);
     }
 
-    private ResponseEntity<ApiResponse> getTrafficDataInternal(String startDateStr, String endDateStr) {
+    private ApiResponse<?> getTrafficDataInternal(String startDateStr, String endDateStr) {
         // Parse dates or use defaults
         Timestamp startDate;
         Timestamp endDate;
@@ -81,29 +74,25 @@ public class AdminAnalyticsController {
         // Extract daily visits as traffic data
         Object dailyVisits = accessStats.get("dailyVisits");
 
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Traffic data retrieved successfully")
-                .data(dailyVisits)
-                .build());
+        return ApiResponse.success(dailyVisits);
     }
 
     @GetMapping("/user-activity")
-    public ResponseEntity<ApiResponse> getUserActivityData(
+    public ApiResponse<?> getUserActivityData(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
         return getUserActivityDataInternal(startDate, endDate);
     }
 
     @PostMapping("/user-activity")
-    public ResponseEntity<ApiResponse> getUserActivityDataPost(@RequestBody(required = false) Map<String, Object> params) {
+    public ApiResponse<?> getUserActivityDataPost(@RequestBody(required = false) Map<String, Object> params) {
         String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
         String endDate = params != null && params.containsKey("endDate") ? params.get("endDate").toString() : null;
 
         return getUserActivityDataInternal(startDate, endDate);
     }
 
-    private ResponseEntity<ApiResponse> getUserActivityDataInternal(String startDateStr, String endDateStr) {
+    private ApiResponse<?> getUserActivityDataInternal(String startDateStr, String endDateStr) {
         // Parse dates or use defaults
         Timestamp startDate;
         Timestamp endDate;
@@ -128,10 +117,6 @@ public class AdminAnalyticsController {
         // For this example, we'll just return the daily visits data reformatted as user activity
         Object dailyVisits = accessStats.get("dailyVisits");
 
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("User activity data retrieved successfully")
-                .data(dailyVisits)
-                .build());
+        return ApiResponse.success(dailyVisits);
     }
 }

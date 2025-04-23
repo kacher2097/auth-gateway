@@ -4,7 +4,7 @@ import com.authenhub.bean.proxy.FastProxyRequest;
 import com.authenhub.bean.proxy.ProxyCountryRequest;
 import com.authenhub.bean.proxy.ProxyProtocolRequest;
 import com.authenhub.bean.proxy.ReliableProxyRequest;
-import com.authenhub.dto.ApiResponse;
+import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.dto.FreeProxyDto;
 import com.authenhub.filter.JwtService;
 import com.authenhub.service.FreeProxyService;
@@ -28,159 +28,104 @@ public class FreeProxyController {
     private final JwtService jwtService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse> getAllProxiesPost() {
+    public ApiResponse<?> getAllProxiesPost() {
         List<FreeProxyDto.Response> proxies = proxyService.getAllProxies();
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Proxies retrieved successfully")
-                .data(proxies)
-                .build());
+        return ApiResponse.success(proxies);
     }
 
 //    @GetMapping("/active")
-//    public ResponseEntity<ApiResponse> getActiveProxies() {
+//    public ApiResponse<?> getActiveProxies() {
 //        List<FreeProxyDto.Response> proxies = proxyService.getActiveProxies();
-//        return ResponseEntity.ok(ApiResponse.builder()
-//                .success(true)
-//                .message("Active proxies retrieved successfully")
-//                .data(proxies)
-//                .build());
+//        return ApiResponse.success(proxies);
 //    }
 
     @PostMapping("/active")
-    public ResponseEntity<ApiResponse> getActiveProxiesPost() {
+    public ApiResponse<?> getActiveProxiesPost() {
         List<FreeProxyDto.Response> proxies = proxyService.getActiveProxies();
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Active proxies retrieved successfully")
-                .data(proxies)
-                .build());
+        return ApiResponse.success(proxies);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse> getProxyById(@PathVariable String id) {
+    public ApiResponse<?> getProxyById(@PathVariable String id) {
         FreeProxyDto.Response proxy = proxyService.getProxyById(id);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Proxy retrieved successfully")
-                .data(proxy)
-                .build());
+        return ApiResponse.success(proxy);
     }
 
     @PostMapping("/{id}/get")
-    public ResponseEntity<ApiResponse> getProxyByIdPost(@PathVariable String id) {
+    public ApiResponse<?> getProxyByIdPost(@PathVariable String id) {
         return getProxyById(id);
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse> createProxy(
+    public ApiResponse<?> createProxy(
             @Valid @RequestBody FreeProxyDto.Request request,
             @RequestHeader("Authorization") String token) {
         FreeProxyDto.Response createdProxy = proxyService.createProxy(request, token);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.builder()
-                .success(true)
-                .message("Proxy created successfully")
-                .data(createdProxy)
-                .build());
+        return ApiResponse.success(createdProxy);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse> updateProxy(
+    public ApiResponse<?> updateProxy(
             @PathVariable String id,
             @Valid @RequestBody FreeProxyDto.Request request) {
 
         FreeProxyDto.Response updatedProxy = proxyService.updateProxy(id, request);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Proxy updated successfully")
-                .data(updatedProxy)
-                .build());
+        return ApiResponse.success(updatedProxy);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteProxy(@PathVariable String id) {
+    public ApiResponse<?> deleteProxy(@PathVariable String id) {
         proxyService.deleteProxy(id);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Proxy deleted successfully")
-                .build());
+        return ApiResponse.success(null);
     }
 
     @PostMapping("/{id}/check")
-    public ResponseEntity<ApiResponse> checkProxy(@PathVariable String id) {
+    public ApiResponse<?> checkProxy(@PathVariable String id) {
         FreeProxyDto.CheckResult result = proxyService.checkProxyById(id);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Proxy check completed")
-                .data(result)
-                .build());
+        return ApiResponse.success(result);
     }
 
     @GetMapping("/protocol/{protocol}")
-    public ResponseEntity<ApiResponse> getProxiesByProtocol(@PathVariable String protocol) {
+    public ApiResponse<?> getProxiesByProtocol(@PathVariable String protocol) {
         List<FreeProxyDto.Response> proxies = proxyService.getProxiesByProtocol(protocol);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Proxies retrieved successfully")
-                .data(proxies)
-                .build());
+        return ApiResponse.success(proxies);
     }
 
     @PostMapping("/protocol")
-    public ResponseEntity<ApiResponse> getProxiesByProtocolPost(@RequestBody ProxyProtocolRequest request) {
+    public ApiResponse<?> getProxiesByProtocolPost(@RequestBody ProxyProtocolRequest request) {
         List<FreeProxyDto.Response> proxies = proxyService.getProxiesByProtocol(request.getProtocol());
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Proxies retrieved successfully")
-                .data(proxies)
-                .build());
+        return ApiResponse.success(proxies);
     }
 
     @GetMapping("/country/{country}")
-    public ResponseEntity<ApiResponse> getProxiesByCountry(@PathVariable String country) {
+    public ApiResponse<?> getProxiesByCountry(@PathVariable String country) {
         List<FreeProxyDto.Response> proxies = proxyService.getProxiesByCountry(country);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Proxies retrieved successfully")
-                .data(proxies)
-                .build());
+        return ApiResponse.success(proxies);
     }
 
     @PostMapping("/country")
-    public ResponseEntity<ApiResponse> getProxiesByCountryPost(@RequestBody ProxyCountryRequest request) {
+    public ApiResponse<?> getProxiesByCountryPost(@RequestBody ProxyCountryRequest request) {
         List<FreeProxyDto.Response> proxies = proxyService.getProxiesByCountry(request.getCountry());
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Proxies retrieved successfully")
-                .data(proxies)
-                .build());
+        return ApiResponse.success(proxies);
     }
 
     @PostMapping("/fast")
-    public ResponseEntity<ApiResponse> getFastProxiesPost(@RequestBody FastProxyRequest request) {
+    public ApiResponse<?> getFastProxiesPost(@RequestBody FastProxyRequest request) {
         int maxResponseTime = request.getMaxResponseTime() != null ? request.getMaxResponseTime() : 1000;
         List<FreeProxyDto.Response> proxies = proxyService.getFastProxies(maxResponseTime);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Fast proxies retrieved successfully")
-                .data(proxies)
-                .build());
+        return ApiResponse.success(proxies);
     }
 
     @PostMapping("/reliable")
-    public ResponseEntity<ApiResponse> getReliableProxiesPost(@RequestBody ReliableProxyRequest request) {
+    public ApiResponse<?> getReliableProxiesPost(@RequestBody ReliableProxyRequest request) {
         double minUptime = request.getMinUptime() != null ? request.getMinUptime() : 90.0;
         List<FreeProxyDto.Response> proxies = proxyService.getReliableProxies(minUptime);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Reliable proxies retrieved successfully")
-                .data(proxies)
-                .build());
+        return ApiResponse.success(proxies);
     }
 
 //    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    @PreAuthorize("hasAnyRole('ADMIN')")
-//    public ResponseEntity<ApiResponse> importProxies(
+//    public ApiResponse<?> importProxies(
 //            @RequestParam("file") MultipartFile file,
 //            @RequestParam("fileType") String fileType,
 //            @RequestHeader("Authorization") String token) {
@@ -192,10 +137,6 @@ public class FreeProxyController {
 //        FreeProxyDto.ImportResult result = proxyService.importProxiesFromFile(file, fileType, username);
 //
 //        return ResponseEntity.ok(ApiResponse.builder()
-//                .success(true)
-//                .message(String.format("Import completed: %d processed, %d successful, %d failed",
-//                        result.getTotalProcessed(), result.getSuccessCount(), result.getFailCount()))
-//                .data(result)
-//                .build());
+//        return ApiResponse.success(result);
 //    }
 }

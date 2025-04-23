@@ -25,11 +25,12 @@ public class LogFilter extends GenericFilterBean {
             String uri = ((jakarta.servlet.http.HttpServletRequest) servletRequest).getRequestURI();
             String ipClient = servletRequest.getRemoteAddr();
             log.info("Request to [{}] from IP [{}] finish in {}ms", uri, ipClient, processTime);
-            MDC.clear();
         } catch (ClientAbortException e) {
             log.warn("Broken pipe ", e);
         } catch (Exception e) {
             log.error("Error with request : {} :", servletRequest, e);
+        } finally {
+            MDC.clear();
         }
     }
 }

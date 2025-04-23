@@ -1,8 +1,5 @@
 package com.authenhub.service.migration;
 
-/**
- * Interface for entity migration services.
- */
 public interface MigrationService {
     
     /**

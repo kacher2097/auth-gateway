@@ -1,12 +1,10 @@
 package com.authenhub.controller;
 
-import com.authenhub.dto.ApiResponse;
+import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.dto.PermissionDto;
 import com.authenhub.service.PermissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,68 +19,45 @@ public class PermissionController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('permission:read')")
-    public ResponseEntity<ApiResponse> getAllPermissions() {
+    public ApiResponse<?> getAllPermissions() {
         List<PermissionDto.Response> permissions = permissionService.getAllPermissions();
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Permissions retrieved successfully")
-                .data(permissions)
-                .build());
+        return ApiResponse.success(permissions);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('permission:read')")
-    public ResponseEntity<ApiResponse> getPermissionById(@PathVariable String id) {
+    public ApiResponse<?> getPermissionById(@PathVariable String id) {
         PermissionDto.Response permission = permissionService.getPermissionById(id);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Permission retrieved successfully")
-                .data(permission)
-                .build());
+        return ApiResponse.success(permission);
     }
 
     @GetMapping("/category/{category}")
     @PreAuthorize("hasAuthority('permission:read')")
-    public ResponseEntity<ApiResponse> getPermissionsByCategory(@PathVariable String category) {
+    public ApiResponse<?> getPermissionsByCategory(@PathVariable String category) {
         List<PermissionDto.Response> permissions = permissionService.getPermissionsByCategory(category);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Permissions retrieved successfully")
-                .data(permissions)
-                .build());
+        return ApiResponse.success(permissions);
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('permission:create')")
-    public ResponseEntity<ApiResponse> createPermission(@Valid @RequestBody PermissionDto.Request request) {
+    public ApiResponse<?> createPermission(@Valid @RequestBody PermissionDto.Request request) {
         PermissionDto.Response permission = permissionService.createPermission(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.builder()
-                .success(true)
-                .message("Permission created successfully")
-                .data(permission)
-                .build());
+        return ApiResponse.success(permission);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('permission:update')")
-    public ResponseEntity<ApiResponse> updatePermission(
+    public ApiResponse<?> updatePermission(
             @PathVariable String id,
             @Valid @RequestBody PermissionDto.Request request) {
         PermissionDto.Response permission = permissionService.updatePermission(id, request);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Permission updated successfully")
-                .data(permission)
-                .build());
+        return ApiResponse.success(permission);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('permission:delete')")
-    public ResponseEntity<ApiResponse> deletePermission(@PathVariable String id) {
+    public ApiResponse<?> deletePermission(@PathVariable String id) {
         permissionService.deletePermission(id);
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Permission deleted successfully")
-                .build());
+        return ApiResponse.success(null);
     }
 }

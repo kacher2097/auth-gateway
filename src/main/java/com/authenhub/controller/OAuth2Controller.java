@@ -1,12 +1,12 @@
 package com.authenhub.controller;
 
+import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.dto.AuthResponse;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,13 +24,13 @@ public class OAuth2Controller {
     private final JwtService jwtService;
 
     @GetMapping("/callback")
-    public ResponseEntity<AuthResponse> oauth2Callback(@AuthenticationPrincipal OAuth2User principal) {
+    public ApiResponse<?> oauth2Callback(@AuthenticationPrincipal OAuth2User principal) {
         Map<String, Object> attributes = principal.getAttributes();
-        
+
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
         String picture = (String) attributes.get("picture");
-        
+
         // Tìm user theo email
         var user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
@@ -47,20 +47,20 @@ public class OAuth2Controller {
                     newUser.setUpdatedAt(TimestampUtils.now());
                     return userRepository.save(newUser);
                 });
-        
+
         // Cập nhật thời gian đăng nhập
         user.setLastLogin(TimestampUtils.now());
         userRepository.save(user);
-        
+
         // Tạo token JWT
         String token = jwtService.generateToken(user);
-        
+
         // Tạo response
         AuthResponse authResponse = AuthResponse.builder()
                 .token(token)
                 .user(AuthResponse.UserInfo.fromUser(user))
                 .build();
-        
-        return ResponseEntity.ok(authResponse);
+
+        return ApiResponse.success(authResponse);
     }
-} 
+}

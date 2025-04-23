@@ -1,7 +1,8 @@
 package com.authenhub.controller;
 
 import com.authenhub.bean.UserUpdateRequest;
-import com.authenhub.dto.ApiResponse;
+import com.authenhub.bean.common.ApiResponse;
+import com.authenhub.constant.enums.ApiResponseCode;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.service.UserContext;
 import com.authenhub.service.UserRoleService;
@@ -9,9 +10,8 @@ import com.authenhub.service.interfaces.IUserManagementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Controller for user management operations
@@ -32,24 +32,16 @@ public class UserManagementController {
      * @return the current user's profile
      */
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse> getCurrentUser() {
+    public ApiResponse<?> getCurrentUser() {
         User currentUser = userContext.getCurrentUser();
-        
+
         if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message("User not authenticated")
-                            .build());
+            return ApiResponse.error(ApiResponseCode.FORBIDDEN, "User not authenticated");
         }
-        
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("User profile retrieved successfully")
-                .data(currentUser)
-                .build());
+
+        return ApiResponse.success(currentUser);
     }
-    
+
     /**
      * Update the current user's profile
      *
@@ -57,35 +49,22 @@ public class UserManagementController {
      * @return updated user
      */
     @PutMapping("/me")
-    public ResponseEntity<ApiResponse> updateCurrentUser(@RequestBody UserUpdateRequest request) {
+    public ApiResponse<?> updateCurrentUser(@RequestBody UserUpdateRequest request) {
         User currentUser = userContext.getCurrentUser();
-        
+
         if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message("User not authenticated")
-                            .build());
+            return ApiResponse.error(ApiResponseCode.FORBIDDEN, "User not authenticated");
         }
-        
+
         try {
             User updatedUser = userManagementService.updateUser(currentUser.getId(), request);
-            
-            return ResponseEntity.ok(ApiResponse.builder()
-                    .success(true)
-                    .message("User profile updated successfully")
-                    .data(updatedUser)
-                    .build());
+            return ApiResponse.success(updatedUser);
         } catch (Exception e) {
             log.error("Error updating user profile", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message("Error updating user profile: " + e.getMessage())
-                            .build());
+            return ApiResponse.error("500", "Error updating user profile: " + e.getMessage());
         }
     }
-    
+
     /**
      * Get a user by ID
      *
@@ -93,44 +72,27 @@ public class UserManagementController {
      * @return user
      */
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse> getUserById(@PathVariable String userId) {
+    public ApiResponse<?> getUserById(@PathVariable String userId) {
         // Check if user is authenticated
         if (!userContext.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message("User not authenticated")
-                            .build());
+            return ApiResponse.error(ApiResponseCode.FORBIDDEN, "User not authenticated");
         }
-        
+
         // Only admins or the user themselves can view user details
         User currentUser = userContext.getCurrentUser();
         if (!userContext.isAdmin() && !currentUser.getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message("You don't have permission to view this user")
-                            .build());
+            return ApiResponse.error(ApiResponseCode.FORBIDDEN, "You don't have permission to view this user");
         }
-        
+
         try {
             User user = userManagementService.getCurrentUser();
-            
-            return ResponseEntity.ok(ApiResponse.builder()
-                    .success(true)
-                    .message("User retrieved successfully")
-                    .data(user)
-                    .build());
+            return ApiResponse.success(user);
         } catch (Exception e) {
             log.error("Error retrieving user", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message("Error retrieving user: " + e.getMessage())
-                            .build());
+            return ApiResponse.error("500", "Error retrieving user: " + e.getMessage());
         }
     }
-    
+
     /**
      * Update a user by ID
      *
@@ -139,31 +101,18 @@ public class UserManagementController {
      * @return updated user
      */
     @PutMapping("/{userId}")
-    public ResponseEntity<ApiResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request) {
+    public ApiResponse<?> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request) {
         try {
             User updatedUser = userManagementService.updateUser(userId, request);
-            
-            return ResponseEntity.ok(ApiResponse.builder()
-                    .success(true)
-                    .message("User updated successfully")
-                    .data(updatedUser)
-                    .build());
+            return ApiResponse.success(updatedUser);
         } catch (AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .build());
+            return ApiResponse.error(ApiResponseCode.FORBIDDEN, e.getMessage());
         } catch (Exception e) {
             log.error("Error updating user", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message("Error updating user: " + e.getMessage())
-                            .build());
+            return ApiResponse.error("500", "Error updating user: " + e.getMessage());
         }
     }
-    
+
     /**
      * Set user active status
      *
@@ -172,31 +121,18 @@ public class UserManagementController {
      * @return updated user
      */
     @PutMapping("/{userId}/active")
-    public ResponseEntity<ApiResponse> setUserActiveStatus(@PathVariable String userId, @RequestParam boolean active) {
+    public ApiResponse<?> setUserActiveStatus(@PathVariable String userId, @RequestParam boolean active) {
         try {
             User updatedUser = userManagementService.setUserActiveStatus(userId, active);
-            
-            return ResponseEntity.ok(ApiResponse.builder()
-                    .success(true)
-                    .message("User active status updated successfully")
-                    .data(updatedUser)
-                    .build());
+            return ApiResponse.success(updatedUser);
         } catch (AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .build());
+            return ApiResponse.error(ApiResponseCode.FORBIDDEN, e.getMessage());
         } catch (Exception e) {
             log.error("Error updating user active status", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message("Error updating user active status: " + e.getMessage())
-                            .build());
+            return ApiResponse.error("500", "Error updating user active status: " + e.getMessage());
         }
     }
-    
+
     /**
      * Set user role
      *
@@ -205,43 +141,25 @@ public class UserManagementController {
      * @return updated user
      */
     @PutMapping("/{userId}/role")
-    public ResponseEntity<ApiResponse> setUserRole(@PathVariable String userId, @RequestParam User.Role role) {
+    public ApiResponse<?> setUserRole(@PathVariable String userId, @RequestParam User.Role role) {
         try {
             User updatedUser = userManagementService.setUserRole(userId, role);
-            
-            return ResponseEntity.ok(ApiResponse.builder()
-                    .success(true)
-                    .message("User role updated successfully")
-                    .data(updatedUser)
-                    .build());
+            return ApiResponse.success(updatedUser);
         } catch (AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .build());
+            return ApiResponse.error(ApiResponseCode.FORBIDDEN, e.getMessage());
         } catch (Exception e) {
             log.error("Error updating user role", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.builder()
-                            .success(false)
-                            .message("Error updating user role: " + e.getMessage())
-                            .build());
+            return ApiResponse.error("500", "Error updating user role: " + e.getMessage());
         }
     }
 
     @PutMapping("/{userId}/roles/assign")
-    public ResponseEntity<ApiResponse> assignRoleToUser(
+    public ApiResponse<?> assignRoleToUser(
             @PathVariable String userId,
             @RequestParam String roleId) {
 
         User updatedUser = userRoleService.assignRolesToUser(userId, roleId);
-
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Role assigned to user successfully")
-                .data(updatedUser)
-                .build());
+        return ApiResponse.success(updatedUser);
     }
 
     /**
@@ -252,17 +170,12 @@ public class UserManagementController {
      * @return updated user
      */
     @PutMapping("/{userId}/roles/add")
-    public ResponseEntity<ApiResponse> addRoleToUser(
+    public ApiResponse<?> addRoleToUser(
             @PathVariable String userId,
             @RequestParam String roleId) {
 
         User updatedUser = userRoleService.addRolesToUser(userId, roleId);
-
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Role added to user successfully")
-                .data(updatedUser)
-                .build());
+        return ApiResponse.success(updatedUser);
     }
 
     /**
@@ -273,16 +186,11 @@ public class UserManagementController {
      * @return updated user
      */
     @PutMapping("/{userId}/roles/remove")
-    public ResponseEntity<ApiResponse> removeRoleFromUser(
+    public ApiResponse<?> removeRoleFromUser(
             @PathVariable String userId,
             @RequestParam String roleId) {
 
         User updatedUser = userRoleService.removeRolesFromUser(userId, roleId);
-
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Role removed from user successfully")
-                .data(updatedUser)
-                .build());
+        return ApiResponse.success(updatedUser);
     }
 }

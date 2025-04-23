@@ -4,6 +4,7 @@ import com.authenhub.config.DatabaseSwitcherConfig;
 import com.authenhub.entity.User;
 import com.authenhub.repository.UserRepository;
 import com.authenhub.repository.jpa.UserJpaRepository;
+import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -28,13 +30,21 @@ public class UserRepositoryAdapter implements RepositoryAdapter<com.authenhub.en
     private final UserRepository mongoRepository;
     private final UserJpaRepository jpaRepository;
     private final DatabaseSwitcherConfig databaseConfig;
+    private final UserRepository userRepository;
+    private final UserJpaRepository userJpaRepository;
 
     @Override
     public com.authenhub.entity.mongo.User save(com.authenhub.entity.mongo.User user) {
         if (databaseConfig.isMongoActive()) {
             return mongoRepository.save(user);
         } else {
-            User userJpa = User.fromMongo(user);
+            User userJpa = userJpaRepository.findByUsername(user.getUsername()).orElse(null);
+            if (Objects.nonNull(userJpa)) {
+                userJpa.setUpdatedAt(TimestampUtils.now());
+                userJpa = jpaRepository.save(userJpa);
+                return userJpa.toMongo();
+            }
+            userJpa = User.fromMongo(user);
             userJpa = jpaRepository.save(userJpa);
             return userJpa.toMongo();
         }

@@ -1,13 +1,12 @@
 package com.authenhub.controller;
 
-import com.authenhub.dto.ApiResponse;
+import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.dto.request.DateRangeRequest;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.service.interfaces.IAccessLogService;
 import com.authenhub.service.interfaces.IUserService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
@@ -31,9 +30,9 @@ public class AnalyticsController {
      * @return dashboard data
      */
     @GetMapping("/dashboard")
-    public ResponseEntity<ApiResponse> getDashboardData() {
+    public ApiResponse<?> getDashboardData() {
         Map<String, Object> data = new HashMap<>();
-        
+
         // User stats
         data.put("totalUsers", userService.countTotalUsers());
         data.put("activeUsers", userService.countUsersByActive(true));
@@ -41,14 +40,10 @@ public class AnalyticsController {
         data.put("adminUsers", userService.countUsersByRole(User.Role.ADMIN));
         data.put("regularUsers", userService.countUsersByRole(User.Role.USER));
         data.put("socialLoginUsers", userService.countUsersBySocialLogin());
-        
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Dashboard data retrieved successfully")
-                .data(data)
-                .build());
+
+        return ApiResponse.success(data);
     }
-    
+
     /**
      * Get access stats
      *
@@ -56,28 +51,24 @@ public class AnalyticsController {
      * @return access stats
      */
     @PostMapping("/access-stats")
-    public ResponseEntity<ApiResponse> getAccessStats(@RequestBody DateRangeRequest request) {
+    public ApiResponse<?> getAccessStats(@RequestBody DateRangeRequest request) {
         Timestamp startDate = request.getStartDate();
         Timestamp endDate = request.getEndDate();
-        
+
         // Default to last 30 days if no dates provided
         if (startDate == null) {
             startDate = TimestampUtils.addDays(TimestampUtils.now(), -30);
         }
-        
+
         if (endDate == null) {
             endDate = TimestampUtils.now();
         }
-        
+
         Map<String, Object> accessStats = accessLogService.getAccessStats(startDate, endDate);
-        
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Access stats retrieved successfully")
-                .data(accessStats)
-                .build());
+
+        return ApiResponse.success(accessStats);
     }
-    
+
     /**
      * Get traffic data
      *
@@ -85,30 +76,26 @@ public class AnalyticsController {
      * @return traffic data
      */
     @PostMapping("/traffic")
-    public ResponseEntity<ApiResponse> getTrafficData(@RequestBody DateRangeRequest request) {
+    public ApiResponse<?> getTrafficData(@RequestBody DateRangeRequest request) {
         Timestamp startDate = request.getStartDate();
         Timestamp endDate = request.getEndDate();
-        
+
         // Default to last 30 days if no dates provided
         if (startDate == null) {
             startDate = TimestampUtils.addDays(TimestampUtils.now(), -30);
         }
-        
+
         if (endDate == null) {
             endDate = TimestampUtils.now();
         }
-        
+
         // Get daily visits as traffic data
         Map<String, Object> accessStats = accessLogService.getAccessStats(startDate, endDate);
         Object dailyVisits = accessStats.get("dailyVisits");
-        
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Traffic data retrieved successfully")
-                .data(dailyVisits)
-                .build());
+
+        return ApiResponse.success(dailyVisits);
     }
-    
+
     /**
      * Get login activity
      *
@@ -116,27 +103,23 @@ public class AnalyticsController {
      * @return login activity
      */
     @PostMapping("/login-activity")
-    public ResponseEntity<ApiResponse> getLoginActivity(@RequestBody DateRangeRequest request) {
+    public ApiResponse<?> getLoginActivity(@RequestBody DateRangeRequest request) {
         Timestamp startDate = request.getStartDate();
         Timestamp endDate = request.getEndDate();
-        
+
         // Default to last 30 days if no dates provided
         if (startDate == null) {
             startDate = TimestampUtils.addDays(TimestampUtils.now(), -30);
         }
-        
+
         if (endDate == null) {
             endDate = TimestampUtils.now();
         }
-        
+
         // Get login activity
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Login activity retrieved successfully")
-                .data(accessLogService.getLoginActivity(startDate, endDate))
-                .build());
+        return ApiResponse.success(accessLogService.getLoginActivity(startDate, endDate));
     }
-    
+
     /**
      * Get top endpoints
      *
@@ -144,26 +127,22 @@ public class AnalyticsController {
      * @return top endpoints
      */
     @PostMapping("/top-endpoints")
-    public ResponseEntity<ApiResponse> getTopEndpoints(@RequestBody DateRangeRequest request) {
+    public ApiResponse<?> getTopEndpoints(@RequestBody DateRangeRequest request) {
         Timestamp startDate = request.getStartDate();
         Timestamp endDate = request.getEndDate();
-        
+
         // Default to last 30 days if no dates provided
         if (startDate == null) {
             startDate = TimestampUtils.addDays(TimestampUtils.now(), -30);
         }
-        
+
         if (endDate == null) {
             endDate = TimestampUtils.now();
         }
-        
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Top endpoints retrieved successfully")
-                .data(accessLogService.getTopEndpoints(startDate, endDate))
-                .build());
+
+        return ApiResponse.success(accessLogService.getTopEndpoints(startDate, endDate));
     }
-    
+
     /**
      * Get top users
      *
@@ -171,23 +150,19 @@ public class AnalyticsController {
      * @return top users
      */
     @PostMapping("/top-users")
-    public ResponseEntity<ApiResponse> getTopUsers(@RequestBody DateRangeRequest request) {
+    public ApiResponse<?> getTopUsers(@RequestBody DateRangeRequest request) {
         Timestamp startDate = request.getStartDate();
         Timestamp endDate = request.getEndDate();
-        
+
         // Default to last 30 days if no dates provided
         if (startDate == null) {
             startDate = TimestampUtils.addDays(TimestampUtils.now(), -30);
         }
-        
+
         if (endDate == null) {
             endDate = TimestampUtils.now();
         }
-        
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Top users retrieved successfully")
-                .data(accessLogService.getTopUsers(startDate, endDate))
-                .build());
+
+        return ApiResponse.success(accessLogService.getTopUsers(startDate, endDate));
     }
 }

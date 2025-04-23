@@ -27,8 +27,7 @@ public class DatabaseMigrationService {
      */
     public void migrateFromMongoToPostgres() {
         log.info("Starting migration from MongoDB to PostgreSQL");
-        
-        // Migrate in the correct order to maintain referential integrity
+
         permissionMigrationService.migrateFromMongoToPostgres();
         roleMigrationService.migrateFromMongoToPostgres();
         userMigrationService.migrateFromMongoToPostgres();
@@ -45,8 +44,7 @@ public class DatabaseMigrationService {
      */
     public void migrateFromPostgresToMongo() {
         log.info("Starting migration from PostgreSQL to MongoDB");
-        
-        // Migrate in the correct order to maintain referential integrity
+
         permissionMigrationService.migrateFromPostgresToMongo();
         roleMigrationService.migrateFromPostgresToMongo();
         userMigrationService.migrateFromPostgresToMongo();
