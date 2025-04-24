@@ -10,16 +10,7 @@ import java.util.Map;
  * Interface for access log service operations
  */
 public interface IAccessLogService {
-    
-    /**
-     * Log access
-     *
-     * @param request HTTP request
-     * @param statusCode HTTP status code
-     * @param startTime request start time
-     */
-    void logAccess(HttpServletRequest request, int statusCode, long startTime);
-    
+
     /**
      * Get access stats
      *

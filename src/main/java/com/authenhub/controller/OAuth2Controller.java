@@ -1,7 +1,8 @@
 package com.authenhub.controller;
 
+import com.authenhub.bean.auth.AuthResponse;
+import com.authenhub.bean.auth.UserInfo;
 import com.authenhub.bean.common.ApiResponse;
-import com.authenhub.dto.AuthResponse;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.UserRepository;
@@ -58,7 +59,7 @@ public class OAuth2Controller {
         // Tạo response
         AuthResponse authResponse = AuthResponse.builder()
                 .token(token)
-                .user(AuthResponse.UserInfo.fromUser(user))
+                .user(UserInfo.fromUser(user))
                 .build();
 
         return ApiResponse.success(authResponse);

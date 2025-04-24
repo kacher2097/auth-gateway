@@ -1,7 +1,9 @@
 package com.authenhub.service;
 
-import com.authenhub.dto.PermissionDto;
-import com.authenhub.dto.RoleDto;
+import com.authenhub.bean.permission.PermissionResponse;
+import com.authenhub.bean.permission.RoleDetailedResponse;
+import com.authenhub.bean.permission.RoleRequest;
+import com.authenhub.bean.permission.RoleResponse;
 import com.authenhub.entity.mongo.Permission;
 import com.authenhub.entity.mongo.Role;
 import com.authenhub.exception.ResourceAlreadyExistsException;
@@ -26,21 +28,21 @@ public class RoleService implements IRoleService {
     private final PermissionRepositoryAdapter permissionRepository;
 
     @Override
-    public List<RoleDto.Response> getAllRoles() {
+    public List<RoleResponse> getAllRoles() {
         return roleRepository.findAll().stream()
-                .map(RoleDto.Response::fromEntity)
+                .map(RoleResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public RoleDto.Response getRoleById(String id) {
+    public RoleResponse getRoleById(String id) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
-        return RoleDto.Response.fromEntity(role);
+        return RoleResponse.fromEntity(role);
     }
 
     @Override
-    public RoleDto.DetailedResponse getRoleWithPermissions(String id) {
+    public RoleDetailedResponse getRoleWithPermissions(String id) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
 
@@ -49,11 +51,11 @@ public class RoleService implements IRoleService {
                         .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + permId)))
                 .collect(Collectors.toSet());
 
-        Set<PermissionDto.Response> permissionResponses = permissions.stream()
-                .map(PermissionDto.Response::fromEntity)
+        Set<PermissionResponse> permissionResponses = permissions.stream()
+                .map(PermissionResponse::fromEntity)
                 .collect(Collectors.toSet());
 
-        return RoleDto.DetailedResponse.builder()
+        return RoleDetailedResponse.builder()
                 .id(role.getId())
                 .name(role.getName())
                 .displayName(role.getDisplayName())
@@ -66,7 +68,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public RoleDto.Response createRole(RoleDto.Request request) {
+    public RoleResponse createRole(RoleRequest request) {
         // Check if role with same name already exists
         if (roleRepository.existsByName(request.getName())) {
             throw new ResourceAlreadyExistsException("Role already exists with name: " + request.getName());
@@ -86,11 +88,11 @@ public class RoleService implements IRoleService {
                 .build();
 
         Role savedRole = roleRepository.save(role);
-        return RoleDto.Response.fromEntity(savedRole);
+        return RoleResponse.fromEntity(savedRole);
     }
 
     @Override
-    public RoleDto.Response updateRole(String id, RoleDto.Request request) {
+    public RoleResponse updateRole(String id, RoleRequest request) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
 
@@ -115,7 +117,7 @@ public class RoleService implements IRoleService {
         role.setUpdatedAt(TimestampUtils.now());
 
         Role updatedRole = roleRepository.save(role);
-        return RoleDto.Response.fromEntity(updatedRole);
+        return RoleResponse.fromEntity(updatedRole);
     }
 
     @Override
@@ -132,7 +134,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public RoleDto.Response addPermissionsToRole(String roleId, Set<String> permissionIds) {
+    public RoleResponse addPermissionsToRole(String roleId, Set<String> permissionIds) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + roleId));
 
@@ -151,11 +153,11 @@ public class RoleService implements IRoleService {
         role.setUpdatedAt(TimestampUtils.now());
 
         Role updatedRole = roleRepository.save(role);
-        return RoleDto.Response.fromEntity(updatedRole);
+        return RoleResponse.fromEntity(updatedRole);
     }
 
     @Override
-    public RoleDto.Response removePermissionsFromRole(String roleId, Set<String> permissionIds) {
+    public RoleResponse removePermissionsFromRole(String roleId, Set<String> permissionIds) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + roleId));
 
@@ -171,7 +173,7 @@ public class RoleService implements IRoleService {
         role.setUpdatedAt(TimestampUtils.now());
 
         Role updatedRole = roleRepository.save(role);
-        return RoleDto.Response.fromEntity(updatedRole);
+        return RoleResponse.fromEntity(updatedRole);
     }
 
     @Override

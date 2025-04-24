@@ -1,9 +1,8 @@
 package com.authenhub.service;
 
-import com.authenhub.entity.mongo.AccessLog;
 import com.authenhub.config.DatabaseSwitcherConfig;
+import com.authenhub.entity.mongo.AccessLog;
 import com.authenhub.repository.adapter.AccessLogRepositoryAdapter;
-import org.springframework.jdbc.core.JdbcTemplate;
 import com.authenhub.service.interfaces.IAccessLogService;
 import com.authenhub.utils.TimestampUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,16 +10,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.GroupOperation;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
-import org.springframework.data.mongodb.core.aggregation.SortOperation;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -38,39 +30,6 @@ public class AccessLogService implements IAccessLogService {
     private final MongoTemplate mongoTemplate;
     private final JdbcTemplate jdbcTemplate;
     private final DatabaseSwitcherConfig databaseConfig;
-
-    @Override
-    public void logAccess(HttpServletRequest request, int statusCode, long startTime) {
-        try {
-            AccessLog accessLog = new AccessLog();
-
-            // Set basic request info
-            accessLog.setIpAddress(getClientIp(request));
-            accessLog.setUserAgent(request.getHeader("User-Agent"));
-            accessLog.setEndpoint(request.getRequestURI());
-            accessLog.setMethod(request.getMethod());
-            accessLog.setStatusCode(statusCode);
-            accessLog.setTimestamp(TimestampUtils.now());
-//            accessLog.setSessionId(request.getSession().getId());
-            accessLog.setReferrer(request.getHeader("Referer"));
-            accessLog.setResponseTimeMs(System.currentTimeMillis() - startTime);
-
-            // Set user info if authenticated
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
-                accessLog.setUsername(auth.getName());
-                // Note: userId would need to be extracted from your custom UserDetails implementation
-            }
-
-            // Parse user agent for browser, OS, device type
-            parseUserAgent(accessLog);
-
-            // Save the log
-            accessLogRepository.save(accessLog);
-        } catch (Exception e) {
-            log.error("Error logging access", e);
-        }
-    }
 
     @Override
     public Map<String, Object> getAccessStats(Timestamp start, Timestamp end) {

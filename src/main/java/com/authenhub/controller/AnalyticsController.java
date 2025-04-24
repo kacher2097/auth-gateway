@@ -1,7 +1,7 @@
 package com.authenhub.controller;
 
+import com.authenhub.bean.DateRangeRequest;
 import com.authenhub.bean.common.ApiResponse;
-import com.authenhub.dto.request.DateRangeRequest;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.service.interfaces.IAccessLogService;
 import com.authenhub.service.interfaces.IUserService;

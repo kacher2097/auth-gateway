@@ -1,9 +1,10 @@
 package com.authenhub.controller;
 
+import com.authenhub.bean.common.ApiResponse;
+import com.authenhub.bean.payment.PaymentMethodRequest;
+import com.authenhub.bean.payment.PaymentMethodResponse;
 import com.authenhub.bean.payment.PaymentRequest;
 import com.authenhub.bean.payment.PaymentResponse;
-import com.authenhub.bean.common.ApiResponse;
-import com.authenhub.dto.PaymentMethodDto;
 import com.authenhub.service.interfaces.IPaymentMethodService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,26 +21,26 @@ public class PaymentMethodController {
 
     @GetMapping
     public ApiResponse<?> getAllPaymentMethods() {
-        List<PaymentMethodDto.Response> paymentMethods = paymentMethodService.getAllPaymentMethods();
+        List<PaymentMethodResponse> paymentMethods = paymentMethodService.getAllPaymentMethods();
         return ApiResponse.success(paymentMethods);
     }
 
     @GetMapping("/active")
     public ApiResponse<?> getActivePaymentMethods() {
-        List<PaymentMethodDto.Response> paymentMethods = paymentMethodService.getActivePaymentMethods();
+        List<PaymentMethodResponse> paymentMethods = paymentMethodService.getActivePaymentMethods();
         return ApiResponse.success(paymentMethods);
     }
 
     @GetMapping("/{id}")
     public ApiResponse<?> getPaymentMethodById(@PathVariable String id) {
-        PaymentMethodDto.Response paymentMethod = paymentMethodService.getPaymentMethodById(id);
+        PaymentMethodResponse paymentMethod = paymentMethodService.getPaymentMethodById(id);
         return ApiResponse.success(paymentMethod);
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('payment:create')")
-    public ApiResponse<?> createPaymentMethod(@RequestBody PaymentMethodDto.Request request) {
-        PaymentMethodDto.Response paymentMethod = paymentMethodService.createPaymentMethod(request);
+    public ApiResponse<?> createPaymentMethod(@RequestBody PaymentMethodRequest request) {
+        PaymentMethodResponse paymentMethod = paymentMethodService.createPaymentMethod(request);
         return ApiResponse.success(paymentMethod);
     }
 
@@ -47,8 +48,8 @@ public class PaymentMethodController {
     @PreAuthorize("hasAuthority('payment:update')")
     public ApiResponse<?> updatePaymentMethod(
             @PathVariable String id,
-            @RequestBody PaymentMethodDto.Request request) {
-        PaymentMethodDto.Response paymentMethod = paymentMethodService.updatePaymentMethod(id, request);
+            @RequestBody PaymentMethodRequest request) {
+        PaymentMethodResponse paymentMethod = paymentMethodService.updatePaymentMethod(id, request);
         return ApiResponse.success(paymentMethod);
     }
 

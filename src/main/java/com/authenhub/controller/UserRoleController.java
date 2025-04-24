@@ -19,10 +19,6 @@ public class UserRoleController {
     @PreAuthorize("hasAuthority('user:read')")
     public ApiResponse<?> getUserRoles(@PathVariable String userId) {
         Role role = userRoleService.getUserRoles(userId);
-//        Set<RoleDto.Response> roleResponses = roles.stream()
-//                .map(RoleDto.Response::fromEntity)
-//                .collect(Collectors.toSet());
-
         return ApiResponse.success(role);
     }
 

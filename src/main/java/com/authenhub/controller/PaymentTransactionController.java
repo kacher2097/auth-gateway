@@ -2,12 +2,10 @@ package com.authenhub.controller;
 
 import com.authenhub.bean.DateRangeRequest;
 import com.authenhub.bean.PaginatedDateRangeRequest;
-import com.authenhub.dto.ApiResponse;
-import com.authenhub.dto.PaymentTransactionDTO;
+import com.authenhub.bean.common.ApiResponse;
+import com.authenhub.bean.payment.PaymentTransactionDTO;
 import com.authenhub.service.PaymentTransactionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
@@ -21,7 +19,7 @@ public class PaymentTransactionController {
     private final PaymentTransactionService paymentTransactionService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse> findTransactions(
+    public ApiResponse<?> findTransactions(
             @RequestParam(required = false) String userId,
             @RequestParam(required = false) Long amount,
             @RequestParam(required = false) String status,
@@ -35,15 +33,11 @@ public class PaymentTransactionController {
         List<PaymentTransactionDTO> transactions = paymentTransactionService.findTransactions(
                 userId, amount, status, startDate, endDate);
 
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Transactions retrieved successfully")
-                .data(transactions)
-                .build());
+        return ApiResponse.success(transactions);
     }
 
     @GetMapping("/stats/by-status")
-    public ResponseEntity<ApiResponse> getTransactionStatsByStatus(
+    public ApiResponse<?> getTransactionStatsByStatus(
             @RequestParam(required = false) String startDateStr,
             @RequestParam(required = false) String endDateStr) {
 
@@ -53,15 +47,11 @@ public class PaymentTransactionController {
 
         List<PaymentTransactionDTO> stats = paymentTransactionService.getTransactionStatsByStatus(startDate, endDate);
 
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Transaction statistics retrieved successfully")
-                .data(stats)
-                .build());
+        return ApiResponse.success(stats);
     }
 
     @GetMapping("/stats/by-user")
-    public ResponseEntity<ApiResponse> getPaginatedTransactionStatsByUser(
+    public ApiResponse<?> getPaginatedTransactionStatsByUser(
             @RequestParam(required = false) String startDateStr,
             @RequestParam(required = false) String endDateStr,
             @RequestParam(defaultValue = "0") int page,
@@ -74,15 +64,11 @@ public class PaymentTransactionController {
         List<PaymentTransactionDTO> stats = paymentTransactionService.getPaginatedTransactionStatsByUser(
                 startDate, endDate, page, size);
 
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Transaction statistics by user retrieved successfully")
-                .data(stats)
-                .build());
+        return ApiResponse.success(stats);
     }
 
     @PostMapping("/stats/by-status")
-    public ResponseEntity<ApiResponse> getTransactionStatsByStatusPost(
+    public ApiResponse<?> getTransactionStatsByStatusPost(
             @RequestBody(required = false) DateRangeRequest request) {
 
         Timestamp startDate = request != null ? request.getStartDate() : null;
@@ -90,15 +76,11 @@ public class PaymentTransactionController {
 
         List<PaymentTransactionDTO> stats = paymentTransactionService.getTransactionStatsByStatus(startDate, endDate);
 
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Transaction statistics retrieved successfully")
-                .data(stats)
-                .build());
+        return ApiResponse.success(stats);
     }
 
     @PostMapping("/stats/by-user")
-    public ResponseEntity<ApiResponse> getPaginatedTransactionStatsByUserPost(
+    public ApiResponse<?> getPaginatedTransactionStatsByUserPost(
             @RequestBody PaginatedDateRangeRequest request) {
 
         Timestamp startDate = request != null ? request.getStartDate() : null;
@@ -108,11 +90,6 @@ public class PaymentTransactionController {
 
         List<PaymentTransactionDTO> stats = paymentTransactionService.getPaginatedTransactionStatsByUser(
                 startDate, endDate, page, size);
-
-        return ResponseEntity.ok(ApiResponse.builder()
-                .success(true)
-                .message("Transaction statistics by user retrieved successfully")
-                .data(stats)
-                .build());
+        return ApiResponse.success(stats);
     }
 }

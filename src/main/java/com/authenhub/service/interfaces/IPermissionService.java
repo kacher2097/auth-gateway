@@ -1,6 +1,7 @@
 package com.authenhub.service.interfaces;
 
-import com.authenhub.dto.PermissionDto;
+import com.authenhub.bean.permission.PermissionRequest;
+import com.authenhub.bean.permission.PermissionResponse;
 
 import java.util.List;
 
@@ -8,38 +9,38 @@ import java.util.List;
  * Interface for permission service operations
  */
 public interface IPermissionService {
-    
+
     /**
      * Get all permissions
      *
      * @return list of permissions
      */
-    List<PermissionDto.Response> getAllPermissions();
-    
+    List<PermissionResponse> getAllPermissions();
+
     /**
      * Get permission by id
      *
      * @param id permission id
      * @return permission
      */
-    PermissionDto.Response getPermissionById(String id);
-    
+    PermissionResponse getPermissionById(String id);
+
     /**
      * Get permissions by category
      *
      * @param category permission category
      * @return list of permissions
      */
-    List<PermissionDto.Response> getPermissionsByCategory(String category);
-    
+    List<PermissionResponse> getPermissionsByCategory(String category);
+
     /**
      * Create a new permission
      *
      * @param request permission request
      * @return created permission
      */
-    PermissionDto.Response createPermission(PermissionDto.Request request);
-    
+    PermissionResponse createPermission(PermissionRequest request);
+
     /**
      * Update a permission
      *
@@ -47,8 +48,8 @@ public interface IPermissionService {
      * @param request permission request
      * @return updated permission
      */
-    PermissionDto.Response updatePermission(String id, PermissionDto.Request request);
-    
+    PermissionResponse updatePermission(String id, PermissionRequest request);
+
     /**
      * Delete a permission
      *

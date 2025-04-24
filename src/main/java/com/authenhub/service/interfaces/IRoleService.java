@@ -1,6 +1,8 @@
 package com.authenhub.service.interfaces;
 
-import com.authenhub.dto.RoleDto;
+import com.authenhub.bean.permission.RoleDetailedResponse;
+import com.authenhub.bean.permission.RoleRequest;
+import com.authenhub.bean.permission.RoleResponse;
 
 import java.util.List;
 import java.util.Set;
@@ -9,38 +11,38 @@ import java.util.Set;
  * Interface for role service operations
  */
 public interface IRoleService {
-    
+
     /**
      * Get all roles
      *
      * @return list of roles
      */
-    List<RoleDto.Response> getAllRoles();
-    
+    List<RoleResponse> getAllRoles();
+
     /**
      * Get role by id
      *
      * @param id role id
      * @return role
      */
-    RoleDto.Response getRoleById(String id);
-    
+    RoleResponse getRoleById(String id);
+
     /**
      * Get role with permissions
      *
      * @param id role id
      * @return role with permissions
      */
-    RoleDto.DetailedResponse getRoleWithPermissions(String id);
-    
+    RoleDetailedResponse getRoleWithPermissions(String id);
+
     /**
      * Create a new role
      *
      * @param request role request
      * @return created role
      */
-    RoleDto.Response createRole(RoleDto.Request request);
-    
+    RoleResponse createRole(RoleRequest request);
+
     /**
      * Update a role
      *
@@ -48,15 +50,15 @@ public interface IRoleService {
      * @param request role request
      * @return updated role
      */
-    RoleDto.Response updateRole(String id, RoleDto.Request request);
-    
+    RoleResponse updateRole(String id, RoleRequest request);
+
     /**
      * Delete a role
      *
      * @param id role id
      */
     void deleteRole(String id);
-    
+
     /**
      * Add permissions to a role
      *
@@ -64,8 +66,8 @@ public interface IRoleService {
      * @param permissionIds permission ids
      * @return updated role
      */
-    RoleDto.Response addPermissionsToRole(String roleId, Set<String> permissionIds);
-    
+    RoleResponse addPermissionsToRole(String roleId, Set<String> permissionIds);
+
     /**
      * Remove permissions from a role
      *
@@ -73,8 +75,8 @@ public interface IRoleService {
      * @param permissionIds permission ids
      * @return updated role
      */
-    RoleDto.Response removePermissionsFromRole(String roleId, Set<String> permissionIds);
-    
+    RoleResponse removePermissionsFromRole(String roleId, Set<String> permissionIds);
+
     /**
      * Validate permission ids
      *

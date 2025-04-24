@@ -14,7 +14,6 @@ import com.authenhub.utils.TimestampUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,12 +32,12 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final UserManagementService userManagementService;
-    private final AccessLogService accessLogService;
     private final UserService userService;
+    private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final AccessLogService accessLogService;
+    private final UserManagementService userManagementService;
 
     @GetMapping("/users")
     public com.authenhub.bean.common.ApiResponse<?> getAllUsers() {

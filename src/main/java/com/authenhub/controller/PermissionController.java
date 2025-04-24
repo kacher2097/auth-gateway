@@ -1,7 +1,8 @@
 package com.authenhub.controller;
 
 import com.authenhub.bean.common.ApiResponse;
-import com.authenhub.dto.PermissionDto;
+import com.authenhub.bean.permission.PermissionRequest;
+import com.authenhub.bean.permission.PermissionResponse;
 import com.authenhub.service.PermissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,28 +21,28 @@ public class PermissionController {
     @GetMapping
     @PreAuthorize("hasAuthority('permission:read')")
     public ApiResponse<?> getAllPermissions() {
-        List<PermissionDto.Response> permissions = permissionService.getAllPermissions();
+        List<PermissionResponse> permissions = permissionService.getAllPermissions();
         return ApiResponse.success(permissions);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('permission:read')")
     public ApiResponse<?> getPermissionById(@PathVariable String id) {
-        PermissionDto.Response permission = permissionService.getPermissionById(id);
+        PermissionResponse permission = permissionService.getPermissionById(id);
         return ApiResponse.success(permission);
     }
 
     @GetMapping("/category/{category}")
     @PreAuthorize("hasAuthority('permission:read')")
     public ApiResponse<?> getPermissionsByCategory(@PathVariable String category) {
-        List<PermissionDto.Response> permissions = permissionService.getPermissionsByCategory(category);
+        List<PermissionResponse> permissions = permissionService.getPermissionsByCategory(category);
         return ApiResponse.success(permissions);
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('permission:create')")
-    public ApiResponse<?> createPermission(@Valid @RequestBody PermissionDto.Request request) {
-        PermissionDto.Response permission = permissionService.createPermission(request);
+    public ApiResponse<?> createPermission(@Valid @RequestBody PermissionRequest request) {
+        PermissionResponse permission = permissionService.createPermission(request);
         return ApiResponse.success(permission);
     }
 
@@ -49,8 +50,8 @@ public class PermissionController {
     @PreAuthorize("hasAuthority('permission:update')")
     public ApiResponse<?> updatePermission(
             @PathVariable String id,
-            @Valid @RequestBody PermissionDto.Request request) {
-        PermissionDto.Response permission = permissionService.updatePermission(id, request);
+            @Valid @RequestBody PermissionRequest request) {
+        PermissionResponse permission = permissionService.updatePermission(id, request);
         return ApiResponse.success(permission);
     }
 

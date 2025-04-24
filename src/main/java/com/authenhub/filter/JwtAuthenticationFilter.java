@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final PermissionRepository permissionRepository;
 
     // Danh sách các đường dẫn không cần xác thực
-    private final String[] PUBLIC_PATHS = {
+    private final static String[] PUBLIC_PATHS = {
         "/auth/login",
         "/auth/register",
         "/auth/forgot-password",

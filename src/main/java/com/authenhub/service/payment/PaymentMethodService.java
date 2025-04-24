@@ -1,8 +1,9 @@
 package com.authenhub.service.payment;
 
+import com.authenhub.bean.payment.PaymentMethodRequest;
+import com.authenhub.bean.payment.PaymentMethodResponse;
 import com.authenhub.bean.payment.PaymentRequest;
 import com.authenhub.bean.payment.PaymentResponse;
-import com.authenhub.dto.PaymentMethodDto;
 import com.authenhub.entity.mongo.PaymentMethod;
 import com.authenhub.repository.PaymentMethodRepository;
 import com.authenhub.service.interfaces.IPaymentMethodService;
@@ -30,62 +31,75 @@ public class PaymentMethodService implements IPaymentMethodService {
     private final Map<String, PaymentProvider> paymentProviders;
 
     @Override
-    public List<PaymentMethodDto.Response> getAllPaymentMethods() {
+    public List<PaymentMethodResponse> getAllPaymentMethods() {
         return paymentMethodRepository.findAll().stream()
-                .map(PaymentMethodDto.Response::fromEntity)
+                .map(PaymentMethodResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<PaymentMethodDto.Response> getActivePaymentMethods() {
+    public List<PaymentMethodResponse> getActivePaymentMethods() {
         return paymentMethodRepository.findByIsActiveTrue().stream()
-                .map(PaymentMethodDto.Response::fromEntity)
+                .map(PaymentMethodResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public PaymentMethodDto.Response getPaymentMethodById(String id) {
+    public PaymentMethodResponse getPaymentMethodById(String id) {
         return paymentMethodRepository.findById(id)
-                .map(PaymentMethodDto.Response::fromEntity)
+                .map(PaymentMethodResponse::fromEntity)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Payment method not found"));
     }
 
     @Override
-    public PaymentMethodDto.Response createPaymentMethod(PaymentMethodDto.Request request) {
+    public PaymentMethodResponse createPaymentMethod(PaymentMethodRequest request) {
         // Check if payment method with the same name already exists
         if (paymentMethodRepository.existsByName(request.getName())) {
             throw new ResponseStatusException(BAD_REQUEST, "Payment method with this name already exists");
         }
-        
+
         // Check if provider type is valid
         if (!paymentProviders.containsKey(request.getProviderType())) {
             throw new ResponseStatusException(BAD_REQUEST, "Invalid provider type");
         }
-        
+
         // Create payment method
-        PaymentMethod paymentMethod = PaymentMethodDto.toEntity(request);
+        PaymentMethod paymentMethod = PaymentMethod.builder()
+                .name(request.getName())
+                .displayName(request.getDisplayName())
+                .description(request.getDescription())
+                .providerType(request.getProviderType())
+                .isActive(request.isActive())
+                .config(request.getConfig())
+                .iconUrl(request.getIconUrl())
+                .feePercentage(request.getFeePercentage())
+                .fixedFee(request.getFixedFee())
+                .currency(request.getCurrency())
+                .createdAt(TimestampUtils.now())
+                .updatedAt(TimestampUtils.now())
+                .build();
         paymentMethod = paymentMethodRepository.save(paymentMethod);
-        
-        return PaymentMethodDto.Response.fromEntity(paymentMethod);
+
+        return PaymentMethodResponse.fromEntity(paymentMethod);
     }
 
     @Override
-    public PaymentMethodDto.Response updatePaymentMethod(String id, PaymentMethodDto.Request request) {
+    public PaymentMethodResponse updatePaymentMethod(String id, PaymentMethodRequest request) {
         // Find payment method
         PaymentMethod paymentMethod = paymentMethodRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Payment method not found"));
-        
+
         // Check if name is being changed and if it already exists
-        if (!paymentMethod.getName().equals(request.getName()) && 
+        if (!paymentMethod.getName().equals(request.getName()) &&
                 paymentMethodRepository.existsByName(request.getName())) {
             throw new ResponseStatusException(BAD_REQUEST, "Payment method with this name already exists");
         }
-        
+
         // Check if provider type is valid
         if (!paymentProviders.containsKey(request.getProviderType())) {
             throw new ResponseStatusException(BAD_REQUEST, "Invalid provider type");
         }
-        
+
         // Update payment method
         paymentMethod.setName(request.getName());
         paymentMethod.setDisplayName(request.getDisplayName());
@@ -98,10 +112,10 @@ public class PaymentMethodService implements IPaymentMethodService {
         paymentMethod.setFixedFee(request.getFixedFee());
         paymentMethod.setCurrency(request.getCurrency());
         paymentMethod.setUpdatedAt(TimestampUtils.now());
-        
+
         paymentMethod = paymentMethodRepository.save(paymentMethod);
-        
-        return PaymentMethodDto.Response.fromEntity(paymentMethod);
+
+        return PaymentMethodResponse.fromEntity(paymentMethod);
     }
 
     @Override
@@ -110,7 +124,7 @@ public class PaymentMethodService implements IPaymentMethodService {
         if (!paymentMethodRepository.existsById(id)) {
             throw new ResponseStatusException(NOT_FOUND, "Payment method not found");
         }
-        
+
         // Delete payment method
         paymentMethodRepository.deleteById(id);
     }
@@ -120,7 +134,7 @@ public class PaymentMethodService implements IPaymentMethodService {
         // Find payment method
         PaymentMethod paymentMethod = paymentMethodRepository.findById(paymentMethodId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Payment method not found"));
-        
+
         // Check if payment method is active
         if (!paymentMethod.isActive()) {
             return PaymentResponse.builder()
@@ -128,10 +142,10 @@ public class PaymentMethodService implements IPaymentMethodService {
                     .message("Payment method is not active")
                     .build();
         }
-        
+
         // Get payment provider
         PaymentProvider provider = getPaymentProvider(paymentMethod.getProviderType());
-        
+
         // Check if provider is available
         if (!provider.isAvailable()) {
             return PaymentResponse.builder()
@@ -139,7 +153,7 @@ public class PaymentMethodService implements IPaymentMethodService {
                     .message("Payment provider is not available")
                     .build();
         }
-        
+
         // Initialize payment
         return provider.initializePayment(request);
     }
@@ -149,14 +163,14 @@ public class PaymentMethodService implements IPaymentMethodService {
         // Find payment method
         PaymentMethod paymentMethod = paymentMethodRepository.findById(paymentMethodId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Payment method not found"));
-        
+
         // Get payment provider
         PaymentProvider provider = getPaymentProvider(paymentMethod.getProviderType());
-        
+
         // Verify payment
         return provider.verifyPayment(callbackData);
     }
-    
+
     private PaymentProvider getPaymentProvider(String providerType) {
         return Optional.ofNullable(paymentProviders.get(providerType))
                 .orElseThrow(() -> new ResponseStatusException(BAD_REQUEST, "Invalid provider type"));

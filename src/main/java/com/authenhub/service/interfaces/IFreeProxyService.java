@@ -1,6 +1,9 @@
 package com.authenhub.service.interfaces;
 
-import com.authenhub.dto.FreeProxyDto;
+import com.authenhub.bean.proxy.CheckResult;
+import com.authenhub.bean.proxy.ImportResult;
+import com.authenhub.bean.proxy.ProxyRequest;
+import com.authenhub.bean.proxy.ProxyResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -9,61 +12,61 @@ import java.util.List;
  * Interface for free proxy service operations
  */
 public interface IFreeProxyService {
-    
+
     /**
      * Get all proxies
      *
      * @return list of proxies
      */
-    List<FreeProxyDto.Response> getAllProxies();
-    
+    List<ProxyResponse> getAllProxies();
+
     /**
      * Get active proxies
      *
      * @return list of active proxies
      */
-    List<FreeProxyDto.Response> getActiveProxies();
-    
+    List<ProxyResponse> getActiveProxies();
+
     /**
      * Get proxies by protocol
      *
      * @param protocol proxy protocol
      * @return list of proxies
      */
-    List<FreeProxyDto.Response> getProxiesByProtocol(String protocol);
-    
+    List<ProxyResponse> getProxiesByProtocol(String protocol);
+
     /**
      * Get proxies by country
      *
      * @param country proxy country
      * @return list of proxies
      */
-    List<FreeProxyDto.Response> getProxiesByCountry(String country);
-    
+    List<ProxyResponse> getProxiesByCountry(String country);
+
     /**
      * Get fast proxies
      *
      * @param maxResponseTime maximum response time
      * @return list of proxies
      */
-    List<FreeProxyDto.Response> getFastProxies(int maxResponseTime);
-    
+    List<ProxyResponse> getFastProxies(int maxResponseTime);
+
     /**
      * Get reliable proxies
      *
      * @param minUptime minimum uptime
      * @return list of proxies
      */
-    List<FreeProxyDto.Response> getReliableProxies(double minUptime);
-    
+    List<ProxyResponse> getReliableProxies(double minUptime);
+
     /**
      * Create a new proxy
      *
      * @param request proxy request
      * @return created proxy
      */
-    FreeProxyDto.Response createProxy(FreeProxyDto.Request request, String token);
-    
+    ProxyResponse createProxy(ProxyRequest request, String token);
+
     /**
      * Update a proxy
      *
@@ -71,23 +74,23 @@ public interface IFreeProxyService {
      * @param request proxy request
      * @return updated proxy
      */
-    FreeProxyDto.Response updateProxy(String id, FreeProxyDto.Request request);
-    
+    ProxyResponse updateProxy(String id, ProxyRequest request);
+
     /**
      * Delete a proxy
      *
      * @param id proxy id
      */
     void deleteProxy(String id);
-    
+
     /**
      * Check proxy by id
      *
      * @param id proxy id
      * @return check result
      */
-    FreeProxyDto.CheckResult checkProxyById(String id);
-    
+    CheckResult checkProxyById(String id);
+
     /**
      * Import proxies from file
      *
@@ -95,7 +98,7 @@ public interface IFreeProxyService {
      * @param fileType file type
      * @return import result
      */
-    FreeProxyDto.ImportResult importProxies(MultipartFile file, String fileType);
+    ImportResult importProxies(MultipartFile file, String fileType);
 
-    FreeProxyDto.Response getProxyById(String id);
+    ProxyResponse getProxyById(String id);
 }

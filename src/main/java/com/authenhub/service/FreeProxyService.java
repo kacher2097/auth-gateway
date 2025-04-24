@@ -1,11 +1,12 @@
 package com.authenhub.service;
 
-import com.authenhub.dto.FreeProxyDto;
+import com.authenhub.bean.proxy.CheckResult;
+import com.authenhub.bean.proxy.ImportResult;
+import com.authenhub.bean.proxy.ProxyRequest;
+import com.authenhub.bean.proxy.ProxyResponse;
 import com.authenhub.entity.mongo.FreeProxy;
 import com.authenhub.entity.mongo.User;
-import com.authenhub.filter.JwtService;
 import com.authenhub.repository.FreeProxyRepository;
-import com.authenhub.repository.UserRepository;
 import com.authenhub.service.interfaces.IFreeProxyService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +17,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,35 +34,32 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FreeProxyService implements IFreeProxyService {
 
-
-    private final JwtService jwtService;
     private final UserContext userContext;
-    private final UserRepository userRepository;
     private final FreeProxyRepository proxyRepository;
 
     @Override
-    public List<FreeProxyDto.Response> getAllProxies() {
+    public List<ProxyResponse> getAllProxies() {
         return proxyRepository.findAll().stream()
-                .map(FreeProxyDto.Response::fromEntity)
+                .map(ProxyResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FreeProxyDto.Response> getActiveProxies() {
+    public List<ProxyResponse> getActiveProxies() {
         return proxyRepository.findByIsActiveTrue().stream()
-                .map(FreeProxyDto.Response::fromEntity)
+                .map(ProxyResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public FreeProxyDto.Response getProxyById(String id) {
+    public ProxyResponse getProxyById(String id) {
         FreeProxy proxy = proxyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proxy not found"));
-        return FreeProxyDto.Response.fromEntity(proxy);
+        return ProxyResponse.fromEntity(proxy);
     }
 
     @Override
-    public FreeProxyDto.Response createProxy(FreeProxyDto.Request request, String token) {
+    public ProxyResponse createProxy(ProxyRequest request, String token) {
         log.info("Token get form header {}", token);
 //        String usernameFromToken = userContext.getCurrentUsername();
 //        log.info("Username from token: {}", usernameFromToken);
@@ -80,7 +82,7 @@ public class FreeProxyService implements IFreeProxyService {
         proxy.setUptime(0.0);
 
         // Check the proxy before saving
-        FreeProxyDto.CheckResult checkResult = checkProxy(proxy);
+        CheckResult checkResult = checkProxy(proxy);
         proxy.setResponseTimeMs(checkResult.getResponseTimeMs());
         proxy.setLastChecked(checkResult.getCheckedAt());
         proxy.setActive(checkResult.isWorking());
@@ -94,11 +96,11 @@ public class FreeProxyService implements IFreeProxyService {
         }
 
         FreeProxy savedProxy = proxyRepository.save(proxy);
-        return FreeProxyDto.Response.fromEntity(savedProxy);
+        return ProxyResponse.fromEntity(savedProxy);
     }
 
     @Override
-    public FreeProxyDto.Response updateProxy(String id, FreeProxyDto.Request request) {
+    public ProxyResponse updateProxy(String id, ProxyRequest request) {
         FreeProxy proxy = proxyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proxy not found"));
 
@@ -111,7 +113,7 @@ public class FreeProxyService implements IFreeProxyService {
         proxy.setUpdatedAt(TimestampUtils.now());
 
         FreeProxy savedProxy = proxyRepository.save(proxy);
-        return FreeProxyDto.Response.fromEntity(savedProxy);
+        return ProxyResponse.fromEntity(savedProxy);
     }
 
     @Override
@@ -123,11 +125,11 @@ public class FreeProxyService implements IFreeProxyService {
     }
 
     @Override
-    public FreeProxyDto.CheckResult checkProxyById(String id) {
+    public CheckResult checkProxyById(String id) {
         FreeProxy proxy = proxyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proxy not found"));
 
-        FreeProxyDto.CheckResult result = checkProxy(proxy);
+        CheckResult result = checkProxy(proxy);
 
         // Update proxy stats
         if (result.isWorking()) {
@@ -148,39 +150,39 @@ public class FreeProxyService implements IFreeProxyService {
     }
 
     @Override
-    public FreeProxyDto.ImportResult importProxies(MultipartFile file, String fileType) {
+    public ImportResult importProxies(MultipartFile file, String fileType) {
         return null;
     }
 
     @Override
-    public List<FreeProxyDto.Response> getProxiesByProtocol(String protocol) {
+    public List<ProxyResponse> getProxiesByProtocol(String protocol) {
         return proxyRepository.findByProtocol(protocol).stream()
-                .map(FreeProxyDto.Response::fromEntity)
+                .map(ProxyResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FreeProxyDto.Response> getProxiesByCountry(String country) {
+    public List<ProxyResponse> getProxiesByCountry(String country) {
         return proxyRepository.findByCountry(country).stream()
-                .map(FreeProxyDto.Response::fromEntity)
+                .map(ProxyResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FreeProxyDto.Response> getFastProxies(int maxResponseTime) {
+    public List<ProxyResponse> getFastProxies(int maxResponseTime) {
         return proxyRepository.findByResponseTimeLessThan(maxResponseTime).stream()
-                .map(FreeProxyDto.Response::fromEntity)
+                .map(ProxyResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FreeProxyDto.Response> getReliableProxies(double minUptime) {
+    public List<ProxyResponse> getReliableProxies(double minUptime) {
         return proxyRepository.findByUptimeGreaterThan(minUptime).stream()
-                .map(FreeProxyDto.Response::fromEntity)
+                .map(ProxyResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    private FreeProxyDto.CheckResult checkProxy(FreeProxy proxy) {
+    private CheckResult checkProxy(FreeProxy proxy) {
         boolean isWorking;
         int responseTime = 0;
         Timestamp checkedAt = TimestampUtils.now();
@@ -188,6 +190,14 @@ public class FreeProxyService implements IFreeProxyService {
         try {
             long startTime = System.currentTimeMillis();
             Proxy javaProxy = configureProxy(proxy);
+            if (Objects.isNull(javaProxy)) {
+                return CheckResult.builder()
+                        .id(proxy.getId())
+                        .isWorking(false)
+                        .responseTimeMs(0)
+                        .checkedAt(checkedAt)
+                        .build();
+            }
             HttpClient client = HttpClient.newBuilder()
                     .proxy(ProxySelector.of((InetSocketAddress) javaProxy.address()))
                     .connectTimeout(java.time.Duration.ofSeconds(10))
@@ -202,40 +212,24 @@ public class FreeProxyService implements IFreeProxyService {
 
             // Send request and measure response
             HttpResponse<String> httpResponse = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            int responseCode = httpResponse.statusCode();
+            long endTime = System.currentTimeMillis();
 
-            // Check if response is successful
-            if (httpResponse.statusCode() == 200) {
-                return FreeProxyDto.CheckResult.builder()
-                        .id(proxy.getId())
-                        .isWorking(true)
-                        .responseTimeMs(System.currentTimeMillis() - startTime)
-                        .checkedAt(checkedAt)
-                        .build();
+            responseTime = (int) (endTime - startTime);
+            isWorking = (responseCode >= 200 && responseCode < 300);
 
-            } else {
-                return FreeProxyDto.CheckResult.builder()
-                        .id(proxy.getId())
-                        .isWorking(false)
-                        .responseTimeMs(System.currentTimeMillis() - startTime)
-                        .checkedAt(checkedAt)
-                        .build();
-//                response.setIsWorking(false);
-//                response.setErrorMessage("Unexpected status code: " + httpResponse.statusCode());
-            }
-
-//            int responseCode = connection.getResponseCode();
-//            long endTime = System.currentTimeMillis();
-//
-//            responseTime = (int) (endTime - startTime);
-//            isWorking = (responseCode >= 200 && responseCode < 300);
-//
-//            connection.disconnect();
+            return CheckResult.builder()
+                    .id(proxy.getId())
+                    .isWorking(isWorking)
+                    .responseTimeMs(responseTime)
+                    .checkedAt(checkedAt)
+                    .build();
         } catch (Exception e) {
             log.error("Error checking proxy: {}", e.getMessage());
             isWorking = false;
         }
 
-        return FreeProxyDto.CheckResult.builder()
+        return CheckResult.builder()
                 .id(proxy.getId())
                 .isWorking(isWorking)
                 .responseTimeMs(responseTime)
@@ -250,7 +244,7 @@ public class FreeProxyService implements IFreeProxyService {
 
         for (FreeProxy proxy : proxies) {
             try {
-                FreeProxyDto.CheckResult result = checkProxy(proxy);
+                CheckResult result = checkProxy(proxy);
 
                 // Update proxy stats
                 if (result.isWorking()) {
@@ -276,37 +270,15 @@ public class FreeProxyService implements IFreeProxyService {
         log.info("Completed scheduled check of all proxies");
     }
 
-    private Proxy createJavaProxy(FreeProxy proxy) {
-        Proxy.Type proxyType;
-
-        switch (proxy.getProtocol().toUpperCase()) {
-            case "SOCKS4", "SOCKS5":
-                proxyType = Proxy.Type.SOCKS;
-                break;
-            case "HTTP":
-            case "HTTPS":
-            default:
-                proxyType = Proxy.Type.HTTP;
-                break;
-        }
-
-        return new Proxy(proxyType, new InetSocketAddress(proxy.getIpAddress(), proxy.getPort()));
-    }
-
     private Proxy configureProxy(FreeProxy request) throws IllegalArgumentException {
         InetSocketAddress address = new InetSocketAddress(request.getIpAddress(), request.getPort());
         String protocol = request.getProtocol().toUpperCase();
 
-        switch (protocol) {
-            case "HTTP":
-            case "HTTPS":
-                return new Proxy(Proxy.Type.HTTP, address);
-            case "SOCKS4":
-            case "SOCKS5":
-                return new Proxy(Proxy.Type.SOCKS, address);
-            default:
-                throw new IllegalArgumentException("Unsupported protocol: " + protocol);
-        }
+        return switch (protocol) {
+            case "HTTP", "HTTPS" -> new Proxy(Proxy.Type.HTTP, address);
+            case "SOCKS4", "SOCKS5" -> new Proxy(Proxy.Type.SOCKS, address);
+            default -> null;
+        };
     }
 
 //    public FreeProxyDto.ImportResult importProxiesFromFile(MultipartFile file, String fileType, String username) {

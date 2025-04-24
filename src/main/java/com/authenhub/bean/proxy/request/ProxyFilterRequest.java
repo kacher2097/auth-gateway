@@ -1,4 +1,4 @@
-package com.authenhub.dto.request;
+package com.authenhub.bean.proxy.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.authenhub.dto;
+package com.authenhub.bean.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -10,4 +10,4 @@ public class AuthRequest {
 
     @NotBlank(message = "Password is required")
     private String password;
-} 
+}

@@ -1,6 +1,7 @@
 package com.authenhub.service;
 
-import com.authenhub.dto.PermissionDto;
+import com.authenhub.bean.permission.PermissionRequest;
+import com.authenhub.bean.permission.PermissionResponse;
 import com.authenhub.entity.mongo.Permission;
 import com.authenhub.exception.ResourceAlreadyExistsException;
 import com.authenhub.exception.ResourceNotFoundException;
@@ -20,28 +21,28 @@ public class PermissionService implements IPermissionService {
     private final PermissionRepository permissionRepository;
 
     @Override
-    public List<PermissionDto.Response> getAllPermissions() {
+    public List<PermissionResponse> getAllPermissions() {
         return permissionRepository.findAll().stream()
-                .map(PermissionDto.Response::fromEntity)
+                .map(PermissionResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public PermissionDto.Response getPermissionById(String id) {
+    public PermissionResponse getPermissionById(String id) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + id));
-        return PermissionDto.Response.fromEntity(permission);
+        return PermissionResponse.fromEntity(permission);
     }
 
     @Override
-    public List<PermissionDto.Response> getPermissionsByCategory(String category) {
+    public List<PermissionResponse> getPermissionsByCategory(String category) {
         return permissionRepository.findByCategory(category).stream()
-                .map(PermissionDto.Response::fromEntity)
+                .map(PermissionResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public PermissionDto.Response createPermission(PermissionDto.Request request) {
+    public PermissionResponse createPermission(PermissionRequest request) {
         // Check if permission with same name already exists
         if (permissionRepository.existsByName(request.getName())) {
             throw new ResourceAlreadyExistsException("Permission already exists with name: " + request.getName());
@@ -57,11 +58,11 @@ public class PermissionService implements IPermissionService {
                 .build();
 
         Permission savedPermission = permissionRepository.save(permission);
-        return PermissionDto.Response.fromEntity(savedPermission);
+        return PermissionResponse.fromEntity(savedPermission);
     }
 
     @Override
-    public PermissionDto.Response updatePermission(String id, PermissionDto.Request request) {
+    public PermissionResponse updatePermission(String id, PermissionRequest request) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + id));
 
@@ -78,7 +79,7 @@ public class PermissionService implements IPermissionService {
         permission.setUpdatedAt(TimestampUtils.now());
 
         Permission updatedPermission = permissionRepository.save(permission);
-        return PermissionDto.Response.fromEntity(updatedPermission);
+        return PermissionResponse.fromEntity(updatedPermission);
     }
 
     @Override

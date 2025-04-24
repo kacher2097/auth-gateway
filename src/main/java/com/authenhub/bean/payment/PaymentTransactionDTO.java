@@ -1,18 +1,12 @@
-package com.authenhub.dto;
+package com.authenhub.bean.payment;
 
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.sql.Timestamp;
 
 @Data
-@Document(collection = "payment_transactions")
 public class PaymentTransactionDTO {
-
-    @Id
     private String id;
-
     private String userId;
     private Long amount;
     private String status;

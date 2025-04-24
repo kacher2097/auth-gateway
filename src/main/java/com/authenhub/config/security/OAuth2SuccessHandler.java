@@ -1,6 +1,7 @@
 package com.authenhub.config.security;
 
-import com.authenhub.dto.AuthResponse;
+import com.authenhub.bean.auth.AuthResponse;
+import com.authenhub.bean.auth.UserInfo;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.UserRepository;
@@ -62,7 +63,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         // Tạo response
         AuthResponse authResponse = AuthResponse.builder()
                 .token(token)
-                .user(AuthResponse.UserInfo.fromUser(user))
+                .user(UserInfo.fromUser(user))
                 .build();
 
         // Trả về response dưới dạng JSON

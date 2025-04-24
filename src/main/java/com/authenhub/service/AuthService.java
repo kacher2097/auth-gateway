@@ -1,9 +1,10 @@
 package com.authenhub.service;
 
 import com.authenhub.bean.*;
+import com.authenhub.bean.auth.AuthRequest;
+import com.authenhub.bean.auth.AuthResponse;
+import com.authenhub.bean.auth.UserInfo;
 import com.authenhub.config.application.JsonMapper;
-import com.authenhub.dto.AuthRequest;
-import com.authenhub.dto.AuthResponse;
 import com.authenhub.entity.mongo.PasswordResetToken;
 import com.authenhub.entity.mongo.User;
 import com.authenhub.exception.*;
@@ -62,7 +63,7 @@ public class AuthService implements IAuthService {
         String token = jwtService.generateToken(user);
         return AuthResponse.builder()
                 .token(token)
-                .user(AuthResponse.UserInfo.fromUser(user))
+                .user(UserInfo.fromUser(user))
                 .build();
     }
 
@@ -89,7 +90,7 @@ public class AuthService implements IAuthService {
         String token = jwtService.createToken(user);
         return AuthResponse.builder()
                 .token(token)
-                .user(AuthResponse.UserInfo.fromUser(user))
+                .user(UserInfo.fromUser(user))
                 .build();
     }
 
@@ -126,7 +127,7 @@ public class AuthService implements IAuthService {
         String token = jwtService.generateToken(user);
         return AuthResponse.builder()
                 .token(token)
-                .user(AuthResponse.UserInfo.fromUser(user))
+                .user(UserInfo.fromUser(user))
                 .build();
     }
 
@@ -152,7 +153,7 @@ public class AuthService implements IAuthService {
 //            log.info("UserInfoResponse have data {}", userInfoResponse);
 //            return userInfoResponse;
 //        }
-        return AuthResponse.UserInfo.fromUser(user);
+        return UserInfo.fromUser(user);
     }
 
     @Override
@@ -193,7 +194,7 @@ public class AuthService implements IAuthService {
             // Return response
             return AuthResponse.builder()
                     .token(token)
-                    .user(AuthResponse.UserInfo.fromUser(user))
+                    .user(UserInfo.fromUser(user))
                     .build();
         } catch (Exception e) {
             log.error("OAuth2 callback error", e);
@@ -307,7 +308,7 @@ public class AuthService implements IAuthService {
         log.info("Refresh token successfully with id {}", user.getId());
         return AuthResponse.builder()
                 .token(refreshToken)
-                .user(AuthResponse.UserInfo.fromUser(user))
+                .user(UserInfo.fromUser(user))
                 .build();
     }
 

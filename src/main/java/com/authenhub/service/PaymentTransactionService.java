@@ -1,6 +1,6 @@
 package com.authenhub.service;
 
-import com.authenhub.dto.PaymentTransactionDTO;
+import com.authenhub.bean.payment.PaymentTransactionDTO;
 import com.authenhub.utils.MongoAggregationUtils;
 import com.authenhub.utils.MongoQueryUtils;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+
 import com.authenhub.utils.TimestampUtils;
+
 import java.util.List;
 
 @Service
