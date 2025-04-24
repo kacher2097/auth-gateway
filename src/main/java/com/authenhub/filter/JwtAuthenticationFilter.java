@@ -6,7 +6,6 @@ import com.authenhub.dto.AccessLogDTO;
 import com.authenhub.entity.mongo.Permission;
 import com.authenhub.entity.mongo.Role;
 import com.authenhub.entity.mongo.User;
-import com.authenhub.event.AccessTrackingEvent;
 import com.authenhub.event.AccessTrackingPublisher;
 import com.authenhub.exception.ErrorApiException;
 import com.authenhub.repository.PermissionRepository;
@@ -57,12 +56,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // Danh sách các đường dẫn không cần xác thực
     private final static String[] PUBLIC_PATHS = {
-        "/auth/login",
-        "/auth/register",
-        "/auth/forgot-password",
-        "/auth/reset-password",
-        "/auth/social-login",
-        "/auth/oauth2/callback"
+            "/auth/login",
+            "/auth/register",
+            "/auth/forgot-password",
+            "/auth/reset-password",
+            "/auth/social-login",
+            "/auth/oauth2/callback"
     };
 
     @Override
@@ -151,7 +150,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Parse user agent for browser, OS, device type
         parseUserAgent(userAgent, accessLogDTO);
-        publisherAction.publishEvent(new AccessTrackingEvent(accessLogDTO));
+        publisherAction.publishEvent(accessLogDTO);
         log.info("End publish action from JWTFilter with data userName= {}, fullName = {}, mail= {}, ip = {}, uri = {} ",
                 userLogin, fullName, mail, ip, uri);
     }

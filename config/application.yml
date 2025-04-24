@@ -46,12 +46,18 @@ spring:
               - email
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
           facebook:
-            client-id: 212sd1f231s4d32f1a5s64d56asdasd
-            client-secret: 3902480293kmnsdmlksdjfkldsjnklfjmsadc234555
+            client-id: 663214539587597
+            client-secret: 7721bb1cfe1c8118e39aa0a95fe87379
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - public_profile
               - email
+              - pages_show_list
+              - pages_read_engagement
+              - pages_manage_posts
+              - pages_manage_engagement
+              - pages_read_insights
+              - pages_manage_comments
             user-info-uri: https://graph.facebook.com/me
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}

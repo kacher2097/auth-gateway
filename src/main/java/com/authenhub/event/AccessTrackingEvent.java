@@ -17,10 +17,6 @@ public class AccessTrackingEvent extends ApplicationEvent {
         super(source);
     }
 
-    public AccessTrackingEvent(Object source, Clock clock) {
-        super(source, clock);
-    }
-
     public AccessTrackingEvent(Object source, AccessLogDTO accessLogDTO) {
         super(source);
         this.accessLogDTO = accessLogDTO;
