@@ -124,6 +124,83 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     }
 
+    public UsernamePasswordAuthenticationToken getAuthorization(String token) {
+        try {
+            Claims claims = jwtService.extractAllClaims(token);
+            if (Objects.isNull(claims)) {
+                log.info("Function getAuthentication FAIL -> Claims is empty!");
+                return null;
+            }
+
+            if (!claims.containsKey(JwtConstant.JWT_TOKEN_CLAIM_SUBJECT)) {
+                log.info("Function getAuthentication fail -> claim [sub] doesn't exist!");
+                return null;
+            }
+
+            String subject = claims.getSubject();
+            if (Strings.isBlank(subject)) {
+                log.info("Function getAuthentication fail -> claim [sub] is empty!");
+                return null;
+            }
+            if (null == claims.get(JwtConstant.JWT_TOKEN_CLAIM_ROLE_ID)) {
+                log.info("Function getAuthentication fail -> claim [roleId] is empty!");
+                return null;
+            }
+
+            // Get user from repository
+            User user = userRepository.findByUsername(subject).orElse(null);
+            if (user == null) {
+                log.debug("User not found for username: {}", subject);
+                return null;
+            }
+
+            // Get permissions
+            Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
+            Long userId = claims.get(JwtConstant.USER_ID_FIELD, Long.class);
+            Long roleId = claims.get(JwtConstant.JWT_TOKEN_CLAIM_ROLE_ID, Long.class);
+
+            // Verify that the user ID in the token matches the user from the database
+            if (!user.getId().equals(userId)) {
+                log.debug("User ID mismatch: {} vs {}", user.getId(), userId);
+                return null;
+            }
+
+            Role role = roleRepository.findById(roleId).orElse(null);
+            if (role == null) {
+                log.debug("Role not found for id: {}", roleId);
+                return null;
+            }
+
+            List<RolePermission> rolePermissions = rolePermissionRepository.findAllByRoleId(roleId);
+            if (rolePermissions == null || rolePermissions.isEmpty()) {
+                log.debug("RolePermission not found for id: {}", roleId);
+                return null;
+            }
+
+            Set<String> lstFunctionAction = rolePermissions.stream().map(rolePermission -> {
+                Permission permission = permissionRepository.findByName(rolePermission.getPermissionName()).orElse(null);
+                if (permission == null) {
+                    log.debug("Permission not found for id: {}", rolePermission.getPermissionName());
+                    return null;
+                }
+                return permission.getName();
+            }).collect(Collectors.toSet());
+
+            log.debug("Found {} permissions for user {}", lstFunctionAction.size(), subject);
+
+            lstFunctionAction.forEach(permission -> grantedAuthorities.add(new SimpleGrantedAuthority(permission)));
+
+            // Create authentication token with the full User object as principal
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    user, token, grantedAuthorities);
+            log.debug("Authentication token created successfully for user: {}", subject);
+            return authentication;
+        } catch (Exception ex) {
+            log.error("Function getAuthentication has exception: ", ex);
+            return null;
+        }
+    }
+
     private void publishAction(HttpServletRequest request, String username) throws ErrorApiException, ExecutionException {
         log.info("Begin publishAction from JWTFilter");
         long startTime = System.currentTimeMillis();
@@ -215,82 +292,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    public UsernamePasswordAuthenticationToken getAuthorization(String token) {
-        try {
-            Claims claims = jwtService.extractAllClaims(token);
-            if (Objects.isNull(claims)) {
-                log.info("Function getAuthentication FAIL -> Claims is empty!");
-                return null;
-            }
-
-            if (!claims.containsKey(JwtConstant.JWT_TOKEN_CLAIM_SUBJECT)) {
-                log.info("Function getAuthentication fail -> claim [sub] doesn't exist!");
-                return null;
-            }
-
-            String subject = claims.getSubject();
-            if (Strings.isBlank(subject)) {
-                log.info("Function getAuthentication fail -> claim [sub] is empty!");
-                return null;
-            }
-            if (null == claims.get(JwtConstant.JWT_TOKEN_CLAIM_ROLE_ID)) {
-                log.info("Function getAuthentication fail -> claim [roleId] is empty!");
-                return null;
-            }
-
-            // Get user from repository
-            User user = userRepository.findByUsername(subject).orElse(null);
-            if (user == null) {
-                log.debug("User not found for username: {}", subject);
-                return null;
-            }
-
-            // Get permissions
-            Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-            Long userId = claims.get(JwtConstant.USER_ID_FIELD, Long.class);
-            Long roleId = claims.get(JwtConstant.JWT_TOKEN_CLAIM_ROLE_ID, Long.class);
-
-            // Verify that the user ID in the token matches the user from the database
-            if (!user.getId().equals(userId)) {
-                log.debug("User ID mismatch: {} vs {}", user.getId(), userId);
-                return null;
-            }
-
-            Role role = roleRepository.findById(roleId).orElse(null);
-            if (role == null) {
-                log.debug("Role not found for id: {}", roleId);
-                return null;
-            }
-
-            List<RolePermission> rolePermissions = rolePermissionRepository.findAllByRoleId(roleId);
-            if (rolePermissions == null || rolePermissions.isEmpty()) {
-                log.debug("RolePermission not found for id: {}", roleId);
-                return null;
-            }
-
-            Set<String> lstFunctionAction = rolePermissions.stream().map(rolePermission -> {
-                Permission permission = permissionRepository.findByName(rolePermission.getPermissionName()).orElse(null);
-                if (permission == null) {
-                    log.debug("Permission not found for id: {}", rolePermission.getPermissionName());
-                    return null;
-                }
-                return permission.getName();
-            }).collect(Collectors.toSet());
-
-            log.debug("Found {} permissions for user {}", lstFunctionAction.size(), subject);
-
-            lstFunctionAction.forEach(permission -> grantedAuthorities.add(new SimpleGrantedAuthority(permission)));
-
-            // Create authentication token with the full User object as principal
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    user, token, grantedAuthorities);
-            log.debug("Authentication token created successfully for user: {}", subject);
-            return authentication;
-        } catch (Exception ex) {
-            log.error("Function getAuthentication has exception: ", ex);
-            return null;
-        }
-    }
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");

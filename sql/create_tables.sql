@@ -265,6 +265,22 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     used BOOLEAN DEFAULT FALSE
 );
 
+SELECT setval('seq_payment_order', 2145, true);
+
+SELECT nextval('permission_role_sequence');
+alter sequence role_sequence cache 1 restart;
+
+ALTER TABLE role_permissions
+    ALTER COLUMN id SET DEFAULT nextval('permission_role_sequence');
+
+
+SELECT terminal_id, (extra_data::json)->>'supportTranType' AS supportTranType
+FROM movnpay.terminal_service
+WHERE (extra_data::json)->>'supportTranType' = 'GD trả góp' AND service_id = 2;
+
+
+
+
 -- Tạo các chỉ mục để tối ưu truy vấn
 -- Chỉ mục cho bảng users
 CREATE INDEX idx_users_username ON users(username);
