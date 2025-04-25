@@ -2,7 +2,6 @@ package com.authenhub.controller;
 
 import com.authenhub.bean.DateRangeRequest;
 import com.authenhub.bean.common.ApiResponse;
-import com.authenhub.entity.mongo.User;
 import com.authenhub.service.interfaces.IAccessLogService;
 import com.authenhub.service.interfaces.IUserService;
 import com.authenhub.utils.TimestampUtils;
@@ -37,8 +36,8 @@ public class AnalyticsController {
         data.put("totalUsers", userService.countTotalUsers());
         data.put("activeUsers", userService.countUsersByActive(true));
         data.put("inactiveUsers", userService.countUsersByActive(false));
-        data.put("adminUsers", userService.countUsersByRole(User.Role.ADMIN));
-        data.put("regularUsers", userService.countUsersByRole(User.Role.USER));
+        data.put("adminUsers", userService.countUsersByRole("ADMIN"));
+        data.put("regularUsers", userService.countUsersByRole("USER"));
         data.put("socialLoginUsers", userService.countUsersBySocialLogin());
 
         return ApiResponse.success(data);

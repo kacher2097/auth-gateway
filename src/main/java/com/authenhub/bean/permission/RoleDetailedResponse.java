@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoleDetailedResponse {
-    private String id;
+    private Long id;
     private String name;
     private String displayName;
     private String description;

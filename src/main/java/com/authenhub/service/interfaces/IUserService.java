@@ -1,6 +1,6 @@
 package com.authenhub.service.interfaces;
 
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.User;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -42,7 +42,7 @@ public interface IUserService {
      * @param role the role
      * @return the count of users
      */
-    long countUsersByRole(User.Role role);
+    long countUsersByRole(String role);
     
     /**
      * Count total users

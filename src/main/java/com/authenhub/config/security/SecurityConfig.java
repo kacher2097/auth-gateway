@@ -1,7 +1,7 @@
 package com.authenhub.config.security;
 
 import com.authenhub.filter.JwtAuthenticationFilter;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +39,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserRepository userRepository;
+    private final UserJpaRepository userRepository;
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationSuccessHandler oAuth2SuccessHandler;
 

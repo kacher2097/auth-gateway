@@ -13,7 +13,7 @@ public class PasswordResetToken {
     @Id
     private String id;
     private String token;
-    private String userId;
+    private Long userId;
     private Timestamp expiryDate;
     private boolean used;
 

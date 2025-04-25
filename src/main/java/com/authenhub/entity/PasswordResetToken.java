@@ -27,7 +27,7 @@ public class PasswordResetToken {
     private String token;
 
     @Column(name = "user_id", nullable = false)
-    private String userId;
+    private Long userId;
 
     @Column(name = "expiry_date", nullable = false)
     private Timestamp expiryDate;

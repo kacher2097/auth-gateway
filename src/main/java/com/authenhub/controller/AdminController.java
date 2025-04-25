@@ -3,10 +3,10 @@ package com.authenhub.controller;
 import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.bean.user.UserSearchResponse;
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
-import com.authenhub.repository.RoleRepository;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.repository.jpa.RoleJpaRepository;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.service.AccessLogService;
 import com.authenhub.service.UserManagementService;
 import com.authenhub.service.UserService;
@@ -14,14 +14,7 @@ import com.authenhub.utils.TimestampUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -34,8 +27,8 @@ public class AdminController {
 
     private final JwtService jwtService;
     private final UserService userService;
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    private final RoleJpaRepository roleRepository;
+    private final UserJpaRepository userRepository;
     private final AccessLogService accessLogService;
     private final UserManagementService userManagementService;
 
@@ -63,7 +56,7 @@ public class AdminController {
                     .email(user.getEmail())
                     .fullName(user.getFullName())
                     .avatar(user.getAvatar())
-                    .role(user.getRoleId())
+                    .roleId(user.getRoleId())
                     .active(user.isActive())
                     .createdAt(user.getCreatedAt())
                     .updatedAt(user.getUpdatedAt())
@@ -77,16 +70,16 @@ public class AdminController {
     }
 
     @GetMapping("/users/{id}")
-    public ApiResponse<?> getUserById(@PathVariable String id) {
+    public ApiResponse<?> getUserById(@PathVariable Long id) {
         return getUserByIdInternal(id);
     }
 
     @PostMapping("/users/{id}")
-    public ApiResponse<?> getUserByIdPost(@PathVariable String id) {
+    public ApiResponse<?> getUserByIdPost(@PathVariable Long id) {
         return getUserByIdInternal(id);
     }
 
-    private ApiResponse<?> getUserByIdInternal(String id) {
+    private ApiResponse<?> getUserByIdInternal(Long id) {
         Optional<User> userOpt = userRepository.findById(id);
 
         if (userOpt.isEmpty()) {
@@ -101,7 +94,7 @@ public class AdminController {
 
     @PutMapping("/users/{id}")
     public ApiResponse<?> updateUser(
-            @PathVariable String id,
+            @PathVariable Long id,
             @Valid @RequestBody UserUpdateRequest request
     ) {
         User updatedUser = userManagementService.updateUser(id, request);
@@ -111,26 +104,26 @@ public class AdminController {
     }
 
     @PutMapping("/users/{id}/activate")
-    public ApiResponse<?> activateUser(@PathVariable String id) {
+    public ApiResponse<?> activateUser(@PathVariable Long id) {
         User user = userManagementService.setUserActiveStatus(id, true);
         return ApiResponse.success(user);
     }
 
     @PutMapping("/users/{id}/deactivate")
-    public ApiResponse<?> deactivateUser(@PathVariable String id) {
+    public ApiResponse<?> deactivateUser(@PathVariable Long id) {
         User user = userManagementService.setUserActiveStatus(id, false);
         return ApiResponse.success(user);
     }
 
     @PutMapping("/users/{id}/promote-to-admin")
-    public ApiResponse<?> promoteToAdmin(@PathVariable String id) {
-        User user = userManagementService.setUserRole(id, User.Role.ADMIN);
+    public ApiResponse<?> promoteToAdmin(@PathVariable Long id) {
+        User user = userManagementService.setUserRole(id, "ADMIN");
         return ApiResponse.success(user);
     }
 
     @PutMapping("/users/{id}/demote-to-user")
-    public ApiResponse<?> demoteToUser(@PathVariable String id) {
-        User user = userManagementService.setUserRole(id, User.Role.USER);
+    public ApiResponse<?> demoteToUser(@PathVariable Long id) {
+        User user = userManagementService.setUserRole(id, "USER");
         return ApiResponse.success(user);
     }
 
@@ -146,8 +139,8 @@ public class AdminController {
 
     private ApiResponse<?> getDashboardDataInternal() {
         long userCount = userRepository.count();
-        long adminCount = userRepository.countByRole(User.Role.ADMIN);
-        long regularUserCount = userRepository.countByRole(User.Role.USER);
+        long adminCount = userRepository.countByRole("ADMIN");
+        long regularUserCount = userRepository.countByRole("USER");
 
         return ApiResponse.success(new DashboardData(userCount, adminCount, regularUserCount));
     }

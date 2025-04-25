@@ -26,7 +26,7 @@ public class FbRestTemplateConfig {
     }
 
     @Bean(name = "facebookRestTemplate")
-    public RestTemplate facebookRestTemplate() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    public RestTemplate facebookRestTemplate() {
         // Sử dụng SimpleClientHttpRequestFactory thay vì HttpComponentsClientHttpRequestFactory
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(5000);

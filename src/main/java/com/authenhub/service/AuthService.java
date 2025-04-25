@@ -4,13 +4,20 @@ import com.authenhub.bean.*;
 import com.authenhub.bean.auth.AuthRequest;
 import com.authenhub.bean.auth.AuthResponse;
 import com.authenhub.bean.auth.UserInfo;
+import com.authenhub.bean.response.UserInfoResponse;
 import com.authenhub.config.application.JsonMapper;
+import com.authenhub.entity.Permission;
+import com.authenhub.entity.Role;
+import com.authenhub.entity.RolePermission;
+import com.authenhub.entity.User;
 import com.authenhub.entity.mongo.PasswordResetToken;
-import com.authenhub.entity.mongo.User;
 import com.authenhub.exception.*;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.adapter.PasswordResetTokenRepositoryAdapter;
-import com.authenhub.repository.adapter.UserRepositoryAdapter;
+import com.authenhub.repository.jpa.PermissionJpaRepository;
+import com.authenhub.repository.jpa.RoleJpaRepository;
+import com.authenhub.repository.jpa.RolePermissionRepository;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.service.SocialLoginService.SocialUserInfo;
 import com.authenhub.service.interfaces.IAuthService;
 import com.authenhub.utils.TimestampUtils;
@@ -21,6 +28,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,10 +39,13 @@ public class AuthService implements IAuthService {
     private final JsonMapper jsonMapper;
     private final JwtService jwtService;
     private final EmailService emailService;
-    private final UserRepositoryAdapter userRepository;
+    private final UserJpaRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleJpaRepository roleRepository;
     private final SocialLoginService socialLoginService;
     private final AuthenticationManager authenticationManager;
+    private final PermissionJpaRepository permissionJpaRepository;
+    private final RolePermissionRepository rolePermissionRepository;
     private final PasswordResetTokenRepositoryAdapter tokenRepository;
 
     @Override
@@ -52,7 +65,7 @@ public class AuthService implements IAuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
-        user.setRole(User.Role.USER);
+        user.setRole("USER");
         user.setActive(true);
         user.setCreatedAt(TimestampUtils.now());
         user.setUpdatedAt(TimestampUtils.now());
@@ -110,7 +123,7 @@ public class AuthService implements IAuthService {
                     newUser.setFullName(socialUserInfo.getName());
                     newUser.setAvatar(socialUserInfo.getPicture());
                     newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
-                    newUser.setRole(User.Role.USER);
+                    newUser.setRole("USER");
                     newUser.setActive(true);
                     newUser.setCreatedAt(TimestampUtils.now());
                     newUser.setUpdatedAt(TimestampUtils.now());
@@ -138,21 +151,31 @@ public class AuthService implements IAuthService {
         String username = jwtService.extractUsername(token);
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
-//        Role role = roleRepository.findById(user.getRoleId()).orElse(null);
-//        if (role != null) {
-//            List<Permission> permissions = permissionRepository.findAllById(role.getPermissionIds());
-//            UserInfoResponse userInfoResponse = UserInfoResponse.builder()
-//                    .id(user.getId())
-//                    .username(user.getUsername())
-//                    .email(user.getEmail())
-//                    .fullName(user.getFullName())
-//                    .avatar(user.getAvatar())
-//                    .roleId(user.getRoleId())
-//                    .permissions(permissions.stream().map(Permission::getName).collect(Collectors.toSet()))
-//                    .build();
-//            log.info("UserInfoResponse have data {}", userInfoResponse);
-//            return userInfoResponse;
-//        }
+
+        Role role = roleRepository.findById(user.getRoleId()).orElse(null);
+        if (role != null) {
+            List<RolePermission> rolePermissions = rolePermissionRepository.findAllByRoleId(role.getId());
+            if (rolePermissions == null || rolePermissions.isEmpty()) {
+                return UserInfo.fromUser(user);
+            }
+
+            List<Permission> permissions = permissionJpaRepository.findAllByIdIn(
+                    rolePermissions.stream()
+                            .map(RolePermission::getId)
+                            .collect(Collectors.toList()));
+
+            UserInfoResponse userInfoResponse = UserInfoResponse.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .fullName(user.getFullName())
+                    .avatar(user.getAvatar())
+                    .roleId(user.getRoleId())
+                    .permissions(permissions.stream().map(Permission::getName).collect(Collectors.toSet()))
+                    .build();
+            log.info("UserInfoResponse have data {}", userInfoResponse);
+            return userInfoResponse;
+        }
         return UserInfo.fromUser(user);
     }
 
@@ -176,7 +199,7 @@ public class AuthService implements IAuthService {
                         newUser.setFullName(userInfo.getName());
                         newUser.setAvatar(userInfo.getPicture());
                         newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
-                        newUser.setRole(User.Role.USER);
+                        newUser.setRole("USER");
                         newUser.setActive(true);
                         newUser.setCreatedAt(TimestampUtils.now());
                         newUser.setUpdatedAt(TimestampUtils.now());
@@ -213,7 +236,7 @@ public class AuthService implements IAuthService {
                 .orElseThrow(EmailNotFoundException::new);
 
         // Delete any existing tokens for this user
-        tokenRepository.deleteByUserId(user.getId());
+//        tokenRepository.deleteByUserId(user.getId());
 
         // Generate token
         String token = generateResetToken();
@@ -221,7 +244,7 @@ public class AuthService implements IAuthService {
         // Save token
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
-        resetToken.setUserId(user.getId());
+//        resetToken.setUserId(user.getId());
         resetToken.setExpiryDate(TimestampUtils.addHours(TimestampUtils.now(), 24)); // Token valid for 24 hours
         resetToken.setUsed(false);
         tokenRepository.save(resetToken);

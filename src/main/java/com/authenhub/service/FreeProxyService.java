@@ -4,8 +4,8 @@ import com.authenhub.bean.proxy.CheckResult;
 import com.authenhub.bean.proxy.ImportResult;
 import com.authenhub.bean.proxy.ProxyRequest;
 import com.authenhub.bean.proxy.ProxyResponse;
+import com.authenhub.entity.User;
 import com.authenhub.entity.mongo.FreeProxy;
-import com.authenhub.entity.mongo.User;
 import com.authenhub.repository.FreeProxyRepository;
 import com.authenhub.service.interfaces.IFreeProxyService;
 import com.authenhub.utils.TimestampUtils;
@@ -76,7 +76,7 @@ public class FreeProxyService implements IFreeProxyService {
         proxy.setActive(true);
         proxy.setCreatedAt(TimestampUtils.now());
         proxy.setUpdatedAt(TimestampUtils.now());
-        proxy.setCreatedBy(user.getId());
+        proxy.setCreatedBy(user.getFullName());
         proxy.setSuccessCount(0);
         proxy.setFailCount(0);
         proxy.setUptime(0.0);

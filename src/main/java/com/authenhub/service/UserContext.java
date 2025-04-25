@@ -1,7 +1,7 @@
 package com.authenhub.service;
 
-import com.authenhub.entity.mongo.User;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.entity.User;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -18,7 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserContext {
 
-    private final UserRepository userRepository;
+    private final UserJpaRepository userRepository;
     
     /**
      * Get the current authenticated user
@@ -54,7 +54,7 @@ public class UserContext {
      *
      * @return the current user's ID or null if not authenticated
      */
-    public String getCurrentUserId() {
+    public Long getCurrentUserId() {
         User user = getCurrentUser();
         return user != null ? user.getId() : null;
     }
@@ -124,6 +124,6 @@ public class UserContext {
      */
     public boolean isAdmin() {
         User user = getCurrentUser();
-        return user != null && User.Role.ADMIN.equals(user.getRole());
+        return user != null && "ADMIN".equals(user.getRole());
     }
 }

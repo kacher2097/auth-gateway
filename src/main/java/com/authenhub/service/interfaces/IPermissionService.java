@@ -23,7 +23,7 @@ public interface IPermissionService {
      * @param id permission id
      * @return permission
      */
-    PermissionResponse getPermissionById(String id);
+    PermissionResponse getPermissionById(Long id);
 
     /**
      * Get permissions by category
@@ -48,12 +48,12 @@ public interface IPermissionService {
      * @param request permission request
      * @return updated permission
      */
-    PermissionResponse updatePermission(String id, PermissionRequest request);
+    PermissionResponse updatePermission(Long id, PermissionRequest request);
 
     /**
      * Delete a permission
      *
      * @param id permission id
      */
-    void deletePermission(String id);
+    void deletePermission(Long id);
 }

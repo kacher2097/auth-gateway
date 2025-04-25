@@ -1,6 +1,6 @@
 package com.authenhub.bean.permission;
 
-import com.authenhub.entity.mongo.Permission;
+import com.authenhub.entity.Permission;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PermissionResponse {
-    private String id;
+    private Long id;
     private String name;
     private String displayName;
     private String description;

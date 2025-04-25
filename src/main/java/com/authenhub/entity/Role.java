@@ -36,45 +36,9 @@ public class Role {
     @Column(name = "is_system")
     private boolean isSystem;
 
-    @ElementCollection
-    @CollectionTable(name = "role_permissions", joinColumns = @JoinColumn(name = "role_id"))
-    @Column(name = "permission_id")
-    private Set<String> permissionIds = new HashSet<>();
-
     @Column(name = "created_at")
     private Timestamp createdAt;
 
     @Column(name = "updated_at")
     private Timestamp updatedAt;
-
-    /**
-     * Convert from MongoDB entity to JPA entity
-     */
-    public static Role fromMongo(com.authenhub.entity.mongo.Role role) {
-        return Role.builder()
-                .name(role.getName())
-                .displayName(role.getDisplayName())
-                .description(role.getDescription())
-                .isSystem(role.isSystem())
-                .permissionIds(role.getPermissionIds())
-                .createdAt(role.getCreatedAt())
-                .updatedAt(role.getUpdatedAt())
-                .build();
-    }
-
-    /**
-     * Convert to MongoDB entity
-     */
-    public com.authenhub.entity.mongo.Role toMongo() {
-        return com.authenhub.entity.mongo.Role.builder()
-                .id(this.id != null ? this.id.toString() : null)
-                .name(this.name)
-                .displayName(this.displayName)
-                .description(this.description)
-                .isSystem(this.isSystem)
-                .permissionIds(this.permissionIds)
-                .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt)
-                .build();
-    }
 }

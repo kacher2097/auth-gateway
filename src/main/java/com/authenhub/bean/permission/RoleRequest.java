@@ -21,5 +21,5 @@ public class RoleRequest {
     private String description;
     
     @NotEmpty(message = "At least one permission is required")
-    private Set<String> permissions;
+    private Set<Long> permissions;
 }

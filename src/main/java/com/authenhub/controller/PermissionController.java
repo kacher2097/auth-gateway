@@ -27,7 +27,7 @@ public class PermissionController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('permission:read')")
-    public ApiResponse<?> getPermissionById(@PathVariable String id) {
+    public ApiResponse<?> getPermissionById(@PathVariable Long id) {
         PermissionResponse permission = permissionService.getPermissionById(id);
         return ApiResponse.success(permission);
     }
@@ -49,7 +49,7 @@ public class PermissionController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('permission:update')")
     public ApiResponse<?> updatePermission(
-            @PathVariable String id,
+            @PathVariable Long id,
             @Valid @RequestBody PermissionRequest request) {
         PermissionResponse permission = permissionService.updatePermission(id, request);
         return ApiResponse.success(permission);
@@ -57,7 +57,7 @@ public class PermissionController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('permission:delete')")
-    public ApiResponse<?> deletePermission(@PathVariable String id) {
+    public ApiResponse<?> deletePermission(@PathVariable Long id) {
         permissionService.deletePermission(id);
         return ApiResponse.success(null);
     }

@@ -15,12 +15,12 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     Boolean existsByUsername(String username);
     Boolean existsByEmail(String email);
-
-    long countByRole(com.authenhub.entity.mongo.User.Role role);
     long countByActive(boolean active);
 
     List<User> findByCreatedAtBetween(Timestamp start, Timestamp end);
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.socialProvider IS NOT NULL")
     long countBySocialLogin();
+
+    long countByRole(String role);
 }

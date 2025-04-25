@@ -4,12 +4,14 @@ import com.authenhub.bean.permission.PermissionResponse;
 import com.authenhub.bean.permission.RoleDetailedResponse;
 import com.authenhub.bean.permission.RoleRequest;
 import com.authenhub.bean.permission.RoleResponse;
-import com.authenhub.entity.mongo.Permission;
-import com.authenhub.entity.mongo.Role;
+import com.authenhub.entity.Permission;
+import com.authenhub.entity.Role;
+import com.authenhub.entity.RolePermission;
 import com.authenhub.exception.ResourceAlreadyExistsException;
 import com.authenhub.exception.ResourceNotFoundException;
-import com.authenhub.repository.adapter.PermissionRepositoryAdapter;
-import com.authenhub.repository.adapter.RoleRepositoryAdapter;
+import com.authenhub.repository.jpa.PermissionJpaRepository;
+import com.authenhub.repository.jpa.RoleJpaRepository;
+import com.authenhub.repository.jpa.RolePermissionRepository;
 import com.authenhub.service.interfaces.IRoleService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +26,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RoleService implements IRoleService {
 
-    private final RoleRepositoryAdapter roleRepository;
-    private final PermissionRepositoryAdapter permissionRepository;
+    private final RoleJpaRepository roleRepository;
+    private final PermissionJpaRepository permissionRepository;
+    private final RolePermissionRepository rolePermissionRepository;
 
     @Override
     public List<RoleResponse> getAllRoles() {
@@ -35,20 +38,35 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public RoleResponse getRoleById(String id) {
+    public RoleResponse getRoleById(Long id) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
         return RoleResponse.fromEntity(role);
     }
 
     @Override
-    public RoleDetailedResponse getRoleWithPermissions(String id) {
+    public RoleDetailedResponse getRoleWithPermissions(Long id) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
 
-        Set<Permission> permissions = role.getPermissionIds().stream()
-                .map(permId -> permissionRepository.findById(permId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + permId)))
+        List<RolePermission> rolePermissions = rolePermissionRepository.findAllByRoleId(id);
+
+        if (rolePermissions.isEmpty()) {
+            return RoleDetailedResponse.builder()
+                    .id(role.getId())
+                    .name(role.getName())
+                    .displayName(role.getDisplayName())
+                    .description(role.getDescription())
+                    .isSystem(role.isSystem())
+                    .permissions(new HashSet<>())
+                    .createdAt(role.getCreatedAt())
+                    .updatedAt(role.getUpdatedAt())
+                    .build();
+        }
+
+        Set<Permission> permissions = rolePermissions.stream()
+                .map(rolePermission -> permissionRepository.findByName(rolePermission.getPermissionName())
+                        .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + rolePermission.getRoleId())))
                 .collect(Collectors.toSet());
 
         Set<PermissionResponse> permissionResponses = permissions.stream()
@@ -82,7 +100,6 @@ public class RoleService implements IRoleService {
                 .displayName(request.getDisplayName())
                 .description(request.getDescription())
                 .isSystem(false) // Only system can create system roles
-                .permissionIds(request.getPermissions())
                 .createdAt(TimestampUtils.now())
                 .updatedAt(TimestampUtils.now())
                 .build();
@@ -92,7 +109,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public RoleResponse updateRole(String id, RoleRequest request) {
+    public RoleResponse updateRole(Long id, RoleRequest request) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
 
@@ -113,7 +130,6 @@ public class RoleService implements IRoleService {
         role.setName(request.getName());
         role.setDisplayName(request.getDisplayName());
         role.setDescription(request.getDescription());
-        role.setPermissionIds(request.getPermissions());
         role.setUpdatedAt(TimestampUtils.now());
 
         Role updatedRole = roleRepository.save(role);
@@ -121,7 +137,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void deleteRole(String id) {
+    public void deleteRole(Long id) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
 
@@ -134,7 +150,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public RoleResponse addPermissionsToRole(String roleId, Set<String> permissionIds) {
+    public RoleResponse addPermissionsToRole(Long roleId, Set<Long> permissionIds) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + roleId));
 
@@ -147,9 +163,14 @@ public class RoleService implements IRoleService {
         validatePermissionIds(permissionIds);
 
         // Add new permissions
-        Set<String> updatedPermissions = new HashSet<>(role.getPermissionIds());
-        updatedPermissions.addAll(permissionIds);
-        role.setPermissionIds(updatedPermissions);
+//        RolePermission rolePermission = RolePermission.builder()
+//                .roleId(roleId)
+//                .permissionId(permissionIds)
+//                .build();
+
+//        Set<Long> updatedPermissions = new HashSet<>(role.getPermissionIds());
+//        updatedPermissions.addAll(permissionIds);
+//        role.setPermissionIds(updatedPermissions);
         role.setUpdatedAt(TimestampUtils.now());
 
         Role updatedRole = roleRepository.save(role);
@@ -157,7 +178,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public RoleResponse removePermissionsFromRole(String roleId, Set<String> permissionIds) {
+    public RoleResponse removePermissionsFromRole(Long roleId, Set<Long> permissionIds) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + roleId));
 
@@ -167,9 +188,9 @@ public class RoleService implements IRoleService {
         }
 
         // Remove permissions
-        Set<String> updatedPermissions = new HashSet<>(role.getPermissionIds());
-        updatedPermissions.removeAll(permissionIds);
-        role.setPermissionIds(updatedPermissions);
+//        Set<Long> updatedPermissions = new HashSet<>(role.getPermissionIds());
+//        updatedPermissions.removeAll(permissionIds);
+//        role.setPermissionIds(updatedPermissions);
         role.setUpdatedAt(TimestampUtils.now());
 
         Role updatedRole = roleRepository.save(role);
@@ -177,9 +198,9 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public void validatePermissionIds(Set<String> permissionIds) {
-        for (String permissionId : permissionIds) {
-            if (!permissionRepository.existsByName(permissionId)) {
+    public void validatePermissionIds(Set<Long> permissionIds) {
+        for (Long permissionId : permissionIds) {
+            if (!permissionRepository.existsById(permissionId)) {
                 throw new ResourceNotFoundException("Permission not found with id: " + permissionId);
             }
         }

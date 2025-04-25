@@ -163,7 +163,7 @@ public class PasswordResetTokenRepositoryAdapter implements RepositoryAdapter<co
                     })
                     .filter(id -> id != null)
                     .collect(Collectors.toList());
-            
+
             List<PasswordResetToken> tokenJpas = jpaRepository.findAllById(ids);
             jpaRepository.deleteAll(tokenJpas);
         }
@@ -189,11 +189,7 @@ public class PasswordResetTokenRepositoryAdapter implements RepositoryAdapter<co
         }
     }
 
-    public void deleteByUserId(String userId) {
-        if (databaseConfig.isMongoActive()) {
-            mongoRepository.deleteByUserId(userId);
-        } else {
-            jpaRepository.deleteByUserId(userId);
-        }
+    public void deleteByUserId(Long userId) {
+        jpaRepository.deleteByUserId(userId);
     }
 }

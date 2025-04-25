@@ -3,14 +3,15 @@ package com.authenhub.filter;
 import com.authenhub.constant.Constant;
 import com.authenhub.constant.JwtConstant;
 import com.authenhub.dto.AccessLogDTO;
-import com.authenhub.entity.mongo.Permission;
-import com.authenhub.entity.mongo.Role;
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.RolePermission;
+import com.authenhub.entity.User;
+import com.authenhub.entity.Permission;
+import com.authenhub.entity.Role;
 import com.authenhub.event.AccessTrackingPublisher;
 import com.authenhub.exception.ErrorApiException;
-import com.authenhub.repository.PermissionRepository;
-import com.authenhub.repository.RoleRepository;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.repository.jpa.PermissionJpaRepository;
+import com.authenhub.repository.jpa.RoleJpaRepository;
+import com.authenhub.repository.jpa.RolePermissionRepository;
 import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.utils.TimestampUtils;
 import com.authenhub.utils.Utils;
@@ -35,6 +36,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -48,11 +50,12 @@ import static com.authenhub.utils.Utils.getClientIp;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    private final RoleJpaRepository roleRepository;
+    private final UserJpaRepository userRepository;
     private final UserJpaRepository userJpaRepository;
     private final AccessTrackingPublisher publisherAction;
-    private final PermissionRepository permissionRepository;
+    private final PermissionJpaRepository permissionRepository;
+    private final RolePermissionRepository rolePermissionRepository;
 
     // Danh sách các đường dẫn không cần xác thực
     private final static String[] PUBLIC_PATHS = {
@@ -155,8 +158,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 userLogin, fullName, mail, ip, uri);
     }
 
-    private com.authenhub.entity.User getUserInfo(String username) {
-        com.authenhub.entity.User user = userJpaRepository.findByUsername(username).orElse(null);
+    private User getUserInfo(String username) {
+        User user = userJpaRepository.findByUsername(username).orElse(null);
         if (user == null) {
             log.debug("User not found for username: {}", username);
             return null;
@@ -244,29 +247,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Get permissions
             Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-            String userId = claims.get(JwtConstant.USER_ID_FIELD, String.class);
-            String roleId = claims.get(JwtConstant.JWT_TOKEN_CLAIM_ROLE_ID, String.class);
+            Long userId = claims.get(JwtConstant.USER_ID_FIELD, Long.class);
+            Long roleId = claims.get(JwtConstant.JWT_TOKEN_CLAIM_ROLE_ID, Long.class);
 
             // Verify that the user ID in the token matches the user from the database
             if (!user.getId().equals(userId)) {
                 log.debug("User ID mismatch: {} vs {}", user.getId(), userId);
                 return null;
             }
+
             Role role = roleRepository.findById(roleId).orElse(null);
             if (role == null) {
                 log.debug("Role not found for id: {}", roleId);
                 return null;
             }
 
-            Set<String> lstPermissionId = role.getPermissionIds();
-            Set<String> lstFunctionAction = lstPermissionId.stream().map(permissionId -> {
-                Permission permission = permissionRepository.findById(permissionId).orElse(null);
+            List<RolePermission> rolePermissions = rolePermissionRepository.findAllByRoleId(roleId);
+            if (rolePermissions == null || rolePermissions.isEmpty()) {
+                log.debug("RolePermission not found for id: {}", roleId);
+                return null;
+            }
+
+            Set<String> lstFunctionAction = rolePermissions.stream().map(rolePermission -> {
+                Permission permission = permissionRepository.findByName(rolePermission.getPermissionName()).orElse(null);
                 if (permission == null) {
-                    log.debug("Permission not found for id: {}", permissionId);
+                    log.debug("Permission not found for id: {}", rolePermission.getPermissionName());
                     return null;
                 }
                 return permission.getName();
             }).collect(Collectors.toSet());
+
             log.debug("Found {} permissions for user {}", lstFunctionAction.size(), subject);
 
             lstFunctionAction.forEach(permission -> grantedAuthorities.add(new SimpleGrantedAuthority(permission)));

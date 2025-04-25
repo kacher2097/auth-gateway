@@ -2,7 +2,7 @@ package com.authenhub.service;
 
 import com.authenhub.config.DatabaseSwitcherConfig;
 import com.authenhub.entity.mongo.AccessLog;
-import com.authenhub.repository.adapter.AccessLogRepositoryAdapter;
+import com.authenhub.repository.AccessLogRepository;
 import com.authenhub.service.interfaces.IAccessLogService;
 import com.authenhub.utils.TimestampUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,10 +26,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AccessLogService implements IAccessLogService {
 
-    private final AccessLogRepositoryAdapter accessLogRepository;
     private final MongoTemplate mongoTemplate;
     private final JdbcTemplate jdbcTemplate;
     private final DatabaseSwitcherConfig databaseConfig;
+    private final AccessLogRepository accessLogRepository;
 
     @Override
     public Map<String, Object> getAccessStats(Timestamp start, Timestamp end) {

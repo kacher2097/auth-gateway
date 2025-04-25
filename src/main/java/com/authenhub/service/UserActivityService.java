@@ -1,6 +1,6 @@
 package com.authenhub.service;
 
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

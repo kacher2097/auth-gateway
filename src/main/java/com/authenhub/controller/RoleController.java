@@ -28,14 +28,14 @@ public class RoleController {
 
     @GetMapping("/{id}")
 //    @PreAuthorize("hasAuthority('role:read')")
-    public ApiResponse<?> getRoleById(@PathVariable String id) {
+    public ApiResponse<?> getRoleById(@PathVariable Long id) {
         RoleResponse role = roleService.getRoleById(id);
         return ApiResponse.success(role);
     }
 
     @GetMapping("/{id}/permissions")
 //    @PreAuthorize("hasAuthority('role:read')")
-    public ApiResponse<?> getRoleWithPermissions(@PathVariable String id) {
+    public ApiResponse<?> getRoleWithPermissions(@PathVariable Long id) {
         RoleDetailedResponse role = roleService.getRoleWithPermissions(id);
         return ApiResponse.success(role);
     }
@@ -50,7 +50,7 @@ public class RoleController {
     @PutMapping("/{id}")
 //    @PreAuthorize("hasAuthority('role:update')")
     public ApiResponse<?> updateRole(
-            @PathVariable String id,
+            @PathVariable Long id,
             @Valid @RequestBody RoleRequest request) {
         RoleResponse role = roleService.updateRole(id, request);
         return ApiResponse.success(role);
@@ -58,7 +58,7 @@ public class RoleController {
 
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasAuthority('role:delete')")
-    public ApiResponse<?> deleteRole(@PathVariable String id) {
+    public ApiResponse<?> deleteRole(@PathVariable Long id) {
         roleService.deleteRole(id);
         return ApiResponse.success(null);
     }
@@ -66,8 +66,8 @@ public class RoleController {
     @PostMapping("/{id}/permissions")
 //    @PreAuthorize("hasAuthority('role:update')")
     public ApiResponse<?> addPermissionsToRole(
-            @PathVariable String id,
-            @RequestBody Set<String> permissionIds) {
+            @PathVariable Long id,
+            @RequestBody Set<Long> permissionIds) {
         RoleResponse role = roleService.addPermissionsToRole(id, permissionIds);
         return ApiResponse.success(role);
     }
@@ -75,8 +75,8 @@ public class RoleController {
     @DeleteMapping("/{id}/permissions")
 //    @PreAuthorize("hasAuthority('role:update')")
     public ApiResponse<?> removePermissionsFromRole(
-            @PathVariable String id,
-            @RequestBody Set<String> permissionIds) {
+            @PathVariable Long id,
+            @RequestBody Set<Long> permissionIds) {
         RoleResponse role = roleService.removePermissionsFromRole(id, permissionIds);
         return ApiResponse.success(role);
     }

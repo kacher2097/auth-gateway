@@ -15,10 +15,8 @@ public class DatabaseMigrationService {
 
     private final DatabaseSwitcherConfig databaseSwitcherConfig;
     private final UserMigrationService userMigrationService;
-    private final RoleMigrationService roleMigrationService;
     private final PermissionMigrationService permissionMigrationService;
     private final FreeProxyMigrationService freeProxyMigrationService;
-    private final AccessLogMigrationService accessLogMigrationService;
     private final PaymentMethodMigrationService paymentMethodMigrationService;
     private final PasswordResetTokenMigrationService passwordResetTokenMigrationService;
 
@@ -28,13 +26,12 @@ public class DatabaseMigrationService {
     public void migrateFromMongoToPostgres() {
         log.info("Starting migration from MongoDB to PostgreSQL");
 
-        permissionMigrationService.migrateFromMongoToPostgres();
-        roleMigrationService.migrateFromMongoToPostgres();
-        userMigrationService.migrateFromMongoToPostgres();
-        freeProxyMigrationService.migrateFromMongoToPostgres();
-        accessLogMigrationService.migrateFromMongoToPostgres();
+//        permissionMigrationService.migrateFromMongoToPostgres();
+//        roleMigrationService.migrateFromMongoToPostgres();
+//        userMigrationService.migrateFromMongoToPostgres();
+//        freeProxyMigrationService.migrateFromMongoToPostgres();
         paymentMethodMigrationService.migrateFromMongoToPostgres();
-        passwordResetTokenMigrationService.migrateFromMongoToPostgres();
+//        passwordResetTokenMigrationService.migrateFromMongoToPostgres();
         
         log.info("Migration from MongoDB to PostgreSQL completed");
     }
@@ -46,10 +43,8 @@ public class DatabaseMigrationService {
         log.info("Starting migration from PostgreSQL to MongoDB");
 
         permissionMigrationService.migrateFromPostgresToMongo();
-        roleMigrationService.migrateFromPostgresToMongo();
         userMigrationService.migrateFromPostgresToMongo();
         freeProxyMigrationService.migrateFromPostgresToMongo();
-        accessLogMigrationService.migrateFromPostgresToMongo();
         paymentMethodMigrationService.migrateFromPostgresToMongo();
         passwordResetTokenMigrationService.migrateFromPostgresToMongo();
         

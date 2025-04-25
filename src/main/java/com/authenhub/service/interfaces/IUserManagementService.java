@@ -1,7 +1,7 @@
 package com.authenhub.service.interfaces;
 
 import com.authenhub.bean.UserUpdateRequest;
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.User;
 
 /**
  * Interface for user management service operations
@@ -15,7 +15,7 @@ public interface IUserManagementService {
      * @param request user update request
      * @return updated user
      */
-    User updateUser(String userId, UserUpdateRequest request);
+    User updateUser(Long userId, UserUpdateRequest request);
 
     /**
      * Set user active status
@@ -24,7 +24,7 @@ public interface IUserManagementService {
      * @param active active status
      * @return updated user
      */
-    User setUserActiveStatus(String userId, boolean active);
+    User setUserActiveStatus(Long userId, boolean active);
 
     /**
      * Set user role
@@ -33,7 +33,7 @@ public interface IUserManagementService {
      * @param role user role
      * @return updated user
      */
-    User setUserRole(String userId, User.Role role);
+    User setUserRole(Long userId, String role);
 
     /**
      * Get the current authenticated user

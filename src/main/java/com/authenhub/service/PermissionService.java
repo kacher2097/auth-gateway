@@ -2,10 +2,10 @@ package com.authenhub.service;
 
 import com.authenhub.bean.permission.PermissionRequest;
 import com.authenhub.bean.permission.PermissionResponse;
-import com.authenhub.entity.mongo.Permission;
+import com.authenhub.entity.Permission;
 import com.authenhub.exception.ResourceAlreadyExistsException;
 import com.authenhub.exception.ResourceNotFoundException;
-import com.authenhub.repository.PermissionRepository;
+import com.authenhub.repository.jpa.PermissionJpaRepository;
 import com.authenhub.service.interfaces.IPermissionService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PermissionService implements IPermissionService {
 
-    private final PermissionRepository permissionRepository;
+    private final PermissionJpaRepository permissionRepository;
 
     @Override
     public List<PermissionResponse> getAllPermissions() {
@@ -28,7 +28,7 @@ public class PermissionService implements IPermissionService {
     }
 
     @Override
-    public PermissionResponse getPermissionById(String id) {
+    public PermissionResponse getPermissionById(Long id) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + id));
         return PermissionResponse.fromEntity(permission);
@@ -62,7 +62,7 @@ public class PermissionService implements IPermissionService {
     }
 
     @Override
-    public PermissionResponse updatePermission(String id, PermissionRequest request) {
+    public PermissionResponse updatePermission(Long id, PermissionRequest request) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + id));
 
@@ -83,7 +83,7 @@ public class PermissionService implements IPermissionService {
     }
 
     @Override
-    public void deletePermission(String id) {
+    public void deletePermission(Long id) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + id));
 

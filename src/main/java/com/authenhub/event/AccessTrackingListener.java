@@ -3,9 +3,9 @@ package com.authenhub.event;
 import com.authenhub.config.application.JsonMapper;
 import com.authenhub.constant.Constant;
 import com.authenhub.dto.AccessLogDTO;
-import com.authenhub.entity.AccessLog;
+import com.authenhub.entity.mongo.AccessLog;
 import com.authenhub.mapper.AccessLogMapper;
-import com.authenhub.repository.jpa.AccessLogJpaRepository;
+import com.authenhub.repository.AccessLogRepository;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ public class AccessTrackingListener {
 
     private final JsonMapper jsonMapper;
     private final AccessLogMapper accessLogMapper;
-    private final AccessLogJpaRepository accessLogJpaRepository;
+    private final AccessLogRepository accessLogRepository;
 
     @Async
     @EventListener
@@ -38,8 +38,8 @@ public class AccessTrackingListener {
                 return;
             }
             // Save access log
-            AccessLog accessLog = accessLogMapper.toEntity(accessLogDTO);
-            accessLogJpaRepository.save(accessLog);
+            AccessLog accessLog = accessLogMapper.toMongoEntity(accessLogDTO);
+            accessLogRepository.save(accessLog);
             log.info("[AccessTrackingListener] save access log success");
 
         } catch (Exception e) {

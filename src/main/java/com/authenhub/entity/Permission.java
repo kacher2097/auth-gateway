@@ -47,32 +47,4 @@ public class Permission {
         return resource + ":" + action;
     }
 
-    /**
-     * Convert from MongoDB entity to JPA entity
-     */
-    public static Permission fromMongo(com.authenhub.entity.mongo.Permission permission) {
-        return Permission.builder()
-                .name(permission.getName())
-                .displayName(permission.getDisplayName())
-                .description(permission.getDescription())
-                .category(permission.getCategory())
-                .createdAt(permission.getCreatedAt())
-                .updatedAt(permission.getUpdatedAt())
-                .build();
-    }
-
-    /**
-     * Convert to MongoDB entity
-     */
-    public com.authenhub.entity.mongo.Permission toMongo() {
-        return com.authenhub.entity.mongo.Permission.builder()
-                .id(this.id != null ? this.id.toString() : null)
-                .name(this.name)
-                .displayName(this.displayName)
-                .description(this.description)
-                .category(this.category)
-                .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt)
-                .build();
-    }
 }

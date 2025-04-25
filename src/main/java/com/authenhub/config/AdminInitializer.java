@@ -1,7 +1,7 @@
 package com.authenhub.config;
 
-import com.authenhub.entity.mongo.User;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.entity.User;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminInitializer implements CommandLineRunner {
 
-    private final UserRepository userRepository;
+    private final UserJpaRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${admin.username}")
@@ -38,7 +38,7 @@ public class AdminInitializer implements CommandLineRunner {
             admin.setEmail(adminEmail);
             admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setFullName(adminFullName);
-            admin.setRole(User.Role.ADMIN);
+            admin.setRole("ADMIN");
             admin.setActive(true);
             admin.setCreatedAt(TimestampUtils.now());
             admin.setUpdatedAt(TimestampUtils.now());

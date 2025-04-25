@@ -1,8 +1,8 @@
 package com.authenhub.service;
 
 import com.authenhub.config.DatabaseSwitcherConfig;
-import com.authenhub.entity.mongo.User;
-import com.authenhub.repository.adapter.UserRepositoryAdapter;
+import com.authenhub.entity.User;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.service.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -18,9 +18,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService implements IUserService {
 
-    private final UserRepositoryAdapter userRepository;
     private final MongoTemplate mongoTemplate;
     private final JdbcTemplate jdbcTemplate;
+    private final UserJpaRepository userRepository;
     private final DatabaseSwitcherConfig databaseConfig;
 
     /**
@@ -97,12 +97,12 @@ public class UserService implements IUserService {
      * @return the count of users
      */
     @Override
-    public long countUsersByRole(User.Role role) {
+    public long countUsersByRole(String role) {
         if (databaseConfig.isMongoActive()) {
             return userRepository.countByRole(role);
         } else {
             String sql = "SELECT COUNT(*) FROM users WHERE role = ?";
-            return jdbcTemplate.queryForObject(sql, Long.class, role.name());
+            return jdbcTemplate.queryForObject(sql, Long.class, role);
         }
     }
 

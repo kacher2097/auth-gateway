@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: dev
   servlet:
     multipart: { max-file-size: 11MB, max-request-size: 11MB }
   jackson: { date-format: 'yyyy-MM-dd HH:mm:ss', time-zone: Asia/Ho_Chi_Minh }
@@ -142,10 +144,62 @@ rest:
   socket: {timeout: 60000}
 pool: {max: 10}
 
+# Facebook API Configuration
+facebook:
+  api:
+    api-base-url: https://graph.facebook.com/v12.0
+    connect-timeout: 5000
+    read-timeout: 5000
+    max-retries: 3
+  oauth:
+    client-id: 663214539587597
+    client-secret: 7721bb1cfe1c8118e39aa0a95fe87379
+    authorization-base-url: https://www.facebook.com/v12.0/dialog/oauth
+    token-base-url: https://graph.facebook.com/v12.0/oauth/access_token
+    default-scope: email,public_profile,pages_show_list,pages_read_engagement,pages_manage_posts,pages_manage_engagement
+
+# Development profile configuration
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+# Disable SSL validation for development
+server:
+  ssl:
+    enabled: false
+
+# Trust all certificates
+javax:
+  net:
+    ssl:
+      trustStore: NONE
+      trustStorePassword:
+      trustStoreType: NONE
+      verifyHostname: false
+
+# Logging for HTTP client
+logging:
+  level:
+    org.apache.http: DEBUG
+    org.apache.http.wire: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
+    com.authenhub.facebook: DEBUG
+    com.authenhub: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+
+# Increase timeouts for development
+facebook:
+  api:
+    connect-timeout: 10000
+    read-timeout: 10000
+
 # Database switcher configuration
 database:
   # Type of database to use: mongodb or postgresql
-  type: mongodb
+  type: postgresql
   # Enable automatic data migration when switching database types
   enable-auto-migration: false
   # Enable detailed migration logs

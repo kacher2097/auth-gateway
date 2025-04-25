@@ -1,7 +1,7 @@
 package com.authenhub.service.interfaces;
 
-import com.authenhub.entity.mongo.Role;
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.User;
+import com.authenhub.entity.Role;
 
 /**
  * Interface for user role service operations
@@ -15,7 +15,7 @@ public interface IUserRoleService {
      * @param roleId role id
      * @return updated user
      */
-    User assignRolesToUser(String userId, String roleId);
+    User assignRolesToUser(Long userId, Long roleId);
     
     /**
      * Add roles to user
@@ -24,7 +24,7 @@ public interface IUserRoleService {
      * @param roleId role id
      * @return updated user
      */
-    User addRolesToUser(String userId, String roleId);
+    User addRolesToUser(Long userId, Long roleId);
     
     /**
      * Remove roles from user
@@ -33,7 +33,7 @@ public interface IUserRoleService {
      * @param roleId role id
      * @return updated user
      */
-    User removeRolesFromUser(String userId, String roleId);
+    User removeRolesFromUser(Long userId, Long roleId);
     
     /**
      * Get user roles
@@ -41,7 +41,7 @@ public interface IUserRoleService {
      * @param userId user id
      * @return user roles
      */
-    Role getUserRoles(String userId);
+    Role getUserRoles(Long userId);
     
     /**
      * Check if user has permission
@@ -57,5 +57,5 @@ public interface IUserRoleService {
      *
      * @param roleId role id
      */
-    void validateRoleIds(String roleId);
+    void validateRoleIds(Long roleId);
 }

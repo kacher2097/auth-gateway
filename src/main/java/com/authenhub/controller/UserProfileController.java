@@ -2,7 +2,7 @@ package com.authenhub.controller;
 
 import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.constant.enums.ApiResponseCode;
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.User;
 import com.authenhub.service.UserContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -11,11 +11,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInfoResponse {
-    private String id;
+    private Long id;
     private String username;
     private String email;
     private String fullName;
     private String avatar;
-    private String roleId;
+    private Long roleId;
     private Set<String> permissions;
 }

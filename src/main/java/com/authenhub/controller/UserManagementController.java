@@ -3,13 +3,12 @@ package com.authenhub.controller;
 import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.constant.enums.ApiResponseCode;
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.User;
 import com.authenhub.service.UserContext;
 import com.authenhub.service.UserRoleService;
 import com.authenhub.service.interfaces.IUserManagementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -80,7 +79,7 @@ public class UserManagementController {
 
         // Only admins or the user themselves can view user details
         User currentUser = userContext.getCurrentUser();
-        if (!userContext.isAdmin() && !currentUser.getId().equals(userId)) {
+        if (!userContext.isAdmin()) {
             return ApiResponse.error(ApiResponseCode.FORBIDDEN, "You don't have permission to view this user");
         }
 
@@ -101,7 +100,7 @@ public class UserManagementController {
      * @return updated user
      */
     @PutMapping("/{userId}")
-    public ApiResponse<?> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request) {
+    public ApiResponse<?> updateUser(@PathVariable Long userId, @RequestBody UserUpdateRequest request) {
         try {
             User updatedUser = userManagementService.updateUser(userId, request);
             return ApiResponse.success(updatedUser);
@@ -121,7 +120,7 @@ public class UserManagementController {
      * @return updated user
      */
     @PutMapping("/{userId}/active")
-    public ApiResponse<?> setUserActiveStatus(@PathVariable String userId, @RequestParam boolean active) {
+    public ApiResponse<?> setUserActiveStatus(@PathVariable Long userId, @RequestParam boolean active) {
         try {
             User updatedUser = userManagementService.setUserActiveStatus(userId, active);
             return ApiResponse.success(updatedUser);
@@ -141,7 +140,7 @@ public class UserManagementController {
      * @return updated user
      */
     @PutMapping("/{userId}/role")
-    public ApiResponse<?> setUserRole(@PathVariable String userId, @RequestParam User.Role role) {
+    public ApiResponse<?> setUserRole(@PathVariable Long userId, @RequestParam String role) {
         try {
             User updatedUser = userManagementService.setUserRole(userId, role);
             return ApiResponse.success(updatedUser);
@@ -155,8 +154,8 @@ public class UserManagementController {
 
     @PutMapping("/{userId}/roles/assign")
     public ApiResponse<?> assignRoleToUser(
-            @PathVariable String userId,
-            @RequestParam String roleId) {
+            @PathVariable Long userId,
+            @RequestParam Long roleId) {
 
         User updatedUser = userRoleService.assignRolesToUser(userId, roleId);
         return ApiResponse.success(updatedUser);
@@ -171,8 +170,8 @@ public class UserManagementController {
      */
     @PutMapping("/{userId}/roles/add")
     public ApiResponse<?> addRoleToUser(
-            @PathVariable String userId,
-            @RequestParam String roleId) {
+            @PathVariable Long userId,
+            @RequestParam Long roleId) {
 
         User updatedUser = userRoleService.addRolesToUser(userId, roleId);
         return ApiResponse.success(updatedUser);
@@ -187,8 +186,8 @@ public class UserManagementController {
      */
     @PutMapping("/{userId}/roles/remove")
     public ApiResponse<?> removeRoleFromUser(
-            @PathVariable String userId,
-            @RequestParam String roleId) {
+            @PathVariable Long userId,
+            @RequestParam Long roleId) {
 
         User updatedUser = userRoleService.removeRolesFromUser(userId, roleId);
         return ApiResponse.success(updatedUser);

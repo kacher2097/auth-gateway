@@ -1,18 +1,18 @@
 package com.authenhub.bean.auth;
 
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.User;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
 public class UserInfo {
-    private String id;
+    private Long id;
     private String username;
     private String email;
     private String fullName;
     private String avatar;
-    private User.Role role;
+    private String role;
 
     public static UserInfo fromUser(User user) {
         return UserInfo.builder()

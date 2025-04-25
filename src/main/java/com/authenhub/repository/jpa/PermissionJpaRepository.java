@@ -11,5 +11,6 @@ import java.util.Optional;
 public interface PermissionJpaRepository extends JpaRepository<Permission, Long> {
     Optional<Permission> findByName(String name);
     List<Permission> findByCategory(String category);
+    List<Permission> findAllByIdIn(List<Long> ids);
     boolean existsByName(String name);
 }

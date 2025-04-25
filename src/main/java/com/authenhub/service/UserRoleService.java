@@ -1,26 +1,27 @@
 package com.authenhub.service;
 
-import com.authenhub.entity.mongo.Role;
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.Role;
+import com.authenhub.entity.User;
 import com.authenhub.exception.ResourceNotFoundException;
-import com.authenhub.repository.RoleRepository;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.repository.jpa.RoleJpaRepository;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.service.interfaces.IUserRoleService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserRoleService implements IUserRoleService {
 
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    private final RoleJpaRepository roleRepository;
+    private final UserJpaRepository userRepository;
 
     @Override
-    public User assignRolesToUser(String userId, String roleId) {
+    public User assignRolesToUser(Long userId, Long roleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -35,7 +36,7 @@ public class UserRoleService implements IUserRoleService {
     }
 
     @Override
-    public User addRolesToUser(String userId, String roleId) {
+    public User addRolesToUser(Long userId, Long roleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -52,7 +53,7 @@ public class UserRoleService implements IUserRoleService {
     }
 
     @Override
-    public User removeRolesFromUser(String userId, String roleId) {
+    public User removeRolesFromUser(Long userId, Long roleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -68,7 +69,7 @@ public class UserRoleService implements IUserRoleService {
     }
 
     @Override
-    public Role getUserRoles(String userId) {
+    public Role getUserRoles(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -83,32 +84,35 @@ public class UserRoleService implements IUserRoleService {
         }
 
         // Hỗ trợ hệ thống quyền cũ: Nếu người dùng là ADMIN, cho phép tất cả các quyền
-        if (user.getRole() == User.Role.ADMIN) {
+        if (Objects.equals(user.getRole(), "ADMIN")) {
             return true;
         }
 
         // Nếu không có roleIds, không cần kiểm tra thêm
-        if (user.getRoleId() == null || user.getRoleId().isEmpty()) {
+        if (user.getRoleId() == null) {
             return false;
         }
 
         Role role = roleRepository.findById(user.getRoleId()).orElse(null);
+        if (role == null) {
+            return false;
+        }
         if (role.getName().equalsIgnoreCase("admin")) {
             return true;
         }
 
-        for (String permissionId : role.getPermissionIds()) {
-            // In a real implementation, you would fetch the permission and check its name
-            // For simplicity, we'll assume the permissionId is the permission name
-            if (permissionId.equals(permissionName)) {
-                return true;
-            }
-        }
+//        for (Long permissionId : role.getPermissionIds()) {
+//            // In a real implementation, you would fetch the permission and check its name
+//            // For simplicity, we'll assume the permissionId is the permission name
+//            if (permissionId.equals(permissionName)) {
+//                return true;
+//            }
+//        }
         return false;
     }
 
     @Override
-    public void validateRoleIds(String roleId) {
+    public void validateRoleIds(Long roleId) {
         if (!roleRepository.existsById(roleId)) {
             throw new ResourceNotFoundException("Role not found with id: " + roleId);
         }

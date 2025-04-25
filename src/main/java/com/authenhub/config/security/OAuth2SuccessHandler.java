@@ -2,9 +2,9 @@ package com.authenhub.config.security;
 
 import com.authenhub.bean.auth.AuthResponse;
 import com.authenhub.bean.auth.UserInfo;
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.utils.TimestampUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -23,9 +23,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    private final UserRepository userRepository;
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
+    private final UserJpaRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -46,7 +46,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                     newUser.setFullName(name);
                     newUser.setAvatar(picture);
                     newUser.setPassword("OAUTH2_USER"); // Không cần mật khẩu cho OAuth2
-                    newUser.setRole(User.Role.USER);
+                    newUser.setRole("USER");
                     newUser.setActive(true);
                     newUser.setCreatedAt(TimestampUtils.now());
                     newUser.setUpdatedAt(TimestampUtils.now());

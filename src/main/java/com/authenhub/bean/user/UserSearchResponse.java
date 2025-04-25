@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserSearchResponse {
-    private String id;
+    private Long id;
     private String username;
     private String email;
     private String fullName;
@@ -22,7 +22,7 @@ public class UserSearchResponse {
     private String socialProvider;
     private String socialId;
     private Timestamp createdAt;
-    private String roleId;
+    private Long roleId;
     private Timestamp updatedAt;
     private Timestamp lastLogin;
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="true" scan="true" scanPeriod="10 seconds">
 
-    <property name="log-path" value="./logs"/>
+    <property name="log-path" value="/var/logs/admin-hub"/>
     <property name="name-file" value="admin"/>
     <property name="time-file" value="20"/>
     <property name="size-file" value="20 MB"/>

@@ -25,7 +25,7 @@ public interface IRoleService {
      * @param id role id
      * @return role
      */
-    RoleResponse getRoleById(String id);
+    RoleResponse getRoleById(Long id);
 
     /**
      * Get role with permissions
@@ -33,7 +33,7 @@ public interface IRoleService {
      * @param id role id
      * @return role with permissions
      */
-    RoleDetailedResponse getRoleWithPermissions(String id);
+    RoleDetailedResponse getRoleWithPermissions(Long id);
 
     /**
      * Create a new role
@@ -50,14 +50,14 @@ public interface IRoleService {
      * @param request role request
      * @return updated role
      */
-    RoleResponse updateRole(String id, RoleRequest request);
+    RoleResponse updateRole(Long id, RoleRequest request);
 
     /**
      * Delete a role
      *
      * @param id role id
      */
-    void deleteRole(String id);
+    void deleteRole(Long id);
 
     /**
      * Add permissions to a role
@@ -66,7 +66,7 @@ public interface IRoleService {
      * @param permissionIds permission ids
      * @return updated role
      */
-    RoleResponse addPermissionsToRole(String roleId, Set<String> permissionIds);
+    RoleResponse addPermissionsToRole(Long roleId, Set<Long> permissionIds);
 
     /**
      * Remove permissions from a role
@@ -75,12 +75,12 @@ public interface IRoleService {
      * @param permissionIds permission ids
      * @return updated role
      */
-    RoleResponse removePermissionsFromRole(String roleId, Set<String> permissionIds);
+    RoleResponse removePermissionsFromRole(Long roleId, Set<Long> permissionIds);
 
     /**
      * Validate permission ids
      *
      * @param permissionIds permission ids
      */
-    void validatePermissionIds(Set<String> permissionIds);
+    void validatePermissionIds(Set<Long> permissionIds);
 }

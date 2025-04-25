@@ -3,9 +3,9 @@ package com.authenhub.controller;
 import com.authenhub.bean.auth.AuthResponse;
 import com.authenhub.bean.auth.UserInfo;
 import com.authenhub.bean.common.ApiResponse;
-import com.authenhub.entity.mongo.User;
+import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,8 +21,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class OAuth2Controller {
 
-    private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final UserJpaRepository userRepository;
 
     @GetMapping("/callback")
     public ApiResponse<?> oauth2Callback(@AuthenticationPrincipal OAuth2User principal) {
@@ -42,7 +42,7 @@ public class OAuth2Controller {
                     newUser.setFullName(name);
                     newUser.setAvatar(picture);
                     newUser.setPassword("OAUTH2_USER"); // Không cần mật khẩu cho OAuth2
-                    newUser.setRole(User.Role.USER);
+                    newUser.setRole("USER");
                     newUser.setActive(true);
                     newUser.setCreatedAt(TimestampUtils.now());
                     newUser.setUpdatedAt(TimestampUtils.now());

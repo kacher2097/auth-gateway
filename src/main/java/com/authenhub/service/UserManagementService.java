@@ -1,8 +1,8 @@
 package com.authenhub.service;
 
 import com.authenhub.bean.UserUpdateRequest;
-import com.authenhub.entity.mongo.User;
-import com.authenhub.repository.adapter.UserRepositoryAdapter;
+import com.authenhub.entity.User;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.security.UserSecurity;
 import com.authenhub.service.interfaces.IUserManagementService;
 import com.authenhub.utils.TimestampUtils;
@@ -16,13 +16,13 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserManagementService implements IUserManagementService {
 
-    private final UserRepositoryAdapter userRepository;
     private final UserContext userContext;
     private final UserSecurity userSecurity;
+    private final UserJpaRepository userRepository;
     private final UserActivityService userActivityService;
 
     @Override
-    public User updateUser(String userId, UserUpdateRequest request) {
+    public User updateUser(Long userId, UserUpdateRequest request) {
         // Check if the current user can modify this user
         if (!userSecurity.canModifyUser(userId)) {
             throw new AccessDeniedException("You don't have permission to update this user");
@@ -41,7 +41,7 @@ public class UserManagementService implements IUserManagementService {
         if (request.getEmail() != null) {
             // Check if email is already in use by another user
             if (userRepository.existsByEmail(request.getEmail()) &&
-                !user.getEmail().equals(request.getEmail())) {
+                    !user.getEmail().equals(request.getEmail())) {
                 throw new RuntimeException("Email already in use");
             }
             user.setEmail(request.getEmail());
@@ -61,7 +61,7 @@ public class UserManagementService implements IUserManagementService {
     }
 
     @Override
-    public User setUserActiveStatus(String userId, boolean active) {
+    public User setUserActiveStatus(Long userId, boolean active) {
         // Only admins can change user active status
         if (!userContext.isAdmin()) {
             throw new AccessDeniedException("Only administrators can change user active status");
@@ -88,7 +88,7 @@ public class UserManagementService implements IUserManagementService {
     }
 
     @Override
-    public User setUserRole(String userId, User.Role role) {
+    public User setUserRole(Long userId, String role) {
         // Only admins can change user roles
         if (!userContext.isAdmin()) {
             throw new AccessDeniedException("Only administrators can change user roles");

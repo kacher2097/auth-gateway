@@ -1,31 +1,27 @@
 package com.authenhub.config.security;
 
-import com.authenhub.entity.mongo.Permission;
-import com.authenhub.entity.mongo.Role;
-import com.authenhub.entity.mongo.User;
-import com.authenhub.repository.PermissionRepository;
-import com.authenhub.repository.RoleRepository;
-import com.authenhub.repository.UserRepository;
+import com.authenhub.entity.Permission;
+import com.authenhub.entity.Role;
+import com.authenhub.entity.User;
+import com.authenhub.repository.jpa.PermissionJpaRepository;
+import com.authenhub.repository.jpa.RoleJpaRepository;
+import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class PermissionInitializer implements CommandLineRunner {
 
-    private final PermissionRepository permissionRepository;
-    private final RoleRepository roleRepository;
-    private final UserRepository userRepository;
+    private final RoleJpaRepository roleRepository;
+    private final UserJpaRepository userRepository;
+    private final PermissionJpaRepository permissionRepository;
 
     @Override
     public void run(String... args) {
@@ -50,29 +46,29 @@ public class PermissionInitializer implements CommandLineRunner {
                 createPermission("user:read", "View Users", "Permission to view users", "User Management"),
                 createPermission("user:update", "Update User", "Permission to update users", "User Management"),
                 createPermission("user:delete", "Delete User", "Permission to delete users", "User Management"),
-                
+
                 // Role management permissions
                 createPermission("role:create", "Create Role", "Permission to create new roles", "Role Management"),
                 createPermission("role:read", "View Roles", "Permission to view roles", "Role Management"),
                 createPermission("role:update", "Update Role", "Permission to update roles", "Role Management"),
                 createPermission("role:delete", "Delete Role", "Permission to delete roles", "Role Management"),
-                
+
                 // Permission management permissions
                 createPermission("permission:create", "Create Permission", "Permission to create new permissions", "Permission Management"),
                 createPermission("permission:read", "View Permissions", "Permission to view permissions", "Permission Management"),
                 createPermission("permission:update", "Update Permission", "Permission to update permissions", "Permission Management"),
                 createPermission("permission:delete", "Delete Permission", "Permission to delete permissions", "Permission Management"),
-                
+
                 // Proxy management permissions
                 createPermission("proxy:create", "Create Proxy", "Permission to create new proxies", "Proxy Management"),
                 createPermission("proxy:read", "View Proxies", "Permission to view proxies", "Proxy Management"),
                 createPermission("proxy:update", "Update Proxy", "Permission to update proxies", "Proxy Management"),
                 createPermission("proxy:delete", "Delete Proxy", "Permission to delete proxies", "Proxy Management"),
-                
+
                 // Analytics permissions
                 createPermission("analytics:view", "View Analytics", "Permission to view analytics data", "Analytics"),
                 createPermission("analytics:export", "Export Analytics", "Permission to export analytics data", "Analytics"),
-                
+
                 // Settings permissions
                 createPermission("settings:read", "View Settings", "Permission to view system settings", "Settings"),
                 createPermission("settings:update", "Update Settings", "Permission to update system settings", "Settings")
@@ -103,14 +99,14 @@ public class PermissionInitializer implements CommandLineRunner {
 
         // Get all permissions
         List<Permission> allPermissions = permissionRepository.findAll();
-        Set<String> allPermissionIds = new HashSet<>();
-        Set<String> userPermissionIds = new HashSet<>();
+        Set<Long> allPermissionIds = new HashSet<>();
+        Set<Long> userPermissionIds = new HashSet<>();
 
         for (Permission permission : allPermissions) {
             allPermissionIds.add(permission.getId());
-            
+
             // Add basic permissions for regular users
-            if (permission.getName().equals("user:read") || 
+            if (permission.getName().equals("user:read") ||
                     permission.getName().startsWith("proxy:read") ||
                     permission.getName().equals("analytics:view")) {
                 userPermissionIds.add(permission.getId());
@@ -123,7 +119,7 @@ public class PermissionInitializer implements CommandLineRunner {
                 .displayName("Administrator")
                 .description("Administrator role with all permissions")
                 .isSystem(true)
-                .permissionIds(allPermissionIds)
+//                .permissionIds(allPermissionIds)
                 .createdAt(TimestampUtils.now())
                 .updatedAt(TimestampUtils.now())
                 .build();
@@ -134,7 +130,7 @@ public class PermissionInitializer implements CommandLineRunner {
                 .displayName("Regular User")
                 .description("Regular user with limited permissions")
                 .isSystem(true)
-                .permissionIds(userPermissionIds)
+//                .permissionIds(userPermissionIds)
                 .createdAt(TimestampUtils.now())
                 .updatedAt(TimestampUtils.now())
                 .build();
