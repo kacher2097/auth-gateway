@@ -177,14 +177,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return null;
             }
 
-            Set<String> lstFunctionAction = rolePermissions.stream().map(rolePermission -> {
-                Permission permission = permissionRepository.findByName(rolePermission.getPermissionName()).orElse(null);
-                if (permission == null) {
-                    log.debug("Permission not found for id: {}", rolePermission.getPermissionName());
-                    return null;
-                }
-                return permission.getName();
-            }).collect(Collectors.toSet());
+            Set<String> lstFunctionAction = rolePermissions.stream()
+                    .map(RolePermission::getPermissionName)
+                    .collect(Collectors.toSet());
 
             log.debug("Found {} permissions for user {}", lstFunctionAction.size(), subject);
 

@@ -15,6 +15,7 @@ import com.authenhub.repository.jpa.RolePermissionRepository;
 import com.authenhub.service.interfaces.IRoleService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoleService implements IRoleService {
@@ -41,7 +43,18 @@ public class RoleService implements IRoleService {
     public RoleResponse getRoleById(Long id) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
-        return RoleResponse.fromEntity(role);
+        RoleResponse roleResponse = RoleResponse.fromEntity(role);
+        List<RolePermission> rolePermissions = rolePermissionRepository.findAllByRoleId(id);
+        if (rolePermissions == null || rolePermissions.isEmpty()) {
+            log.info("RolePermission not found for id: {}", id);
+            return null;
+        }
+
+        Set<String> lstFunctionAction = rolePermissions.stream()
+                .map(RolePermission::getPermissionName)
+                .collect(Collectors.toSet());
+        roleResponse.setPermissions(lstFunctionAction);
+        return roleResponse;
     }
 
     @Override

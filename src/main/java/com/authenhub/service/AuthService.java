@@ -21,6 +21,7 @@ import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.service.SocialLoginService.SocialUserInfo;
 import com.authenhub.service.interfaces.IAuthService;
 import com.authenhub.utils.TimestampUtils;
+import com.authenhub.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -231,7 +232,6 @@ public class AuthService implements IAuthService {
 
     @Override
     public void forgotPassword(ForgotPasswordRequest request) {
-        // Find user by email
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(EmailNotFoundException::new);
 
@@ -239,7 +239,7 @@ public class AuthService implements IAuthService {
 //        tokenRepository.deleteByUserId(user.getId());
 
         // Generate token
-        String token = generateResetToken();
+        String token = Utils.generateToken();
 
         // Save token
         PasswordResetToken resetToken = new PasswordResetToken();
@@ -249,23 +249,10 @@ public class AuthService implements IAuthService {
         resetToken.setUsed(false);
         tokenRepository.save(resetToken);
 
-        // Send email (this won't throw exceptions even if email sending fails)
         try {
-            // Try to use the real email service first
-            try {
-                emailService.sendPasswordResetEmail(user.getEmail(), token);
-            } catch (Exception e) {
-                log.warn("Real email service failed, falling back to mock: {}", e.getMessage());
-                // If real email service fails, try to use the mock service if available
-//                if (mockEmailService != null) {
-//                    mockEmailService.sendPasswordResetEmail(user.getEmail(), token);
-//                } else {
-//                    throw e; // Re-throw if mock service is not available
-//                }
-            }
+            emailService.sendPasswordResetEmail(user.getEmail(), token);
         } catch (Exception e) {
             log.error("Error sending password reset email", e);
-            // Continue with the process even if email sending fails
         }
     }
 
@@ -276,7 +263,6 @@ public class AuthService implements IAuthService {
             throw new PasswordMismatchException();
         }
 
-        // Find token
         PasswordResetToken resetToken = tokenRepository.findByToken(request.getToken())
                 .orElseThrow(InvalidTokenException::new);
 
@@ -333,9 +319,5 @@ public class AuthService implements IAuthService {
                 .token(refreshToken)
                 .user(UserInfo.fromUser(user))
                 .build();
-    }
-
-    private String generateResetToken() {
-        return java.util.UUID.randomUUID().toString();
     }
 }

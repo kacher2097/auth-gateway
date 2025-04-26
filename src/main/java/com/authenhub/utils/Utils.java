@@ -1,6 +1,7 @@
 package com.authenhub.utils;
 
 import com.authenhub.constant.Constant;
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,10 @@ public class Utils {
 
     public static String getRequestUri(ServletRequest servletRequest) {
         return ((HttpServletRequest) servletRequest).getRequestURI();
+    }
+
+    public static String generateToken() {
+        return NanoIdUtils.randomNanoId();
     }
 
     public static long end(long start) {

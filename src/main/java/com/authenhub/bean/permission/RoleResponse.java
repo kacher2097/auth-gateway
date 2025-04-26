@@ -19,7 +19,7 @@ public class RoleResponse {
     private String displayName;
     private String description;
     private boolean isSystem;
-    private Set<Long> permissionIds;
+    private Set<String> permissions;
     private Timestamp createdAt;
     private Timestamp updatedAt;
     

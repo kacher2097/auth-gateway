@@ -18,4 +18,5 @@ public interface AccessLogRepository extends MongoRepository<AccessLog, String> 
     long countByEndpointAndStatusCode(Timestamp start, Timestamp end, String endpoint, int statusCode);
 
     List<AccessLog> findByEndpointContainingAndTimestampBetween(String endpointPattern, Timestamp start, Timestamp end);
+    List<AccessLog> findByTimestampBetween(Timestamp start, Timestamp end);
 }

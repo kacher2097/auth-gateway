@@ -12,5 +12,6 @@ public interface PermissionJpaRepository extends JpaRepository<Permission, Long>
     Optional<Permission> findByName(String name);
     List<Permission> findByCategory(String category);
     List<Permission> findAllByIdIn(List<Long> ids);
+    List<Permission> findAllByNameIn(List<String> listName);
     boolean existsByName(String name);
 }

@@ -86,7 +86,7 @@ public class AccessLogService implements IAccessLogService {
         }
 
         // Get login activity logs
-        List<AccessLog> loginLogs = accessLogRepository.findByEndpointContainingAndTimestampBetween("/auth/login", start, end);
+        List<AccessLog> loginLogs = accessLogRepository.findByTimestampBetween(start, end);
 
         // Convert to response format
         List<Map<String, Object>> loginActivity = new ArrayList<>();

@@ -8,6 +8,7 @@ import com.authenhub.bean.ResetPasswordRequest;
 import com.authenhub.bean.SocialLoginRequest;
 import com.authenhub.bean.auth.AuthRequest;
 import com.authenhub.bean.auth.AuthResponse;
+import com.authenhub.bean.auth.UserInfo;
 
 /**
  * Interface for authentication service operations
