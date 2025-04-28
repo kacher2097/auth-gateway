@@ -12,42 +12,42 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/permissions")
 @RequiredArgsConstructor
+@RequestMapping("/admin/permissions")
 public class PermissionController {
 
     private final PermissionService permissionService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('permission:read')")
+//    @PreAuthorize("hasAuthority('permission:read')")
     public ApiResponse<?> getAllPermissions() {
         List<PermissionResponse> permissions = permissionService.getAllPermissions();
         return ApiResponse.success(permissions);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('permission:read')")
+//    @PreAuthorize("hasAuthority('permission:read')")
     public ApiResponse<?> getPermissionById(@PathVariable Long id) {
         PermissionResponse permission = permissionService.getPermissionById(id);
         return ApiResponse.success(permission);
     }
 
     @GetMapping("/category/{category}")
-    @PreAuthorize("hasAuthority('permission:read')")
+//    @PreAuthorize("hasAuthority('permission:read')")
     public ApiResponse<?> getPermissionsByCategory(@PathVariable String category) {
         List<PermissionResponse> permissions = permissionService.getPermissionsByCategory(category);
         return ApiResponse.success(permissions);
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('permission:create')")
+//    @PreAuthorize("hasAuthority('permission:create')")
     public ApiResponse<?> createPermission(@Valid @RequestBody PermissionRequest request) {
         PermissionResponse permission = permissionService.createPermission(request);
         return ApiResponse.success(permission);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('permission:update')")
+//    @PreAuthorize("hasAuthority('permission:update')")
     public ApiResponse<?> updatePermission(
             @PathVariable Long id,
             @Valid @RequestBody PermissionRequest request) {
@@ -56,7 +56,7 @@ public class PermissionController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('permission:delete')")
+//    @PreAuthorize("hasAuthority('permission:delete')")
     public ApiResponse<?> deletePermission(@PathVariable Long id) {
         permissionService.deletePermission(id);
         return ApiResponse.success(null);

@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +35,11 @@ public class RoleService implements IRoleService {
 
     @Override
     public List<RoleResponse> getAllRoles() {
+        List<RoleResponse> roleResponseList = roleRepository.findAll().stream()
+                .map(RoleResponse::fromEntity)
+                .collect(Collectors.toList());
+
+
         return roleRepository.findAll().stream()
                 .map(RoleResponse::fromEntity)
                 .collect(Collectors.toList());
@@ -71,7 +77,7 @@ public class RoleService implements IRoleService {
                     .displayName(role.getDisplayName())
                     .description(role.getDescription())
                     .isSystem(role.isSystem())
-                    .permissions(new HashSet<>())
+                    .permissions(Collections.emptySet())
                     .createdAt(role.getCreatedAt())
                     .updatedAt(role.getUpdatedAt())
                     .build();
