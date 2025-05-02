@@ -3,7 +3,7 @@ package com.authenhub.controller;
 import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.bean.proxy.*;
 import com.authenhub.service.FreeProxyService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

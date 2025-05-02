@@ -119,7 +119,8 @@ public class JwtService {
                 .toList());
 
         // Add additional user info if available
-        if (userDetails instanceof User user) {
+        if (userDetails instanceof User) {
+            User user = (User) userDetails;
             claims.put("userId", user.getId());
             claims.put("email", user.getEmail());
             claims.put("fullName", user.getFullName());

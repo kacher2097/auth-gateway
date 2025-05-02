@@ -1,9 +1,9 @@
 package com.authenhub.facebook.config;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import jakarta.annotation.PostConstruct;
 import javax.net.ssl.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;

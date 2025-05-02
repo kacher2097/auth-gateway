@@ -71,6 +71,25 @@ public class User implements UserDetails {
     @Column(name = "social_id")
     private String socialId;
 
+//    private String phoneNumber;
+//    private String address;
+//    private Boolean emailVerified;
+//    private Boolean phoneVerified;
+//    private Boolean enabled;
+//    private Boolean locked;
+//    private String verificationToken;
+//    private Timestamp verificationTokenExpiry;
+//    private String resetPasswordToken;
+//    private Timestamp resetPasswordTokenExpiry;
+//    private Integer toolCredits;
+//    private Timestamp subscriptionStartDate;
+//    private Timestamp subscriptionEndDate;
+//    private String paymentMethod;
+//    private String stripeCustomerId;
+//    private String referralCode;
+//    private String referredBy;
+//    private Integer referralCount;
+
     // Helper method to check if user has a specific role
     public boolean hasRole(Long roleId) {
         return this.roleId != null && this.roleId.equals(roleId);

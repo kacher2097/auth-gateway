@@ -5,7 +5,7 @@ import com.authenhub.bean.auth.AuthRequest;
 import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.filter.JwtService;
 import com.authenhub.service.interfaces.IAuthService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

@@ -274,11 +274,21 @@ public class FreeProxyService implements IFreeProxyService {
         InetSocketAddress address = new InetSocketAddress(request.getIpAddress(), request.getPort());
         String protocol = request.getProtocol().toUpperCase();
 
-        return switch (protocol) {
-            case "HTTP", "HTTPS" -> new Proxy(Proxy.Type.HTTP, address);
-            case "SOCKS4", "SOCKS5" -> new Proxy(Proxy.Type.SOCKS, address);
-            default -> null;
-        };
+        Proxy proxy;
+        switch (protocol) {
+            case "HTTP":
+            case "HTTPS":
+                proxy = new Proxy(Proxy.Type.HTTP, address);
+                break;
+            case "SOCKS4":
+            case "SOCKS5":
+                proxy = new Proxy(Proxy.Type.SOCKS, address);
+                break;
+            default:
+                proxy = null;
+                break;
+        }
+        return proxy;
     }
 
 //    public FreeProxyDto.ImportResult importProxiesFromFile(MultipartFile file, String fileType, String username) {

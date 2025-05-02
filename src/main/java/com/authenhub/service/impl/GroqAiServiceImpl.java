@@ -8,7 +8,7 @@ import com.authenhub.config.application.JsonMapper;
 import com.authenhub.service.interfaces.AiService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.ai.chat.model.ChatModel;
+// import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +21,12 @@ import java.util.regex.Pattern;
 @Service
 public class GroqAiServiceImpl implements AiService {
 
-    private final ChatModel chatModel;
+    // private final ChatModel chatModel;
     private final JsonMapper jsonMapper;
     private final List<ChatMessage> conversationHistory = new ArrayList<>();
 
-    public GroqAiServiceImpl(@Qualifier("groqChatModel") ChatModel chatModel, JsonMapper jsonMapper) {
-        this.chatModel = chatModel;
+    public GroqAiServiceImpl(/*@Qualifier("groqChatModel") ChatModel chatModel,*/ JsonMapper jsonMapper) {
+        // this.chatModel = chatModel;
         this.jsonMapper = jsonMapper;
     }
 
@@ -47,7 +47,7 @@ public class GroqAiServiceImpl implements AiService {
         }
 
         try {
-            String response = chatModel.call(context.toString());
+            String response = "AI response is disabled in this version"; // chatModel.call(context.toString());
             log.info("Get Response from AI success {}", response);
 //            ChatClient client = ChatClient.builder(chatModel)
 //                    .build().prompt()

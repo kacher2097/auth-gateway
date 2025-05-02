@@ -11,7 +11,7 @@ import com.authenhub.service.AccessLogService;
 import com.authenhub.service.UserManagementService;
 import com.authenhub.service.UserService;
 import com.authenhub.utils.TimestampUtils;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
