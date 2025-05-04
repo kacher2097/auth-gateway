@@ -2,6 +2,8 @@ package com.authenhub.controller;
 
 import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.bean.common.ApiResponse;
+import com.authenhub.bean.statistic.StatisticGetResponse;
+import com.authenhub.bean.statistic.StatisticSearchRequest;
 import com.authenhub.bean.user.UserSearchResponse;
 import com.authenhub.entity.User;
 import com.authenhub.filter.JwtService;
@@ -127,89 +129,6 @@ public class AdminController {
         return ApiResponse.success(user);
     }
 
-    @GetMapping("/dashboard")
-    public ApiResponse<?> getDashboardData() {
-        return getDashboardDataInternal();
-    }
-
-    @PostMapping("/dashboard")
-    public ApiResponse<?> getDashboardDataPost() {
-        return getDashboardDataInternal();
-    }
-
-    private ApiResponse<?> getDashboardDataInternal() {
-        long userCount = userRepository.count();
-        long adminCount = userRepository.countByRole("ADMIN");
-        long regularUserCount = userRepository.countByRole("USER");
-
-        return ApiResponse.success(new DashboardData(userCount, adminCount, regularUserCount));
-    }
-
-    @GetMapping("/statistics")
-    public ApiResponse<?> getStatistics(
-            @RequestParam(required = false) String startDate,
-            @RequestParam(required = false) String endDate) {
-        return getStatisticsInternal(startDate, endDate);
-    }
-
-    @PostMapping("/statistics")
-    public ApiResponse<?> getStatisticsPost(@RequestBody(required = false) Map<String, Object> params) {
-        String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
-        String endDate = params != null && params.containsKey("endDate") ? params.get("endDate").toString() : null;
-
-        return getStatisticsInternal(startDate, endDate);
-    }
-
-    private ApiResponse<?> getStatisticsInternal(String startDateStr, String endDateStr) {
-        try {
-            // Parse dates or use defaults
-            Timestamp startDate;
-            Timestamp endDate;
-
-            if (startDateStr != null) {
-                startDate = Timestamp.valueOf(startDateStr.replace('T', ' ').substring(0, 19));
-            } else {
-                endDate = TimestampUtils.now();
-                startDate = TimestampUtils.addDays(endDate, -30);
-            }
-
-            if (endDateStr != null) {
-                endDate = Timestamp.valueOf(endDateStr.replace('T', ' ').substring(0, 19));
-            } else {
-                endDate = TimestampUtils.now();
-            }
-
-            // Get user statistics
-            long totalUsers = userService.countTotalUsers();
-            long activeUsers = userService.countUsersByActive(true);
-            long newUsers = userService.countUsersByCreatedAtBetween(startDate, endDate);
-
-            // Get login statistics from access logs
-            Map<String, Object> accessStats = accessLogService.getAccessStats(startDate, endDate);
-
-            // Create statistics response
-            Map<String, Object> statistics = new HashMap<>();
-            statistics.put("totalUsers", totalUsers);
-            statistics.put("activeUsers", activeUsers);
-            statistics.put("newUsers", newUsers);
-            statistics.put("loginAttempts", accessStats.getOrDefault("totalLogins", 0));
-            statistics.put("successfulLogins", accessStats.getOrDefault("successfulLogins", 0));
-            statistics.put("failedLogins", accessStats.getOrDefault("failedLogins", 0));
-
-            return ApiResponse.success(statistics);
-        } catch (Exception e) {
-            log.error("Error getting statistics", e);
-            return ApiResponse.error("400", "Error getting statistics: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/login-activity")
-    public ApiResponse<?> getLoginActivity(
-            @RequestParam(required = false) String startDate,
-            @RequestParam(required = false) String endDate) {
-        return getLoginActivityInternal(startDate, endDate);
-    }
-
     @PostMapping("/login-activity")
     public ApiResponse<?> getLoginActivityPost(@RequestBody(required = false) Map<String, Object> params) {
         String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
@@ -240,29 +159,5 @@ public class AdminController {
         List<Map<String, Object>> loginActivity = accessLogService.getLoginActivity(startDate, endDate);
 
         return ApiResponse.success(loginActivity);
-    }
-
-    private static class DashboardData {
-        private final long totalUsers;
-        private final long adminUsers;
-        private final long regularUsers;
-
-        public DashboardData(long totalUsers, long adminUsers, long regularUsers) {
-            this.totalUsers = totalUsers;
-            this.adminUsers = adminUsers;
-            this.regularUsers = regularUsers;
-        }
-
-        public long getTotalUsers() {
-            return totalUsers;
-        }
-
-        public long getAdminUsers() {
-            return adminUsers;
-        }
-
-        public long getRegularUsers() {
-            return regularUsers;
-        }
     }
 }

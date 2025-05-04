@@ -46,12 +46,6 @@ public class ApplicationConfig {
         DateFormat dateFormat = new SimpleDateFormat(jacksonDateFormat);
         dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
         objectMapper.setDateFormat(dateFormat);
-
-        // Thêm hỗ trợ cho java.time.Instant
-//        var timeModule = new JavaTimeModule();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
         return objectMapper;
     }
 

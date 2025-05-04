@@ -1,13 +1,20 @@
 package com.authenhub.utils;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
+import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
@@ -18,6 +25,63 @@ public class MongoQueryUtils {
 
     private MongoQueryUtils() {
         // Private constructor to prevent instantiation
+    }
+
+    public static Query toQuery(Criteria criteria) {
+        Query query = new Query();
+        Optional.ofNullable(criteria).ifPresent(query::addCriteria);
+        return query;
+    }
+
+    public static Query toQuery(Criteria criteria, Pageable pageable) {
+        Query query = new Query();
+        Optional.ofNullable(criteria).ifPresent(query::addCriteria);
+        query.with(pageable);
+        return query;
+    }
+
+    public static Query toQuery(Criteria criteria, Pageable pageable, Sort sort) {
+        return Optional.ofNullable(criteria)
+                .map(cs -> Query.query(criteria).with(pageable).with(sort))
+                .orElse(new Query());
+    }
+
+    public static Criteria and(Criteria... criteries) {
+        Criteria criteria = new Criteria();
+        return Optional.ofNullable(criteries).map(cs -> {
+            List<Criteria> predicate = Arrays.stream(cs).filter(Objects::nonNull).collect(Collectors.toList());
+            return criteria.andOperator(predicate);
+        }).orElse(criteria);
+    }
+
+    public static Criteria or(Criteria... criteries) {
+        Criteria criteria = new Criteria();
+        return Optional.ofNullable(criteries).map(cs -> {
+            List<Criteria> predicate = Arrays.stream(cs).filter(Objects::nonNull).collect(Collectors.toList());
+            return criteria.orOperator(predicate);
+        }).orElse(criteria);
+    }
+
+    public static Criteria nor(Criteria... criteries) {
+        Criteria criteria = new Criteria();
+        return Optional.ofNullable(criteries).map(cs -> {
+            List<Criteria> predicate = Arrays.stream(cs).filter(Objects::nonNull).collect(Collectors.toList());
+            return criteria.norOperator(predicate);
+        }).orElse(criteria);
+    }
+
+    public static Criteria lessThan(String fieldName, Timestamp currentDate) {
+        if (Objects.nonNull(currentDate)) {
+            return where(fieldName).lte(currentDate);
+        }
+        return null;
+    }
+
+    public static Criteria greatThan(String fieldName, Timestamp currentDate) {
+        if (Objects.nonNull(currentDate)) {
+            return where(fieldName).gte(currentDate);
+        }
+        return null;
     }
 
     /**
@@ -87,6 +151,17 @@ public class MongoQueryUtils {
             criteria = where(fieldName).lte(endDate);
         }
         
+        return criteria;
+    }
+
+    public static Criteria betweenDate(String fieldName, Object min, Object max) {
+        Criteria criteria = new Criteria();
+        if (Objects.nonNull(min) || Objects.nonNull(max))
+            criteria = Criteria.where(fieldName);
+        if (Objects.nonNull(min))
+            criteria.gte(min);
+        if (Objects.nonNull(max))
+            criteria.lte(max);
         return criteria;
     }
 

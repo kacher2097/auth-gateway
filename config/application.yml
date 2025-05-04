@@ -3,7 +3,9 @@ spring:
     active: dev
   servlet:
     multipart: { max-file-size: 11MB, max-request-size: 11MB }
-  jackson: { date-format: 'yyyy-MM-dd HH:mm:ss', time-zone: Asia/Ho_Chi_Minh }
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Ho_Chi_Minh
   ai:
     ollama:
       chat:

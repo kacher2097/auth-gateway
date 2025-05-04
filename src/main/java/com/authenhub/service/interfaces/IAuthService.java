@@ -9,6 +9,7 @@ import com.authenhub.bean.SocialLoginRequest;
 import com.authenhub.bean.auth.AuthRequest;
 import com.authenhub.bean.auth.AuthResponse;
 import com.authenhub.bean.auth.UserInfo;
+import org.apache.http.auth.InvalidCredentialsException;
 
 /**
  * Interface for authentication service operations
@@ -29,7 +30,7 @@ public interface IAuthService {
      * @param request auth request
      * @return auth response
      */
-    AuthResponse login(AuthRequest request);
+    AuthResponse login(AuthRequest request) throws InvalidCredentialsException;
     
     /**
      * Social login

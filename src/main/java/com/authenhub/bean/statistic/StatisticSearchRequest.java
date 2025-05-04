@@ -1,4 +1,4 @@
-package com.authenhub.bean;
+package com.authenhub.bean.statistic;
 
 import com.authenhub.config.TimestampDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -13,7 +13,8 @@ import java.sql.Timestamp;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccessStatsRequest {
+public class StatisticSearchRequest {
+    private String keyword;
 
     @JsonDeserialize(using = TimestampDeserializer.class)
     private Timestamp startDate;

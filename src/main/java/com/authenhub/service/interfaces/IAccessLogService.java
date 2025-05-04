@@ -1,6 +1,7 @@
 package com.authenhub.service.interfaces;
 
-import jakarta.servlet.http.HttpServletRequest;
+import com.authenhub.bean.statistic.StatisticGetResponse;
+import com.authenhub.bean.statistic.StatisticSearchRequest;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -14,12 +15,20 @@ public interface IAccessLogService {
     /**
      * Get access stats
      *
+     * @param request statistic search request
+     * @return access stats as StatisticGetResponse
+     */
+    StatisticGetResponse getAccessStats(StatisticSearchRequest request);
+
+    /**
+     * Count total visits in date range
+     *
      * @param start start date
      * @param end end date
-     * @return access stats
+     * @return total number of visits
      */
-    Map<String, Object> getAccessStats(Timestamp start, Timestamp end);
-    
+    long countTotalVisits(Timestamp start, Timestamp end);
+
     /**
      * Count by day
      *
@@ -27,8 +36,8 @@ public interface IAccessLogService {
      * @param end end date
      * @return daily counts
      */
-    List<Map<String, Object>> countByDay(Timestamp start, Timestamp end);
-    
+    Long countByDay(Timestamp start, Timestamp end);
+
     /**
      * Count by browser
      *
@@ -37,7 +46,7 @@ public interface IAccessLogService {
      * @return browser counts
      */
     List<Map<String, Object>> countByBrowser(Timestamp start, Timestamp end);
-    
+
     /**
      * Count by device type
      *
@@ -46,7 +55,7 @@ public interface IAccessLogService {
      * @return device type counts
      */
     List<Map<String, Object>> countByDeviceType(Timestamp start, Timestamp end);
-    
+
     /**
      * Get top endpoints
      *
@@ -55,7 +64,7 @@ public interface IAccessLogService {
      * @return top endpoints
      */
     List<Map<String, Object>> getTopEndpoints(Timestamp start, Timestamp end);
-    
+
     /**
      * Get top users
      *
@@ -64,7 +73,7 @@ public interface IAccessLogService {
      * @return top users
      */
     List<Map<String, Object>> getTopUsers(Timestamp start, Timestamp end);
-    
+
     /**
      * Get login activity
      *

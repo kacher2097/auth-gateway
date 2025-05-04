@@ -24,6 +24,7 @@ import com.authenhub.utils.TimestampUtils;
 import com.authenhub.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.auth.InvalidCredentialsException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -82,15 +83,20 @@ public class AuthService implements IAuthService {
     }
 
     @Override
-    public AuthResponse login(AuthRequest request) {
+    public AuthResponse login(AuthRequest request) throws InvalidCredentialsException {
         log.info("Begin login with request {}", jsonMapper.toJson(request));
         // Xác thực thông tin đăng nhập
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+        } catch (Exception e) {
+            throw new InvalidCredentialsException();
+        }
 
         // Lấy thông tin user
         var user = userRepository.findByUsername(request.getUsername())

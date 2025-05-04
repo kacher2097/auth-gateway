@@ -1,18 +1,25 @@
 package com.authenhub.service;
 
-import com.authenhub.config.DatabaseSwitcherConfig;
+import com.authenhub.bean.statistic.StatisticGetResponse;
+import com.authenhub.bean.statistic.StatisticSearchRequest;
 import com.authenhub.entity.mongo.AccessLog;
 import com.authenhub.repository.AccessLogRepository;
 import com.authenhub.service.interfaces.IAccessLogService;
+import com.authenhub.utils.MongoQueryUtils;
 import com.authenhub.utils.TimestampUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.*;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -27,54 +34,54 @@ import java.util.Map;
 public class AccessLogService implements IAccessLogService {
 
     private final MongoTemplate mongoTemplate;
-    private final JdbcTemplate jdbcTemplate;
-    private final DatabaseSwitcherConfig databaseConfig;
     private final AccessLogRepository accessLogRepository;
 
     @Override
-    public Map<String, Object> getAccessStats(Timestamp start, Timestamp end) {
-        Map<String, Object> stats = new HashMap<>();
-
+    public StatisticGetResponse getAccessStats(StatisticSearchRequest request) {
         // If no date range provided, default to last 30 days
-        if (start == null) {
-            end = TimestampUtils.now();
-            start = TimestampUtils.addDays(end, -30);
+        if (request.getStartDate() == null) {
+            request.setStartDate(TimestampUtils.addDays(TimestampUtils.now(), -30));
+            request.setEndDate(TimestampUtils.now());
         }
+
+        Timestamp start = request.getStartDate();
+        Timestamp end = request.getEndDate();
 
         // Get total visits
         long totalVisits = accessLogRepository.countByDateRange(start, end);
-        stats.put("totalVisits", totalVisits);
 
         // Get daily visits
-        List<Map<String, Object>> dailyVisits = countByDay(start, end);
-        stats.put("dailyVisits", dailyVisits);
+        Long dailyVisitsCount = countByDay(start, end);
 
-        // Get browser stats
-        List<Map<String, Object>> browserStats = countByBrowser(start, end);
-        stats.put("browserStats", browserStats);
-
-        // Get device type stats
-        List<Map<String, Object>> deviceStats = countByDeviceType(start, end);
-        stats.put("deviceStats", deviceStats);
-
-        // Get top endpoints
-        List<Map<String, Object>> topEndpoints = getTopEndpoints(start, end);
-        stats.put("topEndpoints", topEndpoints);
-
-        // Get top users
-        List<Map<String, Object>> topUsers = getTopUsers(start, end);
-        stats.put("topUsers", topUsers);
+        // Get all stats in a simplified way
+        List<StatisticGetResponse.StatisticItem> browserStatsResponse = convertToStatItems(countByBrowser(start, end), "browser", "_id", null);
+        List<StatisticGetResponse.StatisticItem> deviceStatsResponse = convertToStatItems(countByDeviceType(start, end), "device", "_id", null);
+        List<StatisticGetResponse.StatisticItem> endpointStatsResponse = convertToStatItems(getTopEndpoints(start, end), "endpoint", "_id", "avgResponseTime");
+        List<StatisticGetResponse.StatisticItem> userStatsResponse = convertToStatItems(getTopUsers(start, end), "user", "username", null);
 
         // Get login statistics
         long totalLogins = accessLogRepository.countByEndpointContaining(start, end, "/auth/login");
         long successfulLogins = accessLogRepository.countByEndpointAndStatusCode(start, end, "/auth/login", 200);
         long failedLogins = totalLogins - successfulLogins;
 
-        stats.put("totalLogins", totalLogins);
-        stats.put("successfulLogins", successfulLogins);
-        stats.put("failedLogins", failedLogins);
+        // Build and return the complete response
+        return StatisticGetResponse.builder()
+                .totalVisits(totalVisits)
+                .dailyVisits(dailyVisitsCount)
+                .browserStats(browserStatsResponse)
+                .deviceStats(deviceStatsResponse)
+                .topEndpoints(endpointStatsResponse)
+                .topUsers(userStatsResponse)
+                .totalLogins(totalLogins)
+                .successfulLogins(successfulLogins)
+                .failedLogins(failedLogins)
+                .build();
+    }
 
-        return stats;
+    @Override
+    public long countTotalVisits(Timestamp start, Timestamp end) {
+
+        return 0;
     }
 
     @Override
@@ -115,57 +122,13 @@ public class AccessLogService implements IAccessLogService {
      *
      * @param start the start date
      * @param end   the end date
-     * @return the list of daily counts
+     * @return daily counts
      */
     @Override
-    public List<Map<String, Object>> countByDay(Timestamp start, Timestamp end) {
-        if (databaseConfig.isMongoActive()) {
-            // Create match operation
-            MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-
-            // Create projection operation to extract date
-            ProjectionOperation projectOperation = Aggregation.project()
-                    .andExpression("timestamp").as("date");
-
-            // Create sort operation
-            SortOperation sortOperation = Aggregation.sort(org.springframework.data.domain.Sort.Direction.ASC, "_id");
-
-            // Create aggregation
-            Aggregation aggregation = Aggregation.newAggregation(
-                    matchOperation,
-                    projectOperation,
-                    sortOperation
-            );
-
-            // Execute aggregation
-            AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
-
-            // Convert results to List<Map<String, Object>>
-            List<Map<String, Object>> dailyCounts = new ArrayList<>();
-            for (Map result : results.getMappedResults()) {
-                Map<String, Object> dailyCount = new HashMap<>();
-                dailyCount.put("_id", result.get("_id"));
-                dailyCount.put("count", result.get("count"));
-                dailyCounts.add(dailyCount);
-            }
-
-            return dailyCounts;
-        } else {
-            // PostgreSQL implementation
-            String sql = ""
-                    + "SELECT TO_CHAR(timestamp, 'YYYY-MM-DD') as date, COUNT(*) as count "
-                    + "FROM access_logs "
-                    + "WHERE timestamp BETWEEN ? AND ? "
-                    + "GROUP BY TO_CHAR(timestamp, 'YYYY-MM-DD') "
-                    + "ORDER BY date ASC";
-
-            return jdbcTemplate.query(sql, (rs, rowNum) -> {
-                Map<String, Object> dayCount = new HashMap<>();
-                dayCount.put("date", rs.getString("date"));
-                dayCount.put("count", rs.getLong("count"));
-                return dayCount;
-            }, start, end);
-        }
+    public Long countByDay(Timestamp start, Timestamp end) {
+        Criteria condition = buildConditionSearch("timestamp", start, end);
+        Query query = MongoQueryUtils.toQuery(condition);
+        return mongoTemplate.count(query, "access_logs");
     }
 
     /**
@@ -398,4 +361,62 @@ public class AccessLogService implements IAccessLogService {
         }
     }
 
+    private Criteria buildConditionSearch(String key, Timestamp start, Timestamp end) {
+        Criteria spectTime = MongoQueryUtils.dateRange("timestamp", start, end);
+        return MongoQueryUtils.and(spectTime);
+    }
+
+    private Criteria buildConditionTotal(String key, String value) {
+        return MongoQueryUtils.hasValue(key, value);
+    }
+
+    /**
+     * Utility method to convert a list of maps to a list of StatisticItem objects
+     *
+     * @param dataList             the list of maps containing the data
+     * @param itemType             the type of the statistic item
+     * @param nameField            the field name to use for the name property
+     * @param avgResponseTimeField the field name to use for the avgResponseTime property (can be null)
+     * @return a list of StatisticItem objects
+     */
+    private List<StatisticGetResponse.StatisticItem> convertToStatItems(
+            List<Map<String, Object>> dataList,
+            String itemType,
+            String nameField,
+            String avgResponseTimeField) {
+
+        List<StatisticGetResponse.StatisticItem> result = new ArrayList<>();
+
+        for (Map<String, Object> item : dataList) {
+            // Get name value, defaulting to "Unknown" if null
+            String name = "Unknown";
+            if (item.get(nameField) != null) {
+                name = item.get(nameField).toString();
+            } else if (nameField.equals("_id") && item.get("_id") != null) {
+                name = item.get("_id").toString();
+            }
+
+            // Get count value
+            int count = Integer.parseInt(item.get("count").toString());
+
+            // Get avgResponseTime if applicable
+            Double avgResponseTime = null;
+            if (avgResponseTimeField != null && item.containsKey(avgResponseTimeField)) {
+                Object value = item.get(avgResponseTimeField);
+                if (value != null) {
+                    avgResponseTime = Double.parseDouble(value.toString());
+                }
+            }
+
+            // Build and add the StatisticItem
+            result.add(StatisticGetResponse.StatisticItem.builder()
+                    .name(name)
+                    .count(count)
+                    .type(itemType)
+                    .avgResponseTime(avgResponseTime)
+                    .build());
+        }
+
+        return result;
+    }
 }
