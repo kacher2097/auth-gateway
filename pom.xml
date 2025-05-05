@@ -366,11 +366,14 @@
         <!-- Video Downloader Dependencies -->
         <!-- Removed JavaTube dependency due to resolution issues -->
 
+        <!-- YouTube Downloader by SealedTX -->
         <dependency>
             <groupId>com.github.sealedtx</groupId>
             <artifactId>java-youtube-downloader</artifactId>
             <version>3.2.8</version>
         </dependency>
+
+        <!-- We'll implement our own YouTube downloader classes -->
 
         <dependency>
             <groupId>commons-io</groupId>
@@ -378,12 +381,7 @@
             <version>2.11.0</version>
         </dependency>
 
-        <!-- JSoup for HTML parsing -->
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.15.4</version>
-        </dependency>
+        <!-- JSoup dependency already declared above -->
 
     </dependencies>
     <dependencyManagement>
@@ -472,8 +470,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>17</source>
+                    <target>17</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>

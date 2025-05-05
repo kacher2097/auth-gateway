@@ -7,6 +7,7 @@ import com.authenhub.filter.JwtService;
 import com.authenhub.service.interfaces.IAuthService;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.auth.InvalidCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -26,7 +27,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<?> login(@Valid @RequestBody AuthRequest request) {
+    public ApiResponse<?> login(@Valid @RequestBody AuthRequest request) throws InvalidCredentialsException {
         return ApiResponse.success(authService.login(request));
     }
 
