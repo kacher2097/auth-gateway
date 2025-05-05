@@ -1,6 +1,7 @@
 package com.authenhub.service;
 
 import com.authenhub.bean.statistic.StatisticGetResponse;
+import com.authenhub.bean.statistic.StatisticItem;
 import com.authenhub.bean.statistic.StatisticSearchRequest;
 import com.authenhub.entity.mongo.AccessLog;
 import com.authenhub.repository.AccessLogRepository;
@@ -27,6 +28,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -54,15 +58,10 @@ public class AccessLogService implements IAccessLogService {
         Long dailyVisitsCount = countByDay(start, end);
 
         // Get all stats in a simplified way
-        List<StatisticGetResponse.StatisticItem> browserStatsResponse = convertToStatItems(countByBrowser(start, end), "browser", "_id", null);
-        List<StatisticGetResponse.StatisticItem> deviceStatsResponse = convertToStatItems(countByDeviceType(start, end), "device", "_id", null);
-        List<StatisticGetResponse.StatisticItem> endpointStatsResponse = convertToStatItems(getTopEndpoints(start, end), "endpoint", "_id", "avgResponseTime");
-        List<StatisticGetResponse.StatisticItem> userStatsResponse = convertToStatItems(getTopUsers(start, end), "user", "username", null);
-
-        // Get login statistics
-        long totalLogins = accessLogRepository.countByEndpointContaining(start, end, "/auth/login");
-        long successfulLogins = accessLogRepository.countByEndpointAndStatusCode(start, end, "/auth/login", 200);
-        long failedLogins = totalLogins - successfulLogins;
+        List<StatisticItem> browserStatsResponse = convertToStatItems(countByBrowser(start, end), "browser", "_id", null);
+        List<StatisticItem> deviceStatsResponse = convertToStatItems(countByDeviceType(start, end), "device", "_id", null);
+        List<StatisticItem> endpointStatsResponse = convertToStatItems(getTopEndpoints(start, end), "endpoint", "_id", "avgResponseTime");
+        List<StatisticItem> userStatsResponse = convertToStatItems(getTopUsers(start, end), "user", "username", null);
 
         // Build and return the complete response
         return StatisticGetResponse.builder()
@@ -72,9 +71,6 @@ public class AccessLogService implements IAccessLogService {
                 .deviceStats(deviceStatsResponse)
                 .topEndpoints(endpointStatsResponse)
                 .topUsers(userStatsResponse)
-                .totalLogins(totalLogins)
-                .successfulLogins(successfulLogins)
-                .failedLogins(failedLogins)
                 .build();
     }
 
@@ -141,30 +137,34 @@ public class AccessLogService implements IAccessLogService {
     @Override
     public List<Map<String, Object>> countByBrowser(Timestamp start, Timestamp end) {
 
-        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-        GroupOperation groupOperation = Aggregation.group("browser")
-                .count().as("count");
+        // Sử dụng Criteria API để lọc theo khoảng thời gian
+        Criteria timeRangeCriteria = Criteria.where("timestamp").gte(start).lte(end);
 
-        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
+        // Tạo query với criteria
+        Query query = new Query(timeRangeCriteria);
 
-        // Create aggregation
-        Aggregation aggregation = Aggregation.newAggregation(
-                matchOperation,
-                groupOperation,
-                sortOperation
-        );
+        // Chỉ lấy trường browser để tối ưu hóa
+        query.fields().include("browser");
 
-        // Execute aggregation
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
+        // Thực hiện truy vấn để lấy tất cả các bản ghi phù hợp
+        List<AccessLog> accessLogs = mongoTemplate.find(query, AccessLog.class, "access_logs");
 
-        // Convert results to List<Map<String, Object>>
-        List<Map<String, Object>> browserCounts = new ArrayList<>();
-        for (Map result : results.getMappedResults()) {
-            Map<String, Object> browserCount = new HashMap<>();
-            browserCount.put("_id", result.get("_id"));
-            browserCount.put("count", result.get("count"));
-            browserCounts.add(browserCount);
-        }
+        // Đếm số lượng theo browser bằng Java Stream API
+        Map<String, Long> browserCountsMap = accessLogs.stream()
+                .map(AccessLog::getBrowser)
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        // Chuyển đổi kết quả thành định dạng mong muốn và sắp xếp
+        List<Map<String, Object>> browserCounts = browserCountsMap.entrySet().stream()
+                .map(entry -> {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("_id", entry.getKey());
+                    result.put("count", entry.getValue().intValue());
+                    return result;
+                })
+                .sorted((a, b) -> Integer.compare((Integer) b.get("count"), (Integer) a.get("count")))
+                .collect(Collectors.toList());
 
         return browserCounts;
     }
@@ -178,34 +178,34 @@ public class AccessLogService implements IAccessLogService {
      */
     @Override
     public List<Map<String, Object>> countByDeviceType(Timestamp start, Timestamp end) {
-        // Create match operation
-        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
+        // Sử dụng Criteria API để lọc theo khoảng thời gian
+        Criteria timeRangeCriteria = Criteria.where("timestamp").gte(start).lte(end);
 
-        // Create group operation
-        GroupOperation groupOperation = Aggregation.group("deviceType")
-                .count().as("count");
+        // Tạo query với criteria
+        Query query = new Query(timeRangeCriteria);
 
-        // Create sort operation
-        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "count");
+        // Chỉ lấy trường deviceType để tối ưu hóa
+        query.fields().include("deviceType");
 
-        // Create aggregation
-        Aggregation aggregation = Aggregation.newAggregation(
-                matchOperation,
-                groupOperation,
-                sortOperation
-        );
+        // Thực hiện truy vấn để lấy tất cả các bản ghi phù hợp
+        List<AccessLog> accessLogs = mongoTemplate.find(query, AccessLog.class, "access_logs");
 
-        // Execute aggregation
-        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "access_logs", Map.class);
+        // Đếm số lượng theo deviceType bằng Java Stream API
+        Map<String, Long> deviceTypeCountsMap = accessLogs.stream()
+                .map(AccessLog::getDeviceType)
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-        // Convert results to List<Map<String, Object>>
-        List<Map<String, Object>> deviceTypeCounts = new ArrayList<>();
-        for (Map result : results.getMappedResults()) {
-            Map<String, Object> deviceTypeCount = new HashMap<>();
-            deviceTypeCount.put("_id", result.get("_id"));
-            deviceTypeCount.put("count", result.get("count"));
-            deviceTypeCounts.add(deviceTypeCount);
-        }
+        // Chuyển đổi kết quả thành định dạng mong muốn và sắp xếp
+        List<Map<String, Object>> deviceTypeCounts = deviceTypeCountsMap.entrySet().stream()
+                .map(entry -> {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("_id", entry.getKey());
+                    result.put("count", entry.getValue().intValue());
+                    return result;
+                })
+                .sorted((a, b) -> Integer.compare((Integer) b.get("count"), (Integer) a.get("count")))
+                .collect(Collectors.toList());
 
         return deviceTypeCounts;
     }
@@ -379,13 +379,13 @@ public class AccessLogService implements IAccessLogService {
      * @param avgResponseTimeField the field name to use for the avgResponseTime property (can be null)
      * @return a list of StatisticItem objects
      */
-    private List<StatisticGetResponse.StatisticItem> convertToStatItems(
+    private List<StatisticItem> convertToStatItems(
             List<Map<String, Object>> dataList,
             String itemType,
             String nameField,
             String avgResponseTimeField) {
 
-        List<StatisticGetResponse.StatisticItem> result = new ArrayList<>();
+        List<StatisticItem> result = new ArrayList<>();
 
         for (Map<String, Object> item : dataList) {
             // Get name value, defaulting to "Unknown" if null
@@ -397,7 +397,7 @@ public class AccessLogService implements IAccessLogService {
             }
 
             // Get count value
-            int count = Integer.parseInt(item.get("count").toString());
+            Long count = Long.parseLong(item.get("count").toString());
 
             // Get avgResponseTime if applicable
             Double avgResponseTime = null;
@@ -409,10 +409,9 @@ public class AccessLogService implements IAccessLogService {
             }
 
             // Build and add the StatisticItem
-            result.add(StatisticGetResponse.StatisticItem.builder()
+            result.add(StatisticItem.builder()
                     .name(name)
                     .count(count)
-                    .type(itemType)
                     .avgResponseTime(avgResponseTime)
                     .build());
         }

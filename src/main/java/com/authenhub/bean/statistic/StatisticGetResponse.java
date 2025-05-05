@@ -16,6 +16,12 @@ public class StatisticGetResponse {
     private String name;
     private int count;
     private String type;
+    private Long totalUsers;
+    private Long newUsers;
+    private Long loginAttempts;
+    private Long successfulLogins;
+    private Long failedLogins;
+    private Long activeUsers;
 
     // Total visits
     private long totalVisits;
@@ -37,18 +43,4 @@ public class StatisticGetResponse {
 
     // Login statistics
     private long totalLogins;
-    private long successfulLogins;
-    private long failedLogins;
-
-    // Inner class for statistic items
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class StatisticItem {
-        private String name;
-        private int count;
-        private String type;
-        private Double avgResponseTime; // For endpoints
-    }
 }

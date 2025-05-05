@@ -1,6 +1,7 @@
 package com.authenhub.exception;
 
 import com.authenhub.dto.ErrorResponse;
+import com.authenhub.utils.TimestampUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -13,27 +14,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.authenhub.utils.TimestampUtils;
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    @ExceptionHandler(AuthException.class)
-    public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex, HttpServletRequest request) {
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .timestamp(TimestampUtils.now())
-                .status(ex.getStatus().value())
-                .error(ex.getStatus().getReasonPhrase())
-                .message(ex.getMessage())
-                .errorCode(ex.getErrorCode())
-                .path(request.getRequestURI())
-                .build();
-
-        return new ResponseEntity<>(errorResponse, ex.getStatus());
-    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(
@@ -50,7 +36,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .message("Validation failed")
-                .errorCode("VALIDATION_ERROR")
+                .code("VALIDATION_ERROR")
                 .path(request.getRequestURI())
                 .fieldErrors(fieldErrors)
                 .build();
@@ -67,7 +53,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message("A database error occurred. Please try again later.")
-                .errorCode("DATABASE_ERROR")
+                .code("DATABASE_ERROR")
                 .path(request.getRequestURI())
                 .build();
 
@@ -83,7 +69,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message("An unexpected error occurred. Please try again later.")
-                .errorCode("NULL_POINTER_ERROR")
+                .code("NULL_POINTER_ERROR")
                 .path(request.getRequestURI())
                 .build();
 
@@ -98,7 +84,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND.value())
                 .error(HttpStatus.NOT_FOUND.getReasonPhrase())
                 .message(ex.getMessage())
-                .errorCode("RESOURCE_NOT_FOUND")
+                .code("RESOURCE_NOT_FOUND")
                 .path(request.getRequestURI())
                 .build();
 
@@ -113,7 +99,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT.value())
                 .error(HttpStatus.CONFLICT.getReasonPhrase())
                 .message(ex.getMessage())
-                .errorCode("RESOURCE_ALREADY_EXISTS")
+                .code("RESOURCE_ALREADY_EXISTS")
                 .path(request.getRequestURI())
                 .build();
 
@@ -128,7 +114,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.FORBIDDEN.value())
                 .error(HttpStatus.FORBIDDEN.getReasonPhrase())
                 .message("You do not have permission to access this resource")
-                .errorCode("ACCESS_DENIED")
+                .code("ACCESS_DENIED")
                 .path(request.getRequestURI())
                 .build();
 
@@ -143,7 +129,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .message(ex.getMessage())
-                .errorCode("ILLEGAL_STATE")
+                .code("ILLEGAL_STATE")
                 .path(request.getRequestURI())
                 .build();
 
@@ -151,18 +137,24 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleApiError(Exception ex, HttpServletRequest request) {
         log.error("Unhandled exception", ex);
 
+        if (ex instanceof ErrorApiException errorApiException) {
+            log.debug("Handled exception: ", ex);
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .message(errorApiException.getMessage())
+                    .code(errorApiException.getCode())
+                    .path(request.getRequestURI())
+                    .build();
+            return ResponseEntity.ok(errorResponse);
+        }
+
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .timestamp(TimestampUtils.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message("An unexpected error occurred. Please try again later.")
-                .errorCode("SERVER_ERROR")
+                .code("99")
                 .path(request.getRequestURI())
                 .build();
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.ok(errorResponse);
     }
 }

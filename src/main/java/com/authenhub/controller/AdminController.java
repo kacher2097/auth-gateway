@@ -128,36 +128,4 @@ public class AdminController {
         User user = userManagementService.setUserRole(id, "USER");
         return ApiResponse.success(user);
     }
-
-    @PostMapping("/login-activity")
-    public ApiResponse<?> getLoginActivityPost(@RequestBody(required = false) Map<String, Object> params) {
-        String startDate = params != null && params.containsKey("startDate") ? params.get("startDate").toString() : null;
-        String endDate = params != null && params.containsKey("endDate") ? params.get("endDate").toString() : null;
-
-        return getLoginActivityInternal(startDate, endDate);
-    }
-
-    private ApiResponse<?> getLoginActivityInternal(String startDateStr, String endDateStr) {
-        // Parse dates or use defaults
-        Timestamp startDate;
-        Timestamp endDate;
-
-        if (startDateStr != null) {
-            startDate = Timestamp.valueOf(startDateStr.replace('T', ' ').substring(0, 19));
-        } else {
-            endDate = TimestampUtils.now();
-            startDate = TimestampUtils.addDays(endDate, -30);
-        }
-
-        if (endDateStr != null) {
-            endDate = Timestamp.valueOf(endDateStr.replace('T', ' ').substring(0, 19));
-        } else {
-            endDate = TimestampUtils.now();
-        }
-
-        // Get login activity from access logs
-        List<Map<String, Object>> loginActivity = accessLogService.getLoginActivity(startDate, endDate);
-
-        return ApiResponse.success(loginActivity);
-    }
 }

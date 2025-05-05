@@ -39,24 +39,7 @@ public class AdminAnalyticsController {
 
     @PostMapping("/access-stats")
     public ApiResponse<?> getAccessStats(@RequestBody AccessStatsRequest request) {
-        Timestamp startDate = request.getStartDate();
-        Timestamp endDate = request.getEndDate();
-
-        if (startDate == null) {
-            endDate = TimestampUtils.now();
-            startDate = TimestampUtils.addDays(endDate, -30);
-        }
-
-        if (endDate == null) {
-            endDate = TimestampUtils.now();
-        }
-        StatisticSearchRequest searchRequest = StatisticSearchRequest.builder()
-                .endDate(endDate)
-                .startDate(startDate)
-                .build();
-        StatisticGetResponse stats = accessLogService.getAccessStats(searchRequest);
-
-        return ApiResponse.success(stats);
+        return analyticsService.getAccessStatsInternal(request);
     }
 
     @GetMapping("/traffic")
@@ -103,6 +86,11 @@ public class AdminAnalyticsController {
         Long dailyVisits = accessStats.getDailyVisits();
 
         return ApiResponse.success(dailyVisits);
+    }
+
+    @PostMapping("/login-activity")
+    public ApiResponse<?> getLoginActivityPost(@RequestBody StatisticSearchRequest request) {
+        return analyticsService.getLoginActivityInternal(request);
     }
 
     @GetMapping("/user-activity")

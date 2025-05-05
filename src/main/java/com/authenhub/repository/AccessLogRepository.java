@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.Query;
 import java.sql.Timestamp;
 import java.util.List;
 
-public interface AccessLogRepository extends MongoRepository<AccessLog, String> {
+public interface AccessLogRepository extends MongoRepository<AccessLog, String>{
     @Query(value = "{ 'timestamp': { $gte: ?0, $lte: ?1 } }", count = true)
     long countByDateRange(Timestamp start, Timestamp end);
 
@@ -17,6 +17,5 @@ public interface AccessLogRepository extends MongoRepository<AccessLog, String> 
     @Query(value = "{ 'timestamp': { $gte: ?0, $lte: ?1 }, 'endpoint': ?2, 'statusCode': ?3 }", count = true)
     long countByEndpointAndStatusCode(Timestamp start, Timestamp end, String endpoint, int statusCode);
 
-    List<AccessLog> findByEndpointContainingAndTimestampBetween(String endpointPattern, Timestamp start, Timestamp end);
     List<AccessLog> findByTimestampBetween(Timestamp start, Timestamp end);
 }

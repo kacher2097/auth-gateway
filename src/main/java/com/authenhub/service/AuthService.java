@@ -95,7 +95,7 @@ public class AuthService implements IAuthService {
                     )
             );
         } catch (Exception e) {
-            throw new InvalidCredentialsException();
+            throw new ErrorApiException("123", "Invalid username or password");
         }
 
         // Lấy thông tin user
