@@ -87,6 +87,106 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
         }
     }
 
+    @Override
+    public ApiResponse<?> getDashboardData(StatisticSearchRequest request) {
+        long userCount = userRepository.count();
+        long adminCount = userRepository.countByRole("ADMIN");
+        long regularUserCount = userRepository.countByRole("USER");
+        DashboardData dashboardData = DashboardData.builder()
+                .totalUsers(userCount)
+                .adminUsers(adminCount)
+                .regularUsers(regularUserCount)
+                .build();
+        return ApiResponse.success(dashboardData);
+    }
+
+    @Override
+    public ApiResponse<?> getAccessStatsInternal(AccessStatsRequest request) {
+
+        Timestamp start = request.getStartDate();
+        Timestamp end = request.getEndDate();
+        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
+
+        GroupOperation groupByBrowser = Aggregation.group("browser")
+                .count().as("count");
+
+        GroupOperation sumCounts = Aggregation.group()
+                .sum("count").as("count");
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchOperation,
+                groupByBrowser,
+                sumCounts
+        );
+
+        AggregationResults<StatisticItem> results = mongoTemplate.aggregate(
+                aggregation, "access_logs", StatisticItem.class);
+
+        // Lấy kết quả
+        StatisticItem result = results.getUniqueMappedResult();
+        long totalCount = result != null ? result.getCount() : 0;
+
+        StatisticGetResponse response = StatisticGetResponse.builder()
+                .totalVisits(totalCount)
+//                .dailyVisits(getDailyVisits(start, end))
+                .totalLogins(countLoginsByStatus(start, end, 200))
+                .browserStats(getBrowserStats(start, end))
+                .deviceStats(getDeviceTypeStats(start, end))
+                .topEndpoints(getTopEndpoints(start, end))
+                .topUsers(getTopUsers(start, end))
+                .build();
+        return ApiResponse.success(response);
+    }
+
+    @Override
+    public ApiResponse<?> getTrafficDataInternal(StatisticSearchRequest request) {
+        return null;
+    }
+
+    @Override
+    public ApiResponse<?> getUserActivityDataInternal(StatisticSearchRequest request) {
+        return null;
+    }
+
+    @Override
+    public ApiResponse<?> getTopEndpointsInternal(StatisticSearchRequest request) {
+        return null;
+    }
+
+    @Override
+    public ApiResponse<?> getTopUsersInternal(StatisticSearchRequest request) {
+        return null;
+    }
+
+    @Override
+    public ApiResponse<?> getLoginActivityInternal(StatisticSearchRequest request) {
+        // Parse dates or use defaults
+        Timestamp startDate = request.getStartDate();
+        Timestamp endDate = request.getEndDate();
+
+        // Get login activity logs
+        List<AccessLog> loginLogs = accessLogRepository.findByTimestampBetween(startDate, endDate);
+
+        // Convert to response format
+        List<LoginActivityBean> loginActivityBeans = new ArrayList<>();
+
+        for (AccessLog log : loginLogs) {
+            LoginActivityBean loginActivityBean = LoginActivityBean.builder()
+                    .username(log.getUsername())
+                    .ip(log.getIpAddress())
+                    .status(log.getStatusCode() == 200 ? "success" : "failed")
+                    .timestamp(log.getTimestamp().toString())
+                    .userAgent(log.getUserAgent())
+                    .reason(log.getStatusCode() != 200 ? "Authentication failed" : null)
+                    .build();
+
+            loginActivityBeans.add(loginActivityBean);
+        }
+
+        return ApiResponse.success(loginActivityBeans);
+    }
+
+
     /**
      * Đếm số lượng đăng nhập theo trạng thái
      *
@@ -287,105 +387,9 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
         return results.getMappedResults().stream()
                 .map(doc -> StatisticItem.builder()
                         .name(doc.get("username") != null ? doc.get("username").toString() :
-                             (doc.get("_id") != null ? doc.get("_id").toString() : "Unknown"))
+                                (doc.get("_id") != null ? doc.get("_id").toString() : "Unknown"))
                         .count(((Number) doc.get("count")).longValue())
                         .build())
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public ApiResponse<?> getDashboardData(StatisticSearchRequest request) {
-        long userCount = userRepository.count();
-        long adminCount = userRepository.countByRole("ADMIN");
-        long regularUserCount = userRepository.countByRole("USER");
-        DashboardData dashboardData = DashboardData.builder()
-                .totalUsers(userCount)
-                .adminUsers(adminCount)
-                .regularUsers(regularUserCount)
-                .build();
-        return ApiResponse.success(dashboardData);
-    }
-
-    @Override
-    public ApiResponse<?> getAccessStatsInternal(AccessStatsRequest request) {
-
-        Timestamp start = request.getStartDate();
-        Timestamp end = request.getEndDate();
-        MatchOperation matchOperation = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-
-        GroupOperation groupByBrowser = Aggregation.group("browser")
-                .count().as("count");
-
-        GroupOperation sumCounts = Aggregation.group()
-                .sum("count").as("count");
-
-        Aggregation aggregation = Aggregation.newAggregation(
-                matchOperation,
-                groupByBrowser,
-                sumCounts
-        );
-
-        AggregationResults<StatisticItem> results = mongoTemplate.aggregate(
-                aggregation, "access_logs", StatisticItem.class);
-
-        // Lấy kết quả
-        StatisticItem result = results.getUniqueMappedResult();
-        long totalCount = result != null ? result.getCount() : 0;
-
-        StatisticSearchRequest searchRequest = StatisticSearchRequest.builder()
-                .endDate(end)
-                .startDate(start)
-                .build();
-        StatisticGetResponse stats = accessLogService.getAccessStats(searchRequest);
-
-        return ApiResponse.success(result);
-    }
-
-    @Override
-    public ApiResponse<?> getTrafficDataInternal(StatisticSearchRequest request) {
-        return null;
-    }
-
-    @Override
-    public ApiResponse<?> getUserActivityDataInternal(StatisticSearchRequest request) {
-        return null;
-    }
-
-    @Override
-    public ApiResponse<?> getTopEndpointsInternal(StatisticSearchRequest request) {
-        return null;
-    }
-
-    @Override
-    public ApiResponse<?> getTopUsersInternal(StatisticSearchRequest request) {
-        return null;
-    }
-
-    @Override
-    public ApiResponse<?> getLoginActivityInternal(StatisticSearchRequest request) {
-        // Parse dates or use defaults
-        Timestamp startDate = request.getStartDate();
-        Timestamp endDate = request.getEndDate();
-
-        // Get login activity logs
-        List<AccessLog> loginLogs = accessLogRepository.findByTimestampBetween(startDate, endDate);
-
-        // Convert to response format
-        List<LoginActivityBean> loginActivityBeans = new ArrayList<>();
-
-        for (AccessLog log : loginLogs) {
-            LoginActivityBean loginActivityBean = LoginActivityBean.builder()
-                    .username(log.getUsername())
-                    .ip(log.getIpAddress())
-                    .status(log.getStatusCode() == 200 ? "success" : "failed")
-                    .timestamp(log.getTimestamp().toString())
-                    .userAgent(log.getUserAgent())
-                    .reason(log.getStatusCode() != 200 ? "Authentication failed" : null)
-                    .build();
-
-            loginActivityBeans.add(loginActivityBean);
-        }
-
-        return ApiResponse.success(loginActivityBeans);
     }
 }

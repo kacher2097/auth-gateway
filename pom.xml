@@ -508,7 +508,7 @@
                         <manifest>
                             <!-- Jar file entry point -->
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.affblog.crawldata.CrawldataApplication</mainClass>
+                            <mainClass>com.authenhub.AuthGatewayApplication</mainClass>
                             <classpathPrefix>libs/</classpathPrefix>
                         </manifest>
                     </archive>

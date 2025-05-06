@@ -15,11 +15,12 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173", "http://localhost:5174","http://localhost:5175",
-                "http://localhost:5176", "http://localhost:5177", "http://localhost:5178", "http://localhost:62998", "http://localhost:57249"));
+                "http://localhost:5176", "http://localhost:5177", "http://localhost:5178", "http://localhost:62998", "http://localhost:57249",
+                "https://app.tuan4tech.info", "http://app.tuan4tech.info"));
         config.addAllowedHeader(CorsConfiguration.ALL);
         config.addAllowedMethod(CorsConfiguration.ALL);
         config.setAllowCredentials(true);
-        config.addExposedHeader("Authorization,Link,X-Total-Count,Phone,type");
+        config.addExposedHeader("Authorization,Link,X-Total-Count,itPhone,type");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 
