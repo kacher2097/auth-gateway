@@ -1,0 +1,50 @@
+# ===================================================================
+# LOGGING CONFIGURATION
+# ===================================================================
+
+# Common logging configuration
+logging:
+  config: 'file:${workdir:.}/config/logback.xml'
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+# Logging configuration for development
+logging:
+  level:
+    org.apache.http: DEBUG
+    org.apache.http.wire: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
+    com.authenhub.facebook: DEBUG
+    com.authenhub: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: staging
+
+# Logging configuration for staging
+logging:
+  level:
+    root: INFO
+    com.authenhub: DEBUG
+    org.springframework: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+# Logging configuration for production
+logging:
+  level:
+    root: INFO
+    com.authenhub: INFO
+    org.springframework: WARN

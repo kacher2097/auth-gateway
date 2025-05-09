@@ -1,0 +1,109 @@
+# ===================================================================
+# DATABASE CONFIGURATION
+# ===================================================================
+
+spring:
+  data:
+    mongodb:
+      auto-index-creation: true
+      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
+      # Cấu hình xử lý lỗi kết nối
+      socket-timeout: 10000
+      connect-timeout: 10000
+      max-wait-time: 10000
+      server-selection-timeout: 10000
+
+# Database switcher common configuration
+database:
+  enable-auto-migration: false
+  detailed-migration-logs: false
+  migration-batch-size: 100
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  data:
+    mongodb:
+      uri: mongodb://localhost:27018/authen-hub
+      database: authen-hub
+      # Cấu hình retry cho MongoDB
+      retry-writes: true
+      retry-reads: true
+      # Cấu hình connection pool
+      min-connections-per-host: 5
+      max-connections-per-host: 20
+      threads-allowed-to-block-for-connection-multiplier: 5
+
+# Database switcher configuration for development
+database:
+  type: postgresql
+
+# PostgreSQL configuration for development
+datasource:
+  url: jdbc:postgresql://localhost:5432/postgres
+  username: postgres
+  password: Bestr@nger00
+  driver: org.postgresql.Driver
+  pool-name: SpringBootJPAHikariCP
+  maximum-pool-size: 10
+  minimum-idle: 5
+  idle-timeout: 30000
+  max-lifetime: 2000000
+  connection-timeout: 300000
+  connection-test-query: SELECT 1
+  database-platform: org.hibernate.dialect.PostgreSQLDialect
+  show-sql: false
+  format_sql: false
+  order_inserts: true
+  order_updates: true
+  max-attempts-retry: 5
+  max-delay-retry: 10000
+  entity-bean-package: com.authenhub.entity
+
+# MongoDB additional configuration for development
+mongodb:
+  heartbeatFrequency: 10000
+  maxIdleTime: 300000
+  maxLifeTime: 600000
+  maxPoolSize: 60
+  maxWaitTime: 600000
+  minHeartbeatFrequency: 500
+  minPoolSize: 10
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE}
+
+# Database switcher configuration for production
+database:
+  type: ${DATABASE_TYPE:postgresql}
+
+# PostgreSQL configuration for production
+datasource:
+  url: ${DATASOURCE_URL}
+  username: ${DATASOURCE_USERNAME}
+  password: ${DATASOURCE_PASSWORD}
+  driver: org.postgresql.Driver
+  pool-name: SpringBootJPAHikariCP
+  maximum-pool-size: 50
+  minimum-idle: 20
+  idle-timeout: 30000
+  max-lifetime: 2000000
+  connection-timeout: 300000
+  connection-test-query: SELECT 1
+  database-platform: org.hibernate.dialect.PostgreSQLDialect
+  show-sql: false
+  format_sql: false
+  order_inserts: true
+  order_updates: true
+  max-attempts-retry: 5
+  max-delay-retry: 10000
+  entity-bean-package: com.authenhub.entity

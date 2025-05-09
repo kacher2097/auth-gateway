@@ -1,0 +1,9 @@
+@echo off
+echo Checking Kafka status...
+docker ps -a | findstr "kafka zookeeper schema-registry kafka-ui"
+
+echo Listing Kafka topics...
+docker exec kafka kafka-topics --list --bootstrap-server kafka:9092
+
+echo Press any key to exit...
+pause > nul

@@ -1,0 +1,83 @@
+# ===================================================================
+# MAIL CONFIGURATION
+# ===================================================================
+
+spring:
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+# Mail configuration for development
+mail:
+  createSubject: "Welcome to AuthenHub"
+  createUserHtmlFile: "create-user-email-template"
+  from: "${MAIL_USERNAME:your-email@gmail.com}"
+  host: "${MAIL_HOST:smtp.gmail.com}"
+  hotline: "123-456-7890"
+  htmlFile: "email-template"
+  logoLocation: "src/main/resources/static/images/logo.png"
+  mailLink: "http://localhost:8118"
+  mailLinkSecretKey: "secretKey"
+  mailName: "AuthenHub"
+  password: "${MAIL_PASSWORD:your-app-password}"
+  port: ${MAIL_PORT:587}
+  protocol: "smtp"
+  smtpAuth: true
+  sslEnable: false
+  starttlsEnable: true
+  subject: "Password Reset Request"
+  username: "${MAIL_USERNAME:your-email@gmail.com}"
+  thymeleaf:
+    checkTemplate: true
+    checkTemplateLocation: true
+    enabled: true
+    prefix: "classpath:/templates/"
+    suffix: ".html"
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+# Mail configuration for production
+mail:
+  createSubject: "${MAIL_CREATE_SUBJECT:Welcome to AuthenHub}"
+  createUserHtmlFile: "${MAIL_CREATE_USER_HTML_FILE:create-user-email-template}"
+  from: "${MAIL_USERNAME}"
+  host: "${MAIL_HOST}"
+  hotline: "${MAIL_HOTLINE:123-456-7890}"
+  htmlFile: "${MAIL_HTML_FILE:email-template}"
+  logoLocation: "${MAIL_LOGO_LOCATION:src/main/resources/static/images/logo.png}"
+  mailLink: "${APP_URL}"
+  mailLinkSecretKey: "${MAIL_LINK_SECRET_KEY}"
+  mailName: "${MAIL_NAME:AuthenHub}"
+  password: "${MAIL_PASSWORD}"
+  port: ${MAIL_PORT}
+  protocol: "${MAIL_PROTOCOL:smtp}"
+  smtpAuth: ${MAIL_SMTP_AUTH:true}
+  sslEnable: ${MAIL_SSL_ENABLE:false}
+  starttlsEnable: ${MAIL_STARTTLS_ENABLE:true}
+  subject: "${MAIL_SUBJECT:Password Reset Request}"
+  username: "${MAIL_USERNAME}"
+  thymeleaf:
+    checkTemplate: true
+    checkTemplateLocation: true
+    enabled: true
+    prefix: "classpath:/templates/"
+    suffix: ".html"

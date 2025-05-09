@@ -1,0 +1,65 @@
+# ===================================================================
+# PAYMENT CONFIGURATION
+# ===================================================================
+
+# Common payment settings
+payment:
+  return-base-url: ${app.frontend-url}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+# Payment configuration for development
+payment:
+  # VNPay Configuration
+  vnpay:
+    payment-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+    tmn-code: # Your VNPay TMN Code
+    secret-key: # Your VNPay Secret Key
+    return-url: ${app.frontend-url}/payment/callback/vnpay
+  # MoMo Configuration
+  momo:
+    payment-url: https://test-payment.momo.vn/v2/gateway/api/create
+    partner-code: # Your MoMo Partner Code
+    access-key: # Your MoMo Access Key
+    secret-key: # Your MoMo Secret Key
+    notify-url: ${app.frontend-url}/api/payments/callback/momo
+  # ViettelPay Configuration
+  viettelpay:
+    payment-url: https://sandbox.viettel.vn/PaymentGateway/payment
+    merchant-code: # Your ViettelPay Merchant Code
+    secret-key: # Your ViettelPay Secret Key
+    notify-url: ${app.frontend-url}/api/payments/callback/viettelpay
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+# Payment configuration for production
+payment:
+  # VNPay Configuration
+  vnpay:
+    payment-url: https://pay.vnpay.vn/vpcpay.html
+    api-url: https://pay.vnpay.vn/merchant_webapi/api/transaction
+    tmn-code: ${VNPAY_TMN_CODE}
+    secret-key: ${VNPAY_SECRET_KEY}
+    return-url: ${app.frontend-url}/payment/callback/vnpay
+  # MoMo Configuration
+  momo:
+    payment-url: https://payment.momo.vn/v2/gateway/api/create
+    partner-code: ${MOMO_PARTNER_CODE}
+    access-key: ${MOMO_ACCESS_KEY}
+    secret-key: ${MOMO_SECRET_KEY}
+    notify-url: ${app.frontend-url}/api/payments/callback/momo
+  # ViettelPay Configuration
+  viettelpay:
+    payment-url: https://viettel.vn/PaymentGateway/payment
+    merchant-code: ${VIETTELPAY_MERCHANT_CODE}
+    secret-key: ${VIETTELPAY_SECRET_KEY}
+    notify-url: ${app.frontend-url}/api/payments/callback/viettelpay

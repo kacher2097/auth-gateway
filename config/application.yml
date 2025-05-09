@@ -1,271 +1,33 @@
+# ===================================================================
+# MAIN CONFIGURATION FILE
+# ===================================================================
+
 spring:
   profiles:
+    # Set the active profile
     active: dev
+    # Include other configuration files
+    include:
+      - kafka
+      - database
+      - mail
+      - payment
+      - social
+      - server
+      - ai
+      - logging
+
+  # Application settings
+  main:
+    allow-bean-definition-overriding: true
+
+  # File upload settings
   servlet:
-    multipart: { max-file-size: 11MB, max-request-size: 11MB }
+    multipart:
+      max-file-size: 11MB
+      max-request-size: 11MB
+
+  # JSON settings
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Ho_Chi_Minh
-  ai:
-    ollama:
-      chat:
-        options: { model: llama3.1 }
-    groq:
-      api-key: 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
-      base-url: https://api.groq.com/openai
-      chat:
-        model: deepseek-r1-distill-llama-70b
-        temperature: 0.7
-        max-tokens: 4000
-        top-p: 0.9
-        presence-penalty: 0.0
-        frequency-penalty: 0.0
-        stop-sequences: [ ]
-
-  main:
-    allow-bean-definition-overriding: true
-  data:
-    mongodb:
-      uri: mongodb://localhost:27018/authen-hub
-      database: authen-hub
-      auto-index-creation: true
-      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
-  rsocket:
-    server:
-      mapping-path: /rsocket
-      transport: websocket
-      port: 7000
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            clientSecret: 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
-            clientId: 871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope:
-              - openid
-              - profile
-              - email
-            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-          facebook:
-            client-id: 663214539587597
-            client-secret: 7721bb1cfe1c8118e39aa0a95fe87379
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope:
-              - public_profile
-              - email
-              - pages_show_list
-              - pages_read_engagement
-              - pages_manage_posts
-              - pages_manage_engagement
-              - pages_read_insights
-              - pages_manage_comments
-            user-info-uri: https://graph.facebook.com/me
-  mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:your-email@gmail.com}
-    password: ${MAIL_PASSWORD:your-app-password}
-    properties:
-      mail:
-        transport:
-          protocol: smtp
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
-
-spring.autoconfigure.exclude: [org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration]
-logging: {config: 'file:${workdir:.}/config/logback.xml'}
-server:
-  port: 8118
-  compression:
-    enabled: true
-    mime-types: application/json,application/xml,text/html,text/xml,text/plain
-    min-response-size: 1024
-
-cors:
-  allowed-origins: http://localhost:5173
-  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
-  allowed-headers: Authorization,Content-Type
-  exposed-headers: "*"
-  allow-credentials: true
-  max-age: 3600
-
-jwt:
-  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
-  expiration: 604800000 # 7 days
-
-app:
-  frontend-url: ${FRONTEND_URL:http://localhost:5173}
-
-# Payment configuration
-payment:
-  vnpay:
-    payment-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-    api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
-    tmn-code: # Your VNPay TMN Code
-    secret-key: # Your VNPay Secret Key
-    return-url: ${app.frontend-url}/payment/callback/vnpay
-  momo:
-    payment-url: https://test-payment.momo.vn/v2/gateway/api/create
-    partner-code: # Your MoMo Partner Code
-    access-key: # Your MoMo Access Key
-    secret-key: # Your MoMo Secret Key
-    notify-url: ${app.frontend-url}/api/payments/callback/momo
-  viettelpay:
-    payment-url: https://sandbox.viettel.vn/PaymentGateway/payment
-    merchant-code: # Your ViettelPay Merchant Code
-    secret-key: # Your ViettelPay Secret Key
-    notify-url: ${app.frontend-url}/api/payments/callback/viettelpay
-
-# Admin account default
-admin:
-  username: admin
-  email: admin@mangahub.com
-  password: Admin@123
-  fullName: Administrator
-
-google:
-  token: tokens
-  credentials: ${workdir:.}/config/google-credentials.json
-  spreadsheet: {id: null}
-  spreadsheetId: 1WnyoczJEvV99NMnAcNG16eO8MlIhgoWqEHwadGIMBp8
-  clientSecret: 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
-  clientId: 871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com
-
-wordpress: {url: 'http://localhost:8068/blog', username: crawlbot, password: eD7ZW#^Q&h2*gAlrbi@%&7v%}
-
-rest:
-  connection: {timeout: 60000}
-  socket: {timeout: 60000}
-pool: {max: 10}
-
-# Facebook API Configuration
-facebook:
-  api:
-    api-base-url: https://graph.facebook.com/v12.0
-    connect-timeout: 5000
-    read-timeout: 5000
-    max-retries: 3
-  oauth:
-    client-id: 663214539587597
-    client-secret: 7721bb1cfe1c8118e39aa0a95fe87379
-    authorization-base-url: https://www.facebook.com/v12.0/dialog/oauth
-    token-base-url: https://graph.facebook.com/v12.0/oauth/access_token
-    default-scope: email,public_profile,pages_show_list,pages_read_engagement,pages_manage_posts,pages_manage_engagement
-
-# Development profile configuration
----
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-# Disable SSL validation for development
-server:
-  ssl:
-    enabled: false
-
-# Trust all certificates
-javax:
-  net:
-    ssl:
-      trustStore: NONE
-      trustStorePassword:
-      trustStoreType: NONE
-      verifyHostname: false
-
-# Logging for HTTP client
-logging:
-  level:
-    org.apache.http: DEBUG
-    org.apache.http.wire: DEBUG
-    org.springframework.web.client.RestTemplate: DEBUG
-    com.authenhub.facebook: DEBUG
-    com.authenhub: DEBUG
-    org.springframework.web: INFO
-    org.springframework.security: INFO
-
-# Increase timeouts for development
-facebook:
-  api:
-    connect-timeout: 10000
-    read-timeout: 10000
-
-# Database switcher configuration
-database:
-  # Type of database to use: mongodb or postgresql
-  type: postgresql
-  # Enable automatic data migration when switching database types
-  enable-auto-migration: false
-  # Enable detailed migration logs
-  detailed-migration-logs: false
-  # Batch size for data migration operations
-  migration-batch-size: 100
-
-datasource:
-  url: jdbc:postgresql://localhost:5432/postgres
-  username: postgres
-  password: Bestr@nger00
-  driver: org.postgresql.Driver
-  pool-name: SpringBootJPAHikariCP
-  maximum-pool-size: 10
-  minimum-idle: 5
-  idle-timeout: 30000
-  max-lifetime: 2000000
-  connection-timeout: 300000
-  connection-test-query: SELECT 1
-  database-platform: org.hibernate.dialect.PostgreSQLDialect
-  show-sql: false
-  format_sql: false
-  order_inserts: true
-  order_updates: true
-  max-attempts-retry: 5
-  max-delay-retry: 10000
-  entity-bean-package: com.authenhub.entity
-
-mongodb:
-  uri: mongodb://localhost:27018/authen-hub
-  database: authen-hub
-  auto-index-creation: true
-  field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
-  heartbeatFrequency: 10000
-  maxIdleTime: 300000
-  maxLifeTime: 600000
-  maxPoolSize: 60
-  maxWaitTime: 600000
-  minHeartbeatFrequency: 500
-  minPoolSize: 10
-
-# Mail configuration
-mail:
-  createSubject: "Welcome to AuthenHub"
-  createUserHtmlFile: "create-user-email-template"
-  from: "${MAIL_USERNAME:your-email@gmail.com}"
-  host: "${MAIL_HOST:smtp.gmail.com}"
-  hotline: "123-456-7890"
-  htmlFile: "email-template"
-  logoLocation: "src/main/resources/static/images/logo.png"
-  mailLink: "http://localhost:8118"
-  mailLinkSecretKey: "secretKey"
-  mailName: "AuthenHub"
-  password: "${MAIL_PASSWORD:your-app-password}"
-  port: ${MAIL_PORT:587}
-  protocol: "smtp"
-  smtpAuth: true
-  sslEnable: false
-  starttlsEnable: true
-  subject: "Password Reset Request"
-  username: "${MAIL_USERNAME:your-email@gmail.com}"
-  thymeleaf:
-    checkTemplate: true
-    checkTemplateLocation: true
-    enabled: true
-    prefix: "classpath:/templates/"
-    suffix: ".html"

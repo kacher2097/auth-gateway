@@ -1,0 +1,41 @@
+# ===================================================================
+# AI CONFIGURATION
+# ===================================================================
+
+spring:
+  ai:
+    ollama:
+      chat:
+        options:
+          model: llama3.1
+    groq:
+      base-url: https://api.groq.com/openai
+      chat:
+        model: deepseek-r1-distill-llama-70b
+        temperature: 0.7
+        max-tokens: 4000
+        top-p: 0.9
+        presence-penalty: 0.0
+        frequency-penalty: 0.0
+        stop-sequences: [ ]
+
+# Disable OpenAI auto-configuration
+spring.autoconfigure.exclude: [org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration]
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  ai:
+    groq:
+      api-key: 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
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  ai:
+    groq:
+      api-key: ${GROQ_API_KEY}
