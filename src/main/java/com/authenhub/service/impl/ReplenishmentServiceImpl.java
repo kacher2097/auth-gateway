@@ -12,32 +12,27 @@ import com.authenhub.repository.ReplenishmentSuggestionRepository;
 import com.authenhub.repository.SalesHistoryRepository;
 import com.authenhub.service.InventoryService;
 import com.authenhub.service.ReplenishmentService;
-import com.authenhub.service.kafka.KafkaProducerService;
 import com.authenhub.utils.TimestampUtils;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReplenishmentServiceImpl implements ReplenishmentService {
 
-    private final ReplenishmentSuggestionRepository replenishmentSuggestionRepository;
+    private final InventoryService inventoryService;
     private final InventoryRepository inventoryRepository;
     private final SalesHistoryRepository salesHistoryRepository;
-    private final InventoryService inventoryService;
-    private final KafkaProducerService kafkaProducerService;
+    private final ReplenishmentSuggestionRepository replenishmentSuggestionRepository;
 
     @Override
     public List<ReplenishmentSuggestionDTO> getAllReplenishmentSuggestions() {
@@ -160,7 +155,7 @@ public class ReplenishmentServiceImpl implements ReplenishmentService {
                     .timestamp(LocalDateTime.now())
                     .build();
 
-            kafkaProducerService.sendReplenishmentEvent(event);
+//            kafkaProducerService.sendReplenishmentEvent(event);
         }
 
         // Convert to DTOs and return
@@ -218,7 +213,7 @@ public class ReplenishmentServiceImpl implements ReplenishmentService {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        kafkaProducerService.sendReplenishmentEvent(event);
+//        kafkaProducerService.sendReplenishmentEvent(event);
 
         return mapToDTO(updatedSuggestion);
     }
@@ -263,7 +258,7 @@ public class ReplenishmentServiceImpl implements ReplenishmentService {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        kafkaProducerService.sendReplenishmentEvent(event);
+//        kafkaProducerService.sendReplenishmentEvent(event);
 
         return mapToDTO(updatedSuggestion);
     }

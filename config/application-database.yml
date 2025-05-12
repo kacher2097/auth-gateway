@@ -64,6 +64,10 @@ datasource:
 
 # MongoDB additional configuration for development
 mongodb:
+  uri: mongodb://localhost:27018/authen-hub
+  database: authen-hub
+  auto-index-creation: true
+  field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
   heartbeatFrequency: 10000
   maxIdleTime: 300000
   maxLifeTime: 600000

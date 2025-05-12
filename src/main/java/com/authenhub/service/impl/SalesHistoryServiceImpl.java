@@ -6,17 +6,12 @@ import com.authenhub.dto.kafka.SalesEvent;
 import com.authenhub.entity.Inventory;
 import com.authenhub.entity.SalesHistory;
 import com.authenhub.exception.ResourceNotFoundException;
+import com.authenhub.kafka.service.KafkaProducerService;
 import com.authenhub.repository.InventoryRepository;
 import com.authenhub.repository.SalesHistoryRepository;
 import com.authenhub.service.InventoryService;
 import com.authenhub.service.SalesHistoryService;
-import com.authenhub.service.kafka.KafkaProducerService;
 import com.authenhub.utils.TimestampUtils;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -24,16 +19,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SalesHistoryServiceImpl implements SalesHistoryService {
 
-    private final SalesHistoryRepository salesHistoryRepository;
-    private final InventoryRepository inventoryRepository;
     private final InventoryService inventoryService;
-    private final KafkaProducerService kafkaProducerService;
+    private final InventoryRepository inventoryRepository;
+    private final SalesHistoryRepository salesHistoryRepository;
+//    private final KafkaProducerService kafkaProducerService;
 
     @Override
     public List<SalesHistoryDTO> getAllSalesHistory() {
@@ -111,7 +110,7 @@ public class SalesHistoryServiceImpl implements SalesHistoryService {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        kafkaProducerService.sendSalesEvent(event);
+//        kafkaProducerService.sendSalesEvent(event);
 
         return mapToDTO(savedSalesHistory);
     }

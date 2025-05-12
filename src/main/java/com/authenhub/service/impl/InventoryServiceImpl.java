@@ -8,7 +8,6 @@ import com.authenhub.entity.Inventory;
 import com.authenhub.exception.ResourceNotFoundException;
 import com.authenhub.repository.InventoryRepository;
 import com.authenhub.service.InventoryService;
-import com.authenhub.service.kafka.KafkaProducerService;
 import com.authenhub.utils.TimestampUtils;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class InventoryServiceImpl implements InventoryService {
 
     private final InventoryRepository inventoryRepository;
-    private final KafkaProducerService kafkaProducerService;
+//    private final KafkaProducerService kafkaProducerService;
 
     @Override
     public List<InventoryDTO> getAllInventory() {
@@ -87,7 +86,7 @@ public class InventoryServiceImpl implements InventoryService {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        kafkaProducerService.sendInventoryEvent(event);
+//        kafkaProducerService.sendInventoryEvent(event);
 
         return mapToDTO(savedInventory);
     }
@@ -151,7 +150,7 @@ public class InventoryServiceImpl implements InventoryService {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        kafkaProducerService.sendInventoryEvent(event);
+//        kafkaProducerService.sendInventoryEvent(event);
 
         return mapToDTO(updatedInventory);
     }
@@ -174,7 +173,7 @@ public class InventoryServiceImpl implements InventoryService {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        kafkaProducerService.sendInventoryEvent(event);
+//        kafkaProducerService.sendInventoryEvent(event);
 
         inventoryRepository.delete(inventory);
     }
@@ -227,7 +226,7 @@ public class InventoryServiceImpl implements InventoryService {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        kafkaProducerService.sendInventoryEvent(event);
+//        kafkaProducerService.sendInventoryEvent(event);
 
         return mapToDTO(updatedInventory);
     }

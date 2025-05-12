@@ -49,6 +49,6 @@ public class MongoConfig {
     @Value("${mongodb.username:}")
     private String username;
 
-    @Value("${mongodb.uri:mongodb://localhost:27017/authen-hub}")
+    @Value("${mongodb.uri:mongodb}")
     private String uri;
 }
