@@ -214,12 +214,12 @@ public class GgSheetConfig {
         }
     }
 
-    @Bean
-    public Sheets getSheetsService() throws IOException, GeneralSecurityException {
-        Credential credential = getCredentials();
-        return new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(),
-                JSON_FACTORY, credential)
-                .setApplicationName("Google sheet Integration with spring boot")
-                .build();
-    }
+//    @Bean
+//    public Sheets getSheetsService() throws IOException, GeneralSecurityException {
+//        Credential credential = getCredentials();
+//        return new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(),
+//                JSON_FACTORY, credential)
+//                .setApplicationName("Google sheet Integration with spring boot")
+//                .build();
+//    }
 }

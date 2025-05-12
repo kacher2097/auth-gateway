@@ -6,7 +6,7 @@ import com.authenhub.dto.kafka.SalesEvent;
 import com.authenhub.entity.Inventory;
 import com.authenhub.entity.SalesHistory;
 import com.authenhub.exception.ResourceNotFoundException;
-import com.authenhub.kafka.service.KafkaProducerService;
+//import com.authenhub.kafka.service.KafkaProducerService;
 import com.authenhub.repository.InventoryRepository;
 import com.authenhub.repository.SalesHistoryRepository;
 import com.authenhub.service.InventoryService;

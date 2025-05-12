@@ -26,7 +26,7 @@ jwt:
 
 # Application configuration
 app:
-  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  frontend-url: ${FRONTEND_URL:http://localhost:5174}
 
 # Admin account default
 admin:

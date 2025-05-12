@@ -6,6 +6,11 @@
 google:
   token: tokens
   credentials: ${workdir:.}/config/google-credentials.json
+  service-account:
+    # Path to service account key file (JSON)
+    key-file: ${GOOGLE_SERVICE_ACCOUNT_KEY_FILE:${workdir:.}/config/google-service-account.json}
+    # Email to impersonate (for Gmail API)
+    user-email: ${GOOGLE_SERVICE_ACCOUNT_USER_EMAIL:thanhtuan6897@gmail.com}
 
 # WordPress common configuration
 wordpress:
@@ -70,6 +75,9 @@ google:
   spreadsheetId: 1WnyoczJEvV99NMnAcNG16eO8MlIhgoWqEHwadGIMBp8
   clientSecret: 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
   clientId: 871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com
+  service-account:
+    # For development, you can use OAuth2 credentials file as a fallback
+    key-file: ${workdir:.}/config/google-credentials.json
 
 # WordPress configuration for development
 wordpress:

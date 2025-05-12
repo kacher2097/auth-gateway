@@ -49,7 +49,7 @@ public class VnExpressCrawler extends AbstractCrawler {
     public List<NewsBean> getData(DataCrawlRequest wpPublishPostBean) throws IOException {
         log.info("Begin crawling VnExpress data with request {}", wpPublishPostBean);
         Document homepage = fetchDocument(VNEXPRESS_URL);
-        Elements newsElements = extractElements(homepage,"article.item-news.item-news-common.thumb-left[data-publishtime]");
+        Elements newsElements = extractElements(homepage,"article.item-news.item-news-common");
 
         log.info("Total news found: {}", newsElements.size());
         int limitElement = Objects.nonNull(wpPublishPostBean.getLimit()) ? wpPublishPostBean.getLimit() : Integer.MAX_VALUE;
