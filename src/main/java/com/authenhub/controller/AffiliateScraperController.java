@@ -25,9 +25,9 @@ public class AffiliateScraperController {
      * @return The affiliate scraper response
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<AffiliateScraperResponse>> scrapeProducts(@RequestBody AffiliateScraperRequest request) {
+    public ApiResponse<AffiliateScraperResponse> scrapeProducts(@RequestBody AffiliateScraperRequest request) {
         AffiliateScraperResponse response = affiliateScraperService.scrapeProducts(request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ApiResponse.success(response);
     }
 
     /**

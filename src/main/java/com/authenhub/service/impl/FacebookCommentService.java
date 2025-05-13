@@ -47,7 +47,7 @@ public class FacebookCommentService implements IFacebookCommentService {
         if (!localComments.isEmpty()) {
             return localComments.stream()
                     .map(FacebookCommentResponse::fromEntity)
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         // Nếu không có trong database, lấy từ Facebook API

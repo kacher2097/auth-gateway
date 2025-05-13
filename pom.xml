@@ -31,6 +31,7 @@
         <spring-ai.version>1.0.0-M6</spring-ai.version>
         <modelmapper.version>3.1.0</modelmapper.version>
         <javatube.version>1.0.0</javatube.version>
+        <playwright.version>1.41.0</playwright.version>
     </properties>
 
     <repositories>
@@ -387,6 +388,13 @@
             <groupId>org.springframework.retry</groupId>
             <artifactId>spring-retry</artifactId>
             <version>2.0.5</version>
+        </dependency>
+
+        <!-- Playwright for Java - Web Scraping -->
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>${playwright.version}</version>
         </dependency>
 
         <dependency>

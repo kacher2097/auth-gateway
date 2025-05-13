@@ -16,6 +16,7 @@ spring:
       - server
       - ai
       - logging
+      - scraper
 
   # Application settings
   main:

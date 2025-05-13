@@ -1,0 +1,88 @@
+# ===================================================================
+# SCRAPER CONFIGURATION
+# ===================================================================
+
+# Common scraper configuration
+scraper:
+  # Playwright configuration
+  use-playwright: true
+  headless: true
+  block-resources: true
+  
+  # Anti-scraping measures
+  user-agent-rotation:
+    enabled: true
+  
+  # Proxy configuration
+  proxy:
+    enabled: false
+    host: 
+    port: 0
+    username: 
+    password: 
+  
+  # Performance settings
+  timeout: 30000
+  max-retries: 3
+  retry-delay: 5000
+  
+  # Platforms configuration
+  platforms:
+    shopee:
+      base-url: https://shopee.vn
+      selectors:
+        product-item: .shopee-search-item-result__item
+        product-name: .shopee-item-card__text-name
+        product-price: .shopee-item-card__current-price
+        product-original-price: .shopee-item-card__original-price
+        product-image: img
+        product-sold: .shopee-item-card__sold-text
+        product-shop: .shopee-item-card__shop-name
+    lazada:
+      base-url: https://lazada.vn
+      selectors:
+        product-item: .Bm3ON
+        product-name: .RfADt
+        product-price: .aBrP0
+        product-original-price: ._1MmFB
+        product-image: img
+        product-sold: .fy5
+        product-shop: .shop-name
+    tiki:
+      base-url: https://tiki.vn
+      selectors:
+        product-item: .product-item
+        product-name: .name
+        product-price: .price-discount__price
+        product-original-price: .price-discount__original
+        product-image: .thumbnail
+        product-sold: .quantity-sold
+        product-shop: .seller-name
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+# Scraper configuration for development
+scraper:
+  headless: true
+  proxy:
+    enabled: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+# Scraper configuration for production
+scraper:
+  headless: true
+  proxy:
+    enabled: true
+    host: ${PROXY_HOST}
+    port: ${PROXY_PORT}
+    username: ${PROXY_USERNAME}
+    password: ${PROXY_PASSWORD}
