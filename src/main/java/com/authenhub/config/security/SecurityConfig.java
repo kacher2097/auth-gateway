@@ -30,7 +30,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import com.authenhub.config.security.OAuth2AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Slf4j
@@ -41,7 +41,7 @@ public class SecurityConfig {
 
     private final UserJpaRepository userRepository;
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final AuthenticationSuccessHandler oAuth2SuccessHandler;
+    private final OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler;
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
@@ -62,7 +62,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         requests -> requests
                                 .requestMatchers("/auth/**").permitAll()
-                                .requestMatchers("/public/**").permitAll()
                                 .requestMatchers("/admin/**").permitAll()
                                 .requestMatchers("/api/**").permitAll()
                                 .requestMatchers("/api/proxies/active").permitAll()

@@ -52,20 +52,4 @@ public class UserProfileController {
         boolean isAdmin = userContext.isAdmin();
         return ApiResponse.success(isAdmin);
     }
-
-    /**
-     * Get the current user's permissions
-     *
-     * @return the current user's permissions
-     */
-    @GetMapping("/permissions")
-    public ApiResponse<?> getUserPermissions() {
-        User currentUser = userContext.getCurrentUser();
-
-        if (currentUser == null) {
-            return ApiResponse.error(ApiResponseCode.FORBIDDEN, "User not authenticated");
-        }
-
-        return ApiResponse.success(currentUser.getAuthorities());
-    }
 }

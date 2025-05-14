@@ -1,5 +1,8 @@
 package com.authenhub.service;
 
+import com.authenhub.bean.auth.social.SocialUserInfo;
+import com.authenhub.bean.auth.social.TokenResponse;
+import com.authenhub.exception.ErrorApiException;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +41,7 @@ public class SocialLoginService {
             case "FACEBOOK":
                 return getFacebookUserInfo(accessToken);
             default:
-                throw new RuntimeException("Provider không hợp lệ");
+                throw new ErrorApiException("456", "Provider không hợp lệ");
         }
     }
 
@@ -51,9 +54,9 @@ public class SocialLoginService {
     }
 
     private String getAccessTokenFromCode(String code, String provider, String redirectUri) {
-        String tokenUrl;
-        String clientId;
-        String clientSecret;
+        final String tokenUrl;
+        final String clientId;
+        final String clientSecret;
 
         if ("GOOGLE".equalsIgnoreCase(provider)) {
             tokenUrl = "https://oauth2.googleapis.com/token";
@@ -97,14 +100,10 @@ public class SocialLoginService {
     private SocialUserInfo getGoogleUserInfo(String accessToken) {
         try {
             var response = restTemplate.getForObject(
-                    googleUserInfoUrl + "?access_token=" + accessToken,
-                    GoogleUserInfo.class
+                    googleUserInfoUrl + "?access_token=" + accessToken, SocialUserInfo.class
             );
-            return new SocialUserInfo(
-                    response.getEmail(),
-                    response.getName(),
-                    response.getPicture()
-            );
+            log.info("Google user info: {}", response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Không thể lấy thông tin từ Google: " + e.getMessage());
         }
@@ -114,59 +113,13 @@ public class SocialLoginService {
         try {
             var response = restTemplate.getForObject(
                     facebookUserInfoUrl + "?fields=id,name,email,picture&access_token=" + accessToken,
-                    FacebookUserInfo.class
+                    SocialUserInfo.class
             );
-            return new SocialUserInfo(
-                    response.getEmail(),
-                    response.getName(),
-                    response.getPicture().getData().url
-            );
+
+            log.info("Facebook user info: {}", response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Không thể lấy thông tin từ Facebook: " + e.getMessage());
-        }
-    }
-
-    @Data
-    public static class SocialUserInfo {
-        private final String email;
-        private final String name;
-        private final String picture;
-    }
-
-    @Data
-    private static class GoogleUserInfo {
-        private String email;
-        private String name;
-        private String picture;
-    }
-
-    @Data
-    private static class FacebookUserInfo {
-        private String email;
-        private String name;
-        private Picture picture;
-
-        @Data
-        private static class Picture {
-            private Data data;
-
-            @lombok.Data
-            private static class Data {
-                private String url;
-            }
-        }
-    }
-
-    @Data
-    private static class TokenResponse {
-        private String access_token;
-        private String token_type;
-        private Integer expires_in;
-        private String scope;
-        private String id_token; // For OpenID Connect (Google)
-
-        public String getAccessToken() {
-            return access_token;
         }
     }
 }

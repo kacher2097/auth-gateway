@@ -5,20 +5,17 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-
-import org.springframework.util.StringUtils;
-
+import jakarta.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
@@ -28,6 +25,17 @@ public class JwtService {
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
+
+    @Value("${jwt.expiration-refresh-token}")
+    private long refreshTokenExpiration;
+
+    private Key key;
+
+    @PostConstruct
+    public void init() {
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     public String extractUsername(String token) {
         log.debug("Extracting username from token: {}", token);
@@ -43,47 +51,25 @@ public class JwtService {
         return claims != null ? claimsResolver.apply(claims) : null;
     }
 
-    public String extractRole(String token) {
-        Claims claims = extractAllClaims(token);
-        if (claims == null) {
-            return null;
-        }
-
-        @SuppressWarnings("unchecked")
-        List<String> roles = (List<String>) claims.get("roles");
-        if (roles != null && !roles.isEmpty()) {
-            // Return the first role (assuming a user has only one role)
-            return roles.get(0);
-        }
-        return null;
-    }
-
-    public boolean hasRole(String token, String role) {
-        Claims claims = extractAllClaims(token);
-        if (claims == null) {
-            return false;
-        }
-
-        @SuppressWarnings("unchecked")
-        List<String> roles = (List<String>) claims.get("roles");
-        return roles != null && roles.contains(role);
-    }
-
     public Claims extractAllClaims(String token) {
+//        if (isTokenExpired(token)) {
+//            log.error("Token is expired");
+//            return null;
+//        }
         if (token == null || token.isEmpty()) {
-            log.warn("Attempted to extract claims from null or empty token");
+            log.error("Attempted to extract claims from null or empty token");
             return null;
         }
 
         try {
             final String finalToken = getJwtFromRequest(token);
             if (finalToken == null || finalToken.isEmpty()) {
-                log.warn("Token after processing is null or empty");
+                log.error("Token after processing is null or empty");
                 return null;
             }
 
             return Jwts.parserBuilder()
-                    .setSigningKey(getSignKey())
+                    .setSigningKey(key)
                     .build()
                     .parseClaimsJws(finalToken)
                     .getBody();
@@ -97,77 +83,38 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-
-        // Add user roles and permissions to the token
-        List<String> authorities = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-
-        claims.put("roles", authorities.stream()
-                .filter(auth -> auth.startsWith("ROLE_"))
-                .toList());
-
-        claims.put("roleId", authorities.stream()
-                .filter(auth -> auth.startsWith("ROLE_"))
-                .toList());
-
-        // Add permissions separately for easier access
-        claims.put("permissions", authorities.stream()
-                .filter(auth -> !auth.startsWith("ROLE_"))
-                .toList());
-
-        // Add additional user info if available
-        if (userDetails instanceof User) {
-            User user = (User) userDetails;
-            claims.put("userId", user.getId());
-            claims.put("email", user.getEmail());
-            claims.put("fullName", user.getFullName());
-
-            if (user.getAvatar() != null) {
-                claims.put("avatar", user.getAvatar());
-            }
-
-            if (user.getSocialProvider() != null) {
-                claims.put("socialProvider", user.getSocialProvider());
-            }
-        }
-
-        return createToken(claims, userDetails);
-    }
-
     public String createToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roleId", user.getRoleId());
         claims.put("userId", user.getId());
+        if (user.getAvatar() != null) {
+            claims.put("avatar", user.getAvatar());
+        }
+
+        if (user.getSocialProvider() != null) {
+            claims.put("socialProvider", user.getSocialProvider());
+        }
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(SignatureAlgorithm.HS256, getSignKey())
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    private String createToken(Map<String, Object> claims, UserDetails userDetails) {
+    public String createRefreshToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
+        claims.put("refreshToken", true);
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(SignatureAlgorithm.HS256, getSignKey())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
-
-//    public String generateRefreshToken(User user) {
-//        return Jwts.builder()
-//                .setSubject(user.getEmail())
-//                .setIssuedAt(new Date())
-//                .setExpiration(new Date(System.currentTimeMillis() + 2592000000L)) // 30 days
-//                .signWith(getSigningKey())
-//                .compact();
-//    }
 
     private String getJwtFromRequest(String tokenWithBearer) {
         if (StringUtils.hasText(tokenWithBearer)) {
@@ -181,10 +128,5 @@ public class JwtService {
             }
         }
         return null;
-    }
-
-    private Key getSignKey() {
-        byte[] keyBytes = secretKey.getBytes();
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

@@ -1,37 +1,49 @@
 package com.authenhub.service;
 
-import com.authenhub.bean.*;
+import com.authenhub.bean.ChangePasswordRequest;
+import com.authenhub.bean.ForgotPasswordRequest;
+import com.authenhub.bean.OAuth2CallbackRequest;
+import com.authenhub.bean.RegisterRequest;
+import com.authenhub.bean.ResetPasswordRequest;
+import com.authenhub.bean.SocialLoginRequest;
 import com.authenhub.bean.auth.AuthRequest;
 import com.authenhub.bean.auth.AuthResponse;
 import com.authenhub.bean.auth.UserInfo;
+import com.authenhub.bean.auth.social.SocialUserInfo;
 import com.authenhub.bean.response.UserInfoResponse;
 import com.authenhub.config.application.JsonMapper;
+import com.authenhub.config.security.AuthenticationProviderCustom;
 import com.authenhub.entity.Permission;
 import com.authenhub.entity.Role;
 import com.authenhub.entity.RolePermission;
 import com.authenhub.entity.User;
 import com.authenhub.entity.mongo.PasswordResetToken;
-import com.authenhub.exception.*;
+import com.authenhub.exception.EmailAlreadyExistsException;
+import com.authenhub.exception.EmailNotFoundException;
+import com.authenhub.exception.ErrorApiException;
+import com.authenhub.exception.InvalidPasswordException;
+import com.authenhub.exception.InvalidTokenException;
+import com.authenhub.exception.PasswordMismatchException;
+import com.authenhub.exception.UsernameAlreadyExistsException;
 import com.authenhub.filter.JwtService;
 import com.authenhub.repository.adapter.PasswordResetTokenRepositoryAdapter;
 import com.authenhub.repository.jpa.PermissionJpaRepository;
 import com.authenhub.repository.jpa.RoleJpaRepository;
 import com.authenhub.repository.jpa.RolePermissionRepository;
 import com.authenhub.repository.jpa.UserJpaRepository;
-import com.authenhub.service.SocialLoginService.SocialUserInfo;
 import com.authenhub.service.interfaces.IAuthService;
 import com.authenhub.utils.TimestampUtils;
 import com.authenhub.utils.Utils;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.http.auth.InvalidCredentialsException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.auth.InvalidCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -45,7 +57,7 @@ public class AuthService implements IAuthService {
     private final PasswordEncoder passwordEncoder;
     private final RoleJpaRepository roleRepository;
     private final SocialLoginService socialLoginService;
-    private final AuthenticationManager authenticationManager;
+    private final AuthenticationProviderCustom authenticationManager;
     private final PermissionJpaRepository permissionJpaRepository;
     private final RolePermissionRepository rolePermissionRepository;
     private final PasswordResetTokenRepositoryAdapter tokenRepository;
@@ -75,7 +87,7 @@ public class AuthService implements IAuthService {
         userRepository.save(user);
         log.info("Register new user successfully with id {}", user.getId());
         // Tạo token và response
-        String token = jwtService.generateToken(user);
+        String token = jwtService.createToken(user);
         return AuthResponse.builder()
                 .token(token)
                 .user(UserInfo.fromUser(user))
@@ -85,22 +97,22 @@ public class AuthService implements IAuthService {
     @Override
     public AuthResponse login(AuthRequest request) throws InvalidCredentialsException {
         log.info("Begin login with request {}", jsonMapper.toJson(request));
-        // Xác thực thông tin đăng nhập
-
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getUsername(),
-                            request.getPassword()
-                    )
-            );
-        } catch (Exception e) {
-            throw new ErrorApiException("123", "Invalid username or password");
-        }
 
         // Lấy thông tin user
         var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+                .orElseThrow(() -> new ErrorApiException("234", "User không tồn tại"));
+        // Xác thực thông tin đăng nhập
+        Authentication authentication = null;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            user, StringUtils.EMPTY
+                    )
+            );
+        } catch (Exception e) {
+            log.error("Login error", e);
+            throw new ErrorApiException("123", "Invalid username or password");
+        }
 
         // Cập nhật thời gian đăng nhập
         user.setLastLogin(TimestampUtils.now());
@@ -108,8 +120,10 @@ public class AuthService implements IAuthService {
         log.info("Login user successfully with id {}", user.getId());
         // Tạo token và response
         String token = jwtService.createToken(user);
+        String refreshToken = jwtService.createRefreshToken(user);
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .user(UserInfo.fromUser(user))
                 .build();
     }
@@ -144,7 +158,7 @@ public class AuthService implements IAuthService {
         userRepository.save(user);
 
         // Tạo token và response
-        String token = jwtService.generateToken(user);
+        String token = jwtService.createToken(user);
         return AuthResponse.builder()
                 .token(token)
                 .user(UserInfo.fromUser(user))
@@ -219,7 +233,7 @@ public class AuthService implements IAuthService {
             userRepository.save(user);
 
             // Generate JWT token
-            String token = jwtService.generateToken(user);
+            String token = jwtService.createToken(user);
 
             // Return response
             return AuthResponse.builder()
@@ -230,10 +244,6 @@ public class AuthService implements IAuthService {
             log.error("OAuth2 callback error", e);
             throw new RuntimeException("OAuth2 authentication failed: " + e.getMessage());
         }
-    }
-
-    public void changePassword(String username, ChangePasswordRequest request) {
-
     }
 
     @Override

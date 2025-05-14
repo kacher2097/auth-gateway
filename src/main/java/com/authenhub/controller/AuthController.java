@@ -73,20 +73,4 @@ public class AuthController {
         authService.resetPassword(request);
         return ApiResponse.success(null);
     }
-
-    @GetMapping("/check-role")
-    public ApiResponse<?> checkRole(@RequestHeader("Authorization") String token) {
-        // Extract token from Authorization header
-        String jwt = token.substring(7); // Remove "Bearer " prefix
-
-        // Get user role from token
-        String role = jwtService.extractRole(jwt);
-        boolean isAdmin = role != null && role.equals("ROLE_ADMIN");
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("role", role);
-        data.put("isAdmin", isAdmin);
-
-        return ApiResponse.success(data);
-    }
 }

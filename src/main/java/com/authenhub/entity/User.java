@@ -1,19 +1,17 @@
 package com.authenhub.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import java.sql.Timestamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
 
 @Data
 @Entity
@@ -21,7 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
-public class User implements UserDetails {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
@@ -89,64 +87,4 @@ public class User implements UserDetails {
 //    private String referralCode;
 //    private String referredBy;
 //    private Integer referralCount;
-
-    // Helper method to check if user has a specific role
-    public boolean hasRole(Long roleId) {
-        return this.roleId != null && this.roleId.equals(roleId);
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        Set<GrantedAuthority> authorities = new HashSet<>();
-        if (role != null) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
-
-            // If ADMIN, add all basic permissions
-            if (Objects.equals(role, "ADMIN")) {
-                // Add basic permissions for admin
-                authorities.add(new SimpleGrantedAuthority("permission:read"));
-                authorities.add(new SimpleGrantedAuthority("permission:create"));
-                authorities.add(new SimpleGrantedAuthority("permission:update"));
-                authorities.add(new SimpleGrantedAuthority("permission:delete"));
-                authorities.add(new SimpleGrantedAuthority("role:read"));
-                authorities.add(new SimpleGrantedAuthority("role:create"));
-                authorities.add(new SimpleGrantedAuthority("role:update"));
-                authorities.add(new SimpleGrantedAuthority("role:delete"));
-                authorities.add(new SimpleGrantedAuthority("user:read"));
-                authorities.add(new SimpleGrantedAuthority("user:create"));
-                authorities.add(new SimpleGrantedAuthority("user:update"));
-                authorities.add(new SimpleGrantedAuthority("user:delete"));
-                authorities.add(new SimpleGrantedAuthority("proxy:read"));
-                authorities.add(new SimpleGrantedAuthority("proxy:create"));
-                authorities.add(new SimpleGrantedAuthority("proxy:update"));
-                authorities.add(new SimpleGrantedAuthority("proxy:delete"));
-                authorities.add(new SimpleGrantedAuthority("analytics:view"));
-                authorities.add(new SimpleGrantedAuthority("analytics:export"));
-                authorities.add(new SimpleGrantedAuthority("settings:read"));
-                authorities.add(new SimpleGrantedAuthority("settings:update"));
-            }
-        }
-
-        return authorities;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return active;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return active;
-    }
 }
