@@ -35,6 +35,7 @@ import com.authenhub.service.interfaces.IAuthService;
 import com.authenhub.utils.TimestampUtils;
 import com.authenhub.utils.Utils;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,10 +68,10 @@ public class AuthService implements IAuthService {
         log.info("Begin register new user with request {}", jsonMapper.toJson(request));
         // Kiểm tra username và email đã tồn tại
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new UsernameAlreadyExistsException();
+            throw new ErrorApiException("741", "Username already exists");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new EmailAlreadyExistsException();
+            throw new ErrorApiException("742", "Email already exists");
         }
 
         // Tạo user mới
@@ -80,11 +81,12 @@ public class AuthService implements IAuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setRole("USER");
+        user.setRoleId(2L);
         user.setActive(true);
         user.setCreatedAt(TimestampUtils.now());
         user.setUpdatedAt(TimestampUtils.now());
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
         log.info("Register new user successfully with id {}", user.getId());
         // Tạo token và response
         String token = jwtService.createToken(user);
@@ -180,10 +182,9 @@ public class AuthService implements IAuthService {
                 return UserInfo.fromUser(user);
             }
 
-            List<Permission> permissions = permissionJpaRepository.findAllByIdIn(
-                    rolePermissions.stream()
-                            .map(RolePermission::getId)
-                            .collect(Collectors.toList()));
+            Set<String> permissions = rolePermissions.stream()
+                    .map(RolePermission::getPermissionName)
+                    .collect(Collectors.toSet());
 
             UserInfoResponse userInfoResponse = UserInfoResponse.builder()
                     .id(user.getId())
@@ -192,7 +193,7 @@ public class AuthService implements IAuthService {
                     .fullName(user.getFullName())
                     .avatar(user.getAvatar())
                     .roleId(user.getRoleId())
-                    .permissions(permissions.stream().map(Permission::getName).collect(Collectors.toSet()))
+                    .permissions(permissions)
                     .build();
             log.info("UserInfoResponse have data {}", userInfoResponse);
             return userInfoResponse;
@@ -221,6 +222,7 @@ public class AuthService implements IAuthService {
                         newUser.setAvatar(userInfo.getPicture());
                         newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
                         newUser.setRole("USER");
+                        newUser.setRoleId(2L);
                         newUser.setActive(true);
                         newUser.setCreatedAt(TimestampUtils.now());
                         newUser.setUpdatedAt(TimestampUtils.now());

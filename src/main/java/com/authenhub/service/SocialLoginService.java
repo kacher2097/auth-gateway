@@ -1,5 +1,6 @@
 package com.authenhub.service;
 
+import com.authenhub.bean.auth.social.AuthSocialRequest;
 import com.authenhub.bean.auth.social.SocialUserInfo;
 import com.authenhub.bean.auth.social.TokenResponse;
 import com.authenhub.exception.ErrorApiException;
@@ -70,20 +71,21 @@ public class SocialLoginService {
             throw new RuntimeException("Provider không hợp lệ");
         }
 
-        // Create request body
-        String requestBody = "code=" + code +
-                "&client_id=" + clientId +
-                "&client_secret=" + clientSecret +
-                "&redirect_uri=" + redirectUri +
-                "&grant_type=authorization_code";
-
+        AuthSocialRequest authSocialRequest = AuthSocialRequest.builder()
+                .clientId(clientId)
+                .clientSecret(clientSecret)
+                .code(code)
+                .provider(provider)
+                .redirectUri(redirectUri)
+                .grantType("authorization_code")
+                .build();
         // Make POST request to token endpoint
         try {
             // This is a simplified example - in a real app, you'd use proper OAuth2 libraries
             // or Spring Security OAuth2 support
             TokenResponse response = restTemplate.postForObject(
                 tokenUrl,
-                requestBody,
+                    authSocialRequest,
                 TokenResponse.class
             );
 

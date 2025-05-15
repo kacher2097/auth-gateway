@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChatMessage {
 
-    private String role; // "user" hoặc "assistant"
+    private String role;
     private String content;
     private Long timestamp;
 }

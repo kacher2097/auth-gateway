@@ -32,3 +32,7 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Ho_Chi_Minh
+    deserialization:
+      fail-on-unknown-properties: false
+    mapper:
+      accept-case-insensitive-properties: true

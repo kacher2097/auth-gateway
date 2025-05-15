@@ -56,14 +56,14 @@ public class JwtService {
 //            log.error("Token is expired");
 //            return null;
 //        }
-        if (token == null || token.isEmpty()) {
+        if (org.apache.commons.lang3.StringUtils.isEmpty(token)) {
             log.error("Attempted to extract claims from null or empty token");
             return null;
         }
 
         try {
             final String finalToken = getJwtFromRequest(token);
-            if (finalToken == null || finalToken.isEmpty()) {
+            if (org.apache.commons.lang3.StringUtils.isEmpty(finalToken)) {
                 log.error("Token after processing is null or empty");
                 return null;
             }
@@ -123,7 +123,6 @@ public class JwtService {
                 log.debug("Extracted token: {}", token);
                 return StringUtils.hasText(token) ? token : null;
             } else {
-                // Nếu token không bắt đầu bằng "Bearer ", có thể nó đã được xử lý trước đó
                 return tokenWithBearer.trim();
             }
         }

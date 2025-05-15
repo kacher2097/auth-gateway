@@ -21,11 +21,6 @@ public class PaymentConfig {
     }
 
     @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
-
-    @Bean
     public Map<String, PaymentProvider> paymentProviders(
             VNPayProvider vnPayProvider,
             MoMoProvider moMoProvider,

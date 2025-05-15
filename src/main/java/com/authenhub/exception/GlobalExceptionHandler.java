@@ -3,6 +3,8 @@ package com.authenhub.exception;
 import com.authenhub.dto.ErrorResponse;
 import com.authenhub.utils.TimestampUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.mongodb.UncategorizedMongoDbException;
@@ -13,9 +15,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
@@ -149,12 +148,31 @@ public class GlobalExceptionHandler {
                     .build();
             return ResponseEntity.ok(errorResponse);
         }
-
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .message("An unexpected error occurred. Please try again later.")
-                .code("99")
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.ok(errorResponse);
+        ErrorResponse errorResponse;
+        switch (ex) {
+            case AuthException authException:
+                log.debug("Handled exception: ", ex);
+                errorResponse = ErrorResponse.builder()
+                        .message(authException.getMessage())
+                        .code("89")
+                        .path(request.getRequestURI())
+                        .build();
+                return ResponseEntity.ok(errorResponse);
+            case IllegalArgumentException illegalArgumentException:
+                log.debug("Handled exception: ", ex);
+                errorResponse = ErrorResponse.builder()
+                        .code("10")
+                        .message(illegalArgumentException.getMessage())
+                        .path(request.getRequestURI())
+                        .build();
+                return ResponseEntity.ok(errorResponse);
+            default:
+                errorResponse = ErrorResponse.builder()
+                        .code("99")
+                        .message("An unexpected error occurred. Please try again later.")
+                        .path(request.getRequestURI())
+                        .build();
+                return ResponseEntity.ok(errorResponse);
+        }
     }
 }
