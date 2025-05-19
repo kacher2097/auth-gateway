@@ -106,10 +106,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             filterChain.doFilter(request, response);
-        } catch (Exception ex) {
-            log.error("Function doFilterInternal has exception: ", ex);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid or expired token");
+        } catch (ErrorApiException ex) {
+            log.error("Function doFilterInternal has exception: {}", ex.getMessage());
+            throw new ErrorApiException(ex.getCode(), ex.getMessage());
         } finally {
             publishAction(request, username);
             log.info(
@@ -143,9 +142,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     user, token, grantedAuthorities);
             log.debug("Authentication token created successfully for user: {}", subject);
             return authentication;
-        } catch (Exception ex) {
-            log.error("Function getAuthentication has exception: ", ex);
-            return null;
+        } catch (ErrorApiException ex) {
+            log.error("Function getAuthentication has exception: {}", ex.getMessage());
+            throw ex;
         }
     }
 

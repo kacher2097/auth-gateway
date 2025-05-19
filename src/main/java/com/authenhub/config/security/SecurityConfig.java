@@ -1,5 +1,6 @@
 package com.authenhub.config.security;
 
+import com.authenhub.filter.AuthenticationEntryPointCustom;
 import com.authenhub.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler;
+    private final AuthenticationEntryPointCustom authenticationEntryPoint;
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
@@ -86,6 +88,9 @@ public class SecurityConfig {
                         .contentSecurityPolicy(HeadersConfigurer.ContentSecurityPolicyConfig::reportOnly)
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                )
                 .httpBasic(Customizer.withDefaults());
         return http.build();
     }
