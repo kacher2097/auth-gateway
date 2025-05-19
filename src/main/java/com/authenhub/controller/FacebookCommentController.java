@@ -1,5 +1,6 @@
 package com.authenhub.controller;
 
+import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.bean.common.SimpleApiResponse;
 import com.authenhub.bean.facebook.comment.FacebookAutoReplyRuleRequest;
 import com.authenhub.bean.facebook.comment.FacebookCommentFilterRequest;
@@ -22,26 +23,26 @@ public class FacebookCommentController {
     private final IFacebookCommentService commentService;
     
     @GetMapping
-    public ResponseEntity<List<FacebookCommentResponse>> getComments(
+    public ApiResponse<?> getComments(
             @RequestParam String postId,
             @RequestParam String userId,
             @RequestParam(defaultValue = "100") int limit,
             @RequestParam(defaultValue = "0") int offset) {
         List<FacebookCommentResponse> comments = commentService.getComments(postId, userId, limit, offset);
-        return ResponseEntity.ok(comments);
+        return ApiResponse.success(comments);
     }
     
     @PostMapping
-    public ResponseEntity<FacebookCommentResponse> createComment(
+    public ApiResponse<?> createComment(
             @RequestParam String postId,
             @RequestParam String userId,
             @RequestBody FacebookCommentRequest request) {
         FacebookCommentResponse comment = commentService.createComment(postId, request, userId);
-        return ResponseEntity.ok(comment);
+        return ApiResponse.success(comment);
     }
     
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<SimpleApiResponse> deleteComment(
+    public ApiResponse<?> deleteComment(
             @PathVariable String commentId,
             @RequestParam String userId) {
         boolean deleted = commentService.deleteComment(commentId, userId);
@@ -51,27 +52,27 @@ public class FacebookCommentController {
                 .message(deleted ? "Comment deleted successfully" : "Failed to delete comment")
                 .build();
         
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(response);
     }
     
     @PostMapping("/auto-reply")
-    public ResponseEntity<FacebookAutoReplyRule> addAutoReplyRule(
+    public ApiResponse<?> addAutoReplyRule(
             @RequestParam String userId,
             @RequestBody FacebookAutoReplyRuleRequest request) {
         FacebookAutoReplyRule rule = commentService.addAutoReplyRule(request, userId);
-        return ResponseEntity.ok(rule);
+        return ApiResponse.success(rule);
     }
     
     @GetMapping("/auto-reply")
-    public ResponseEntity<List<FacebookAutoReplyRule>> getAutoReplyRules(
+    public ApiResponse<?> getAutoReplyRules(
             @RequestParam String targetId,
             @RequestParam String userId) {
         List<FacebookAutoReplyRule> rules = commentService.getAutoReplyRules(targetId, userId);
-        return ResponseEntity.ok(rules);
+        return ApiResponse.success(rules);
     }
     
     @DeleteMapping("/auto-reply/{ruleId}")
-    public ResponseEntity<SimpleApiResponse> deleteAutoReplyRule(
+    public ApiResponse<?> deleteAutoReplyRule(
             @PathVariable String ruleId,
             @RequestParam String userId) {
         boolean deleted = commentService.deleteAutoReplyRule(ruleId, userId);
@@ -81,14 +82,14 @@ public class FacebookCommentController {
                 .message(deleted ? "Auto reply rule deleted successfully" : "Failed to delete auto reply rule")
                 .build();
         
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(response);
     }
     
     @PostMapping("/filter")
-    public ResponseEntity<FacebookCommentFilter> addCommentFilterRule(
+    public ApiResponse<?> addCommentFilterRule(
             @RequestParam String userId,
             @RequestBody FacebookCommentFilterRequest request) {
         FacebookCommentFilter filter = commentService.addCommentFilterRule(request, userId);
-        return ResponseEntity.ok(filter);
+        return ApiResponse.success(filter);
     }
 }

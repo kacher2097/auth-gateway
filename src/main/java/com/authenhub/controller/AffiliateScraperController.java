@@ -37,12 +37,12 @@ public class AffiliateScraperController {
      * @return The products with affiliate links
      */
     @PostMapping("/generate-links")
-    public ResponseEntity<ApiResponse<ProductItem[]>> generateAffiliateLinks(
+    public ApiResponse<?> generateAffiliateLinks(
             @RequestBody ProductItem[] products,
             @RequestParam String affiliateId) {
-        
+
         ProductItem[] updatedProducts = affiliateScraperService.generateAffiliateLinks(products, affiliateId);
-        return ResponseEntity.ok(ApiResponse.success(updatedProducts));
+        return ApiResponse.success(updatedProducts);
     }
 
     /**
@@ -53,13 +53,13 @@ public class AffiliateScraperController {
      * @return True if the product is successfully added to price tracking
      */
     @PostMapping("/track-price")
-    public ResponseEntity<ApiResponse<Boolean>> trackProductPrice(
+    public ApiResponse<?> trackProductPrice(
             @RequestParam String productId,
             @RequestParam String platform,
             @RequestParam String userId) {
-        
+
         boolean result = affiliateScraperService.trackProductPrice(productId, platform, userId);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ApiResponse.success(result);
     }
 
     /**
@@ -72,16 +72,16 @@ public class AffiliateScraperController {
     public ResponseEntity<byte[]> exportProducts(
             @PathVariable String format,
             @RequestBody AffiliateScraperResponse response) {
-        
+
         byte[] fileContent = affiliateScraperService.exportProducts(format, response);
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(getMediaType(format));
         headers.setContentDispositionFormData("attachment", "products." + format);
-        
+
         return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
     }
-    
+
     private MediaType getMediaType(String format) {
         switch (format.toLowerCase()) {
             case "json":

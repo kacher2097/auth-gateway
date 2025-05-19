@@ -6,10 +6,12 @@ import com.authenhub.bean.tool.dataextractor.DataExtractorResponse;
 import com.authenhub.service.interfaces.IDataExtractorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/tools/data-extractor")
@@ -20,35 +22,37 @@ public class DataExtractorController {
 
     /**
      * Extract data from a source
+     *
      * @param request The data extractor request
      * @return The data extractor response
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<DataExtractorResponse>> extractData(@RequestBody DataExtractorRequest request) {
+    public ApiResponse<DataExtractorResponse> extractData(@RequestBody DataExtractorRequest request) {
         DataExtractorResponse response = dataExtractorService.extractData(request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ApiResponse.success(response);
     }
 
     /**
      * Export extracted data to a file
-     * @param format The export format (csv, json, excel)
+     *
+     * @param format   The export format (csv, json, excel)
      * @param response The data extractor response
      * @return The file content
      */
     @PostMapping("/export/{format}")
-    public ResponseEntity<byte[]> exportExtractedData(
+    public ApiResponse<byte[]> exportExtractedData(
             @PathVariable String format,
             @RequestBody DataExtractorResponse response) {
-        
+
         byte[] fileContent = dataExtractorService.exportExtractedData(format, response);
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(getMediaType(format));
         headers.setContentDispositionFormData("attachment", "extracted-data." + format);
-        
-        return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
+
+        return ApiResponse.success(fileContent);
     }
-    
+
     private MediaType getMediaType(String format) {
         switch (format.toLowerCase()) {
             case "json":

@@ -24,9 +24,9 @@ public class WebCrawlerController {
      * @return The web crawler response
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<WebCrawlerResponse>> crawlWebPages(@RequestBody WebCrawlerRequest request) {
+    public ApiResponse<?> crawlWebPages(@RequestBody WebCrawlerRequest request) {
         WebCrawlerResponse response = webCrawlerService.crawlWebPages(request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ApiResponse.success(response);
     }
 
     /**
@@ -35,9 +35,9 @@ public class WebCrawlerController {
      * @return The web crawler response
      */
     @GetMapping("/{jobId}")
-    public ResponseEntity<ApiResponse<WebCrawlerResponse>> getCrawlStatus(@PathVariable String jobId) {
+    public ApiResponse<?> getCrawlStatus(@PathVariable String jobId) {
         WebCrawlerResponse response = webCrawlerService.getCrawlStatus(jobId);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ApiResponse.success(response);
     }
 
     /**
@@ -50,13 +50,13 @@ public class WebCrawlerController {
     public ResponseEntity<byte[]> exportWebPages(
             @PathVariable String format,
             @PathVariable String jobId) {
-        
+
         byte[] fileContent = webCrawlerService.exportWebPages(format, jobId);
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(getMediaType(format));
         headers.setContentDispositionFormData("attachment", "web-pages." + format);
-        
+
         return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
     }
 
@@ -66,11 +66,11 @@ public class WebCrawlerController {
      * @return The job ID
      */
     @PostMapping("/schedule")
-    public ResponseEntity<ApiResponse<String>> scheduleCrawlJob(@RequestBody WebCrawlerRequest request) {
+    public ApiResponse<?> scheduleCrawlJob(@RequestBody WebCrawlerRequest request) {
         String jobId = webCrawlerService.scheduleCrawlJob(request);
-        return ResponseEntity.ok(ApiResponse.success(jobId));
+        return ApiResponse.success(jobId);
     }
-    
+
     private MediaType getMediaType(String format) {
         switch (format.toLowerCase()) {
             case "json":
