@@ -17,6 +17,8 @@ spring:
       - ai
       - logging
       - scraper
+      - password
+      - swagger
 
   # Application settings
   main:
