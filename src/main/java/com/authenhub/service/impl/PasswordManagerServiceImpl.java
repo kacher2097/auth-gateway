@@ -1,27 +1,40 @@
 package com.authenhub.service.impl;
 
 import com.authenhub.bean.common.ApiResponse;
-import com.authenhub.bean.passwordmanager.*;
+import com.authenhub.bean.passwordmanager.CheckPasswordStrengthRequest;
+import com.authenhub.bean.passwordmanager.CheckPasswordStrengthResponse;
+import com.authenhub.bean.passwordmanager.ExportPasswordsResponse;
+import com.authenhub.bean.passwordmanager.GeneratePasswordRequest;
+import com.authenhub.bean.passwordmanager.GeneratePasswordResponse;
+import com.authenhub.bean.passwordmanager.ImportPasswordsRequest;
+import com.authenhub.bean.passwordmanager.ImportPasswordsResponse;
+import com.authenhub.bean.passwordmanager.PasswordCreateRequest;
+import com.authenhub.bean.passwordmanager.PasswordResponse;
+import com.authenhub.bean.passwordmanager.PasswordUpdateRequest;
+import com.authenhub.bean.passwordmanager.PwManagerSearchReq;
 import com.authenhub.constant.enums.ApiResponseCode;
 import com.authenhub.entity.PasswordManage;
+import com.authenhub.entity.PasswordManage_;
 import com.authenhub.repository.PasswordManageRepository;
 import com.authenhub.service.PasswordManagerService;
 import com.authenhub.utils.PasswordEncryptionUtil;
 import com.authenhub.utils.PasswordUtils;
+import com.authenhub.utils.SpecificationCustom;
 import com.authenhub.utils.TimestampUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.io.IOException;
-import java.util.Arrays;
 
 @Slf4j
 @Service
@@ -38,30 +51,19 @@ public class PasswordManagerServiceImpl implements PasswordManagerService {
 
         List<PasswordManage> results;
 
-        if (StringUtils.isNotBlank(request.getKeyword())) {
-            // Search by keyword in site URL or username
-            results = passwordManageRepository.findByKeyword(request.getKeyword());
-        } else if (StringUtils.isNotBlank(request.getUsername())) {
-            // Search by username
-            results = passwordManageRepository.findByUsernameContainingIgnoreCase(request.getUsername());
+        // Use the specification-based search if any filter criteria are provided
+        if (StringUtils.isNotBlank(request.getKeyword()) ||
+                StringUtils.isNotBlank(request.getProvider()) ||
+                StringUtils.isNotBlank(request.getUsername())) {
+
+            Specification<PasswordManage> spec = buildSpecification(request);
+            results = passwordManageRepository.findAll(spec);
         } else {
-            // Get all passwords
+            // Get all passwords if no filters are provided
             results = passwordManageRepository.findAll();
         }
 
         List<PasswordResponse> responses = results.stream()
-                .map(PasswordResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        return ApiResponse.success(responses);
-    }
-
-    @Override
-    public ApiResponse<List<PasswordResponse>> getAllPasswords() {
-        log.info("Getting all passwords");
-
-        List<PasswordManage> passwordManages = passwordManageRepository.findAll();
-        List<PasswordResponse> responses = passwordManages.stream()
                 .map(PasswordResponse::fromEntity)
                 .collect(Collectors.toList());
 
@@ -478,5 +480,11 @@ public class PasswordManagerServiceImpl implements PasswordManagerService {
             log.error("Error importing from JSON: {}", e.getMessage(), e);
             return new ArrayList<>();
         }
+    }
+
+    private Specification<PasswordManage> buildSpecification(PwManagerSearchReq request) {
+        Specification<PasswordManage> specKeyword = SpecificationCustom.hasLikeIgnoreCase(PasswordManage_.SITE_URL, request.getKeyword());
+        Specification<PasswordManage> specUsername = SpecificationCustom.hasLikeIgnoreCase(PasswordManage_.USERNAME, request.getKeyword());
+        return SpecificationCustom.and(specKeyword, specUsername);
     }
 }

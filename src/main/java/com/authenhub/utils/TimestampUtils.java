@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
- * Utility class for handling timestamp conversions
+ * Utility class for working with Timestamp objects
  */
 public class TimestampUtils {
 
@@ -93,15 +93,6 @@ public class TimestampUtils {
     }
 
     /**
-     * Get current timestamp
-     *
-     * @return the current timestamp
-     */
-    public static Timestamp now() {
-        return new Timestamp(System.currentTimeMillis());
-    }
-
-    /**
      * Create a timestamp from milliseconds
      *
      * @param milliseconds the milliseconds
@@ -128,7 +119,7 @@ public class TimestampUtils {
      * Add seconds to a timestamp
      *
      * @param timestamp the timestamp
-     * @param seconds the seconds to add
+     * @param seconds   the seconds to add
      * @return the new timestamp
      */
     public static Timestamp addSeconds(Timestamp timestamp, int seconds) {
@@ -142,7 +133,7 @@ public class TimestampUtils {
      * Add minutes to a timestamp
      *
      * @param timestamp the timestamp
-     * @param minutes the minutes to add
+     * @param minutes   the minutes to add
      * @return the new timestamp
      */
     public static Timestamp addMinutes(Timestamp timestamp, int minutes) {
@@ -153,7 +144,7 @@ public class TimestampUtils {
      * Add hours to a timestamp
      *
      * @param timestamp the timestamp
-     * @param hours the hours to add
+     * @param hours     the hours to add
      * @return the new timestamp
      */
     public static Timestamp addHours(Timestamp timestamp, int hours) {
@@ -164,10 +155,45 @@ public class TimestampUtils {
      * Add days to a timestamp
      *
      * @param timestamp the timestamp
-     * @param days the days to add
+     * @param days      the days to add
      * @return the new timestamp
      */
     public static Timestamp addDays(Timestamp timestamp, int days) {
         return addHours(timestamp, days * 24);
+    }
+
+    /**
+     * Get current timestamp
+     *
+     * @return Current timestamp
+     */
+    public static Timestamp now() {
+        return Timestamp.valueOf(LocalDateTime.now());
+    }
+
+    /**
+     * Convert String to Timestamp
+     *
+     * @param dateTimeString String to convert (format: yyyy-MM-dd HH:mm:ss)
+     * @return Timestamp
+     */
+    public static Timestamp fromString(String dateTimeString) {
+        if (dateTimeString == null || dateTimeString.isEmpty()) {
+            return null;
+        }
+        return Timestamp.valueOf(dateTimeString);
+    }
+
+    /**
+     * Convert Timestamp to String
+     *
+     * @param timestamp Timestamp to convert
+     * @return String (format: yyyy-MM-dd HH:mm:ss)
+     */
+    public static String toString(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        return timestamp.toString();
     }
 }

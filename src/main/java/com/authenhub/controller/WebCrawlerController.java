@@ -4,6 +4,8 @@ import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.bean.tool.webcrawler.WebCrawlerRequest;
 import com.authenhub.bean.tool.webcrawler.WebCrawlerResponse;
 import com.authenhub.service.interfaces.IWebCrawlerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,39 +16,30 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/tools/web-crawler")
 @RequiredArgsConstructor
+@Tag(name = "Web Crawler", description = "API để thu thập dữ liệu từ các trang web")
 public class WebCrawlerController {
 
     private final IWebCrawlerService webCrawlerService;
 
-    /**
-     * Crawl web pages from a website
-     * @param request The web crawler request
-     * @return The web crawler response
-     */
     @PostMapping
+    @Operation(summary = "Thu thập dữ liệu từ trang web",
+            description = "Thu thập dữ liệu từ một trang web dựa trên các tham số đầu vào.")
     public ApiResponse<?> crawlWebPages(@RequestBody WebCrawlerRequest request) {
         WebCrawlerResponse response = webCrawlerService.crawlWebPages(request);
         return ApiResponse.success(response);
     }
 
-    /**
-     * Get the status of a crawl job
-     * @param jobId The job ID
-     * @return The web crawler response
-     */
     @GetMapping("/{jobId}")
+    @Operation(summary = "Lấy trạng thái của công việc thu thập",
+            description = "Lấy trạng thái và kết quả của một công việc thu thập dữ liệu dựa trên ID.")
     public ApiResponse<?> getCrawlStatus(@PathVariable String jobId) {
         WebCrawlerResponse response = webCrawlerService.getCrawlStatus(jobId);
         return ApiResponse.success(response);
     }
 
-    /**
-     * Export web pages to a file
-     * @param format The export format (csv, json, excel)
-     * @param jobId The job ID
-     * @return The file content
-     */
     @GetMapping("/export/{format}/{jobId}")
+    @Operation(summary = "Xuất dữ liệu thu thập ra file",
+            description = "Xuất dữ liệu đã thu thập ra file với các định dạng khác nhau (CSV, JSON, Excel).")
     public ResponseEntity<byte[]> exportWebPages(
             @PathVariable String format,
             @PathVariable String jobId) {
@@ -60,12 +53,9 @@ public class WebCrawlerController {
         return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
     }
 
-    /**
-     * Schedule a crawl job
-     * @param request The web crawler request
-     * @return The job ID
-     */
     @PostMapping("/schedule")
+    @Operation(summary = "Lên lịch công việc thu thập dữ liệu",
+            description = "Lên lịch một công việc thu thập dữ liệu để chạy trong tương lai.")
     public ApiResponse<?> scheduleCrawlJob(@RequestBody WebCrawlerRequest request) {
         String jobId = webCrawlerService.scheduleCrawlJob(request);
         return ApiResponse.success(jobId);

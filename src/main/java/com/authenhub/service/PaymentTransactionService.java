@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 
-import com.authenhub.utils.TimestampUtils;
-
 import java.util.List;
 
 @Service

@@ -16,11 +16,11 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173", "http://localhost:5174","http://localhost:5175",
                 "http://localhost:5176", "http://localhost:5177", "http://localhost:5178", "http://localhost:62998", "http://localhost:57249",
-                "https://app.tuan4tech.info", "http://app.tuan4tech.info"));
+                "https://app.tuan4tech.info", "http://app.tuan4tech.info", "http://localhost:8118"));
         config.addAllowedHeader(CorsConfiguration.ALL);
         config.addAllowedMethod(CorsConfiguration.ALL);
         config.setAllowCredentials(true);
-        config.addExposedHeader("Authorization,Link,X-Total-Count,itPhone,type");
+        config.addExposedHeader("**");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 

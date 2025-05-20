@@ -7,6 +7,8 @@ import com.authenhub.entity.User;
 import com.authenhub.service.UserContext;
 import com.authenhub.service.UserRoleService;
 import com.authenhub.service.interfaces.IUserManagementService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -19,18 +21,16 @@ import org.springframework.security.access.AccessDeniedException;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "User Management", description = "API quản lý người dùng: xem và cập nhật thông tin cá nhân")
 public class UserManagementController {
 
     private final UserContext userContext;
     private final UserRoleService userRoleService;
     private final IUserManagementService userManagementService;
 
-    /**
-     * Get the current user's profile
-     *
-     * @return the current user's profile
-     */
     @GetMapping("/me")
+    @Operation(summary = "Lấy thông tin người dùng hiện tại",
+            description = "Lấy thông tin của người dùng đã đăng nhập.")
     public ApiResponse<?> getCurrentUser() {
         User currentUser = userContext.getCurrentUser();
 
@@ -41,13 +41,9 @@ public class UserManagementController {
         return ApiResponse.success(currentUser);
     }
 
-    /**
-     * Update the current user's profile
-     *
-     * @param request update request
-     * @return updated user
-     */
     @PutMapping("/me")
+    @Operation(summary = "Cập nhật thông tin người dùng hiện tại",
+            description = "Cập nhật thông tin của người dùng đã đăng nhập.")
     public ApiResponse<?> updateCurrentUser(@RequestBody UserUpdateRequest request) {
         User currentUser = userContext.getCurrentUser();
 
@@ -64,13 +60,9 @@ public class UserManagementController {
         }
     }
 
-    /**
-     * Get a user by ID
-     *
-     * @param userId user ID
-     * @return user
-     */
     @GetMapping("/{userId}")
+    @Operation(summary = "Lấy thông tin người dùng theo ID",
+            description = "Lấy thông tin của người dùng dựa trên ID. Chỉ admin mới có quyền truy cập.")
     public ApiResponse<?> getUserById(@PathVariable String userId) {
         // Check if user is authenticated
         if (!userContext.isAuthenticated()) {
@@ -92,14 +84,9 @@ public class UserManagementController {
         }
     }
 
-    /**
-     * Update a user by ID
-     *
-     * @param userId user ID
-     * @param request update request
-     * @return updated user
-     */
     @PutMapping("/{userId}")
+    @Operation(summary = "Cập nhật thông tin người dùng theo ID",
+            description = "Cập nhật thông tin của người dùng dựa trên ID. Chỉ admin mới có quyền truy cập.")
     public ApiResponse<?> updateUser(@PathVariable Long userId, @RequestBody UserUpdateRequest request) {
         try {
             User updatedUser = userManagementService.updateUser(userId, request);
@@ -112,13 +99,6 @@ public class UserManagementController {
         }
     }
 
-    /**
-     * Set user active status
-     *
-     * @param userId user ID
-     * @param active active status
-     * @return updated user
-     */
     @PutMapping("/{userId}/active")
     public ApiResponse<?> setUserActiveStatus(@PathVariable Long userId, @RequestParam boolean active) {
         try {
@@ -132,13 +112,6 @@ public class UserManagementController {
         }
     }
 
-    /**
-     * Set user role
-     *
-     * @param userId user ID
-     * @param role role
-     * @return updated user
-     */
     @PutMapping("/{userId}/role")
     public ApiResponse<?> setUserRole(@PathVariable Long userId, @RequestParam String role) {
         try {
@@ -161,13 +134,6 @@ public class UserManagementController {
         return ApiResponse.success(updatedUser);
     }
 
-    /**
-     * Add role to user
-     *
-     * @param userId user id
-     * @param roleId role id
-     * @return updated user
-     */
     @PutMapping("/{userId}/roles/add")
     public ApiResponse<?> addRoleToUser(
             @PathVariable Long userId,
@@ -177,13 +143,6 @@ public class UserManagementController {
         return ApiResponse.success(updatedUser);
     }
 
-    /**
-     * Remove role from user
-     *
-     * @param userId user id
-     * @param roleId role id
-     * @return updated user
-     */
     @PutMapping("/{userId}/roles/remove")
     public ApiResponse<?> removeRoleFromUser(
             @PathVariable Long userId,

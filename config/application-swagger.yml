@@ -17,4 +17,5 @@ springdoc:
     display-request-duration: true
   show-actuator: false
   packages-to-scan: com.authenhub.controller
-  paths-to-match: /api/**
+  paths-to-match: /**
+  port: 8118

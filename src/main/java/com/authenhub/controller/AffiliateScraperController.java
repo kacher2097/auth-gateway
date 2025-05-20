@@ -5,6 +5,8 @@ import com.authenhub.bean.tool.affiliatescraper.AffiliateScraperRequest;
 import com.authenhub.bean.tool.affiliatescraper.AffiliateScraperResponse;
 import com.authenhub.bean.tool.affiliatescraper.ProductItem;
 import com.authenhub.service.interfaces.IAffiliateScraperService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,28 +17,22 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/tools/affiliate-scraper")
 @RequiredArgsConstructor
+@Tag(name = "Affiliate Scraper", description = "API để thu thập và quản lý sản phẩm từ các nền tảng thương mại điện tử")
 public class AffiliateScraperController {
 
     private final IAffiliateScraperService affiliateScraperService;
 
-    /**
-     * Scrape products from an e-commerce platform
-     * @param request The affiliate scraper request
-     * @return The affiliate scraper response
-     */
     @PostMapping
+    @Operation(summary = "Thu thập sản phẩm từ nền tảng thương mại điện tử",
+            description = "Thu thập thông tin sản phẩm từ các nền tảng thương mại điện tử như Shopee, Lazada, Tiki, v.v.")
     public ApiResponse<AffiliateScraperResponse> scrapeProducts(@RequestBody AffiliateScraperRequest request) {
         AffiliateScraperResponse response = affiliateScraperService.scrapeProducts(request);
         return ApiResponse.success(response);
     }
 
-    /**
-     * Generate affiliate links for products
-     * @param products The products to generate affiliate links for
-     * @param affiliateId The affiliate ID
-     * @return The products with affiliate links
-     */
     @PostMapping("/generate-links")
+    @Operation(summary = "Tạo liên kết tiếp thị liên kết cho sản phẩm",
+            description = "Tạo liên kết tiếp thị liên kết cho các sản phẩm đã thu thập để kiếm hoa hồng.")
     public ApiResponse<?> generateAffiliateLinks(
             @RequestBody ProductItem[] products,
             @RequestParam String affiliateId) {
@@ -45,14 +41,9 @@ public class AffiliateScraperController {
         return ApiResponse.success(updatedProducts);
     }
 
-    /**
-     * Track product prices
-     * @param productId The product ID
-     * @param platform The platform
-     * @param userId The user ID
-     * @return True if the product is successfully added to price tracking
-     */
     @PostMapping("/track-price")
+    @Operation(summary = "Theo dõi giá sản phẩm",
+            description = "Thêm sản phẩm vào danh sách theo dõi giá để nhận thông báo khi giá thay đổi.")
     public ApiResponse<?> trackProductPrice(
             @RequestParam String productId,
             @RequestParam String platform,
@@ -62,13 +53,9 @@ public class AffiliateScraperController {
         return ApiResponse.success(result);
     }
 
-    /**
-     * Export products to a file
-     * @param format The export format (csv, json, excel)
-     * @param response The affiliate scraper response
-     * @return The file content
-     */
     @PostMapping("/export/{format}")
+    @Operation(summary = "Xuất sản phẩm ra file",
+            description = "Xuất danh sách sản phẩm đã thu thập ra file với các định dạng khác nhau (CSV, JSON, Excel).")
     public ResponseEntity<byte[]> exportProducts(
             @PathVariable String format,
             @RequestBody AffiliateScraperResponse response) {

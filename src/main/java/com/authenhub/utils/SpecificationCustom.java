@@ -64,101 +64,36 @@ public class SpecificationCustom {
                 fromDate, toDate);
     }
 
-    /**
-     * Create a specification for boolean value query.
-     *
-     * @param key   field name
-     * @param value boolean value
-     * @param <T>   entity type
-     * @return specification for boolean value
-     */
     public static <T> Specification<T> hasValue(String key, Boolean value) {
         return (root, query, cb) -> value == null ? cb.conjunction() : cb.equal(root.get(key), value);
     }
 
-    /**
-     * Create a specification for string value query.
-     *
-     * @param key   field name
-     * @param value string value
-     * @param <T>   entity type
-     * @return specification for string value
-     */
     public static <T> Specification<T> hasValue(String key, String value) {
         return (root, query, cb) -> StringUtils.isBlank(value) ? cb.conjunction() : cb.equal(root.get(key), value);
     }
 
-    /**
-     * Create a specification for integer value query.
-     *
-     * @param key   field name
-     * @param value integer value
-     * @param <T>   entity type
-     * @return specification for integer value
-     */
     public static <T> Specification<T> hasValue(String key, Integer value) {
         return (root, query, cb) -> value == null || value == 0 ? cb.conjunction() : cb.equal(root.get(key), value);
     }
 
-    /**
-     * Create a specification for merchant level query.
-     *
-     * @param key   field name
-     * @param value integer value
-     * @param <T>   entity type
-     * @return specification for merchant level
-     */
     public static <T> Specification<T> hasValueLevelMerchant(String key, Integer value) {
         return (root, query, cb) -> value == null ? cb.conjunction() : cb.equal(root.get(key), value);
     }
 
-    /**
-     * Create a specification for integer value query including zero.
-     *
-     * @param key   field name
-     * @param value integer value
-     * @param <T>   entity type
-     * @return specification for integer value including zero
-     */
     public static <T> Specification<T> hasValueIncludeZero(String key, Integer value) {
         return (root, query, cb) -> value == null ? cb.conjunction() : cb.equal(root.get(key), value);
     }
 
-    /**
-     * Create a specification for case-insensitive string value query.
-     *
-     * @param key   field name
-     * @param value string value
-     * @param <T>   entity type
-     * @return specification for case-insensitive string value
-     */
     public static <T> Specification<T> hasValueIgnoreCase(String key, String value) {
         return (root, query, cb) -> StringUtils.isBlank(value) ? cb.conjunction() : cb.equal(cb.lower(root.get(key)),
                 value.toLowerCase());
     }
 
-    /**
-     * Create a specification for string value containing query (case-insensitive).
-     *
-     * @param key   field name
-     * @param value string value
-     * @param <T>   entity type
-     * @return specification for string value containing
-     */
     public static <T> Specification<T> contains(String key, String value) {
         return (root, query, cb) -> StringUtils.isBlank(value) ? cb.conjunction() :
                 cb.like(cb.lower(root.get(key)), "%" + value.toLowerCase() + "%");
     }
 
-    /**
-     * Create a specification for values in a collection.
-     *
-     * @param key    field name
-     * @param values collection of values
-     * @param <T>    entity type
-     * @param <V>    value type
-     * @return specification for values in collection
-     */
     public static <T, V> Specification<T> in(String key, Collection<V> values) {
         return (root, query, cb) -> {
             if (values == null || values.isEmpty()) {
@@ -168,15 +103,6 @@ public class SpecificationCustom {
         };
     }
 
-    /**
-     * Create a specification for join query.
-     *
-     * @param joinAttribute join attribute name
-     * @param key          field name in joined entity
-     * @param value        value to compare
-     * @param <T>          entity type
-     * @return specification for join query
-     */
     public static <T> Specification<T> joinEqual(String joinAttribute, String key, Object value) {
         return (root, query, cb) -> {
             if (value == null) {
@@ -185,6 +111,110 @@ public class SpecificationCustom {
             Join<T, ?> join = root.join(joinAttribute, JoinType.INNER);
             return cb.equal(join.get(key), value);
         };
+    }
+
+    public static <T> Specification<T> hasValue(String key, Long value) {
+        return (root, query, cb) -> value == null || value == 0 ? cb.conjunction() : cb.equal(root.get(key), value);
+    }
+
+    public static <T> Specification<T> hasValue(String parentName, String key, Long value) {
+        return (root, query, cb) -> value == null || value == 0 ? cb.conjunction() : cb.equal(root.get(parentName).get(key), value);
+    }
+
+    public static <T> Specification<T> hasNotValue(String key, Long value) {
+        return (root, query, cb) -> value == null || value == 0 ? cb.conjunction() : cb.notEqual(root.get(key), value);
+    }
+
+    public static <T> Specification<T> hasNotValue(String key, Integer value) {
+        return (root, query, cb) -> value == null || value == 0 ? cb.conjunction() : cb.notEqual(root.get(key), value);
+    }
+
+    public static <T> Specification<T> hasLikeLowerCase(String key, String value) {
+        return (root, query, cb) -> StringUtils.isBlank(value) ? cb.conjunction() : cb.like(cb.lower(root.get(key)),
+                "%" + value.toLowerCase() + "%");
+    }
+
+    public static <T> Specification<T> hasLikeIgnoreCase(String key, String value) {
+        return (root, query, cb) -> StringUtils.isBlank(value) ? cb.conjunction() : cb.like(cb.upper(root.get(key)),
+                "%" + value.toUpperCase() + "%");
+    }
+
+    public static <T> Specification<T> hasLikeIgnoreCase(String key, String key2, String value) {
+        return (root, query, cb) -> StringUtils.isBlank(value) ? cb.conjunction() : cb.like(cb.upper(root.get(key).get(key2)),
+                "%" + value.toUpperCase() + "%");
+    }
+
+    public static <T> Specification<T> hasLikeIgnoreCaseDisjunction(String key, String value) {
+        return (root, query, cb) -> StringUtils.isBlank(value) ? cb.disjunction() : cb.like(cb.upper(root.get(key)),
+                "%" + value.toUpperCase() + "%");
+    }
+
+    public static <T> Specification<T> hasValueIn(String key, Collection value) {
+        return (root, query, cb) -> {
+            if (null == value || value.size() == 0) {
+                return cb.conjunction();
+            }
+            return root.get(key).in(value);
+        };
+    }
+
+    public static <T> Specification<T> hasValueInDis(String key, Collection value) {
+        return (root, query, cb) -> {
+            if (null == value || value.size() == 0) {
+                return cb.disjunction();
+            }
+            return root.get(key).in(value);
+        };
+    }
+
+    public static <T, V> Specification<V> hasJoin(String key1Join, JoinType joinType, String key2Join, String value) {
+        return (root, query, cb) -> {
+            if (StringUtils.isBlank(value)) {
+                return cb.conjunction();
+            }
+            final Join<T, V> join = root.join(key1Join, joinType);
+            return cb.equal(join.get(key2Join), value);
+        };
+    }
+
+    public static <T, V> Specification<V> hasJoin(String key1Join, JoinType joinType, String key2Join, Long value) {
+        return (root, query, cb) -> {
+            if (null == value || value == 0) {
+                return cb.conjunction();
+            }
+            final Join<T, V> join = root.join(key1Join, joinType);
+            return cb.equal(join.get(key2Join), value);
+        };
+    }
+
+    public static <T, V, M> Specification<M> hasJoin(
+            String key1Join, JoinType joinType, String key2Join, JoinType joinType2, String key, Long value
+    ) {
+        return (root, query, cb) -> {
+            if (null == value || 0 == value) {
+                return cb.conjunction();
+            }
+            final Join<T, V> join = root.join(key1Join, joinType);
+            final Join<V, M> join2 = join.join(key2Join, joinType2);
+            return cb.equal(join2.get(key), value);
+        };
+    }
+
+    public static <T> Specification<T> greaterThan(String key, Timestamp fromDate) {
+        return (root, query, cb) -> (fromDate == null) ? cb.conjunction() : cb.greaterThan(root.get(key), fromDate);
+    }
+
+    public static <T> Specification<T> lessThan(String key, Timestamp toDate) {
+        return (root, query, cb) -> (toDate == null) ? cb.conjunction() : cb.lessThan(root.get(key), toDate);
+    }
+
+    public static <T> Specification<T> greaterThanOrEqualTo(String key, Timestamp fromDate) {
+        return (root, query, cb) -> fromDate == null ? cb.conjunction() : cb.greaterThanOrEqualTo(root.get(key),
+                fromDate);
+    }
+
+    public static <T> Specification<T> lessThanOrEqualTo(String key, Timestamp toDate) {
+        return (root, query, cb) -> toDate == null ? cb.conjunction() : cb.lessThanOrEqualTo(root.get(key), toDate);
     }
 
     /**
@@ -303,10 +333,10 @@ public class SpecificationCustom {
      * This is a more flexible version that allows you to specify multiple conditions within a date range.
      *
      * @param timestampField field name for timestamp
-     * @param start start timestamp
-     * @param end end timestamp
+     * @param start          start timestamp
+     * @param end            end timestamp
      * @param additionalSpec additional specification to apply within the date range
-     * @param <T> entity type
+     * @param <T>            entity type
      * @return specification for date range with additional conditions
      */
     public static <T> Specification<T> dateRangeWithCondition(String timestampField, Timestamp start, Timestamp end,

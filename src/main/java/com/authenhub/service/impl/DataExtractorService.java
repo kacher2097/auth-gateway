@@ -6,14 +6,12 @@ import com.authenhub.bean.tool.dataextractor.ExtractedDataItem;
 import com.authenhub.entity.DataExtractorJob;
 import com.authenhub.repository.DataExtractorJobRepository;
 import com.authenhub.service.interfaces.IDataExtractorService;
+import com.authenhub.utils.TimestampUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import com.authenhub.utils.TimestampUtils;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +19,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

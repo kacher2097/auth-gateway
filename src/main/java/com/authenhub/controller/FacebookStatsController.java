@@ -5,6 +5,8 @@ import com.authenhub.bean.facebook.stats.FacebookEngagementResponse;
 import com.authenhub.bean.facebook.stats.FacebookPageStatsResponse;
 import com.authenhub.bean.facebook.stats.FacebookPostStatsResponse;
 import com.authenhub.service.interfaces.IFacebookStatsService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +17,14 @@ import java.util.Date;
 @RestController
 @RequestMapping("/api/v1/facebook/stats")
 @RequiredArgsConstructor
+@Tag(name = "Facebook Stats", description = "API để lấy thống kê và phân tích dữ liệu Facebook")
 public class FacebookStatsController {
 
     private final IFacebookStatsService statsService;
 
     @GetMapping("/post/{postId}")
+    @Operation(summary = "Lấy thống kê bài đăng",
+            description = "Lấy thống kê chi tiết của một bài đăng Facebook dựa trên ID.")
     public ApiResponse<?> getPostStats(
             @PathVariable String postId,
             @RequestParam String userId) {
@@ -28,6 +33,8 @@ public class FacebookStatsController {
     }
 
     @GetMapping("/page/{pageId}")
+    @Operation(summary = "Lấy thống kê trang",
+            description = "Lấy thống kê chi tiết của một trang Facebook dựa trên ID.")
     public ApiResponse<?> getPageStats(
             @PathVariable String pageId,
             @RequestParam String userId) {
@@ -36,6 +43,8 @@ public class FacebookStatsController {
     }
 
     @GetMapping("/engagement")
+    @Operation(summary = "Lấy dữ liệu tương tác",
+            description = "Lấy dữ liệu tương tác của một trang hoặc bài đăng Facebook trong khoảng thời gian cụ thể.")
     public ApiResponse<?> getEngagementData(
             @RequestParam String id,
             @RequestParam String type,

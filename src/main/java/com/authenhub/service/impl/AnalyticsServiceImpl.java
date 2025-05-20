@@ -13,7 +13,6 @@ import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.service.AccessLogService;
 import com.authenhub.service.UserService;
 import com.authenhub.service.interfaces.IAnalyticsService;
-import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -32,9 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j

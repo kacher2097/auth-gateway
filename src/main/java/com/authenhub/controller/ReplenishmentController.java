@@ -4,6 +4,8 @@ import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.dto.inventory.ApproveReplenishmentRequest;
 import com.authenhub.dto.inventory.ReplenishmentSuggestionDTO;
 import com.authenhub.service.ReplenishmentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +24,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/replenishment")
 @RequiredArgsConstructor
+@Tag(name = "Replenishment", description = "API để quản lý và tự động hóa việc bổ sung hàng tồn kho")
 public class ReplenishmentController {
 
     private final ReplenishmentService replenishmentService;
 
     @GetMapping
+    @Operation(summary = "Lấy tất cả đề xuất bổ sung hàng",
+            description = "Lấy danh sách tất cả các đề xuất bổ sung hàng tồn kho.")
     public ApiResponse<List<ReplenishmentSuggestionDTO>> getAllReplenishmentSuggestions() {
         log.info("REST request to get all replenishment suggestions");
         List<ReplenishmentSuggestionDTO> suggestions = replenishmentService.getAllReplenishmentSuggestions();
@@ -34,6 +39,8 @@ public class ReplenishmentController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Lấy đề xuất bổ sung hàng theo ID",
+            description = "Lấy thông tin chi tiết của một đề xuất bổ sung hàng dựa trên ID.")
     public ApiResponse<ReplenishmentSuggestionDTO> getReplenishmentSuggestionById(@PathVariable Long id) {
         log.info("REST request to get replenishment suggestion with id: {}", id);
         ReplenishmentSuggestionDTO suggestion = replenishmentService.getReplenishmentSuggestionById(id);
@@ -41,6 +48,8 @@ public class ReplenishmentController {
     }
 
     @GetMapping("/sku/{sku}")
+    @Operation(summary = "Lấy đề xuất bổ sung hàng theo SKU",
+            description = "Lấy danh sách các đề xuất bổ sung hàng cho một mặt hàng dựa trên mã SKU.")
     public ApiResponse<List<ReplenishmentSuggestionDTO>> getReplenishmentSuggestionsBySku(@PathVariable String sku) {
         log.info("REST request to get replenishment suggestions for SKU: {}", sku);
         List<ReplenishmentSuggestionDTO> suggestions = replenishmentService.getReplenishmentSuggestionsBySku(sku);
@@ -48,6 +57,8 @@ public class ReplenishmentController {
     }
 
     @GetMapping("/status/{status}")
+    @Operation(summary = "Lấy đề xuất bổ sung hàng theo trạng thái",
+            description = "Lấy danh sách các đề xuất bổ sung hàng dựa trên trạng thái (mới, đã duyệt, đã từ chối).")
     public ApiResponse<List<ReplenishmentSuggestionDTO>> getReplenishmentSuggestionsByStatus(@PathVariable String status) {
         log.info("REST request to get replenishment suggestions with status: {}", status);
         List<ReplenishmentSuggestionDTO> suggestions = replenishmentService.getReplenishmentSuggestionsByStatus(status);
@@ -55,6 +66,8 @@ public class ReplenishmentController {
     }
 
     @PostMapping("/generate")
+    @Operation(summary = "Tạo đề xuất bổ sung hàng mới",
+            description = "Tạo các đề xuất bổ sung hàng mới dựa trên dữ liệu bán hàng và dự báo.")
     public ApiResponse<List<ReplenishmentSuggestionDTO>> generateReplenishmentSuggestions(
             @AuthenticationPrincipal UserDetails userDetails) {
         log.info("REST request to generate replenishment suggestions");
@@ -63,6 +76,8 @@ public class ReplenishmentController {
     }
 
     @PutMapping("/{id}/approve")
+    @Operation(summary = "Phê duyệt đề xuất bổ sung hàng",
+            description = "Phê duyệt một đề xuất bổ sung hàng và cập nhật số lượng hàng tồn kho.")
     public ApiResponse<ReplenishmentSuggestionDTO> approveReplenishmentSuggestion(
             @PathVariable Long id,
             @Valid @RequestBody ApproveReplenishmentRequest request,
@@ -73,6 +88,8 @@ public class ReplenishmentController {
     }
 
     @PutMapping("/{id}/reject")
+    @Operation(summary = "Từ chối đề xuất bổ sung hàng",
+            description = "Từ chối một đề xuất bổ sung hàng và đánh dấu nó là đã bị từ chối.")
     public ApiResponse<ReplenishmentSuggestionDTO> rejectReplenishmentSuggestion(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {

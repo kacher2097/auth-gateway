@@ -3,6 +3,8 @@ package com.authenhub.controller;
 import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.config.gg.GoogleConfig;
 import com.authenhub.service.helper.GoogleServiceHelper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/google")
 @RequiredArgsConstructor
+@Tag(name = "Google API", description = "API để tương tác với các dịch vụ của Google như Sheets, Drive, Gmail")
 public class GoogleApiController {
 
     private final GoogleServiceHelper googleServiceHelper;
@@ -31,6 +34,8 @@ public class GoogleApiController {
      * @return the values read from the sheet
      */
     @GetMapping("/sheets/read")
+    @Operation(summary = "Đọc dữ liệu từ Google Sheet",
+            description = "Đọc dữ liệu từ một bảng tính Google Sheets trong một phạm vi cụ thể.")
     public ApiResponse<?> readSheet(
             @RequestParam(required = false) String spreadsheetId,
             @RequestParam String range) {
@@ -51,6 +56,8 @@ public class GoogleApiController {
      * @return number of updated cells
      */
     @PostMapping("/sheets/write")
+    @Operation(summary = "Ghi dữ liệu vào Google Sheet",
+            description = "Ghi dữ liệu vào một bảng tính Google Sheets trong một phạm vi cụ thể.")
     public ApiResponse<?> writeToSheet(
             @RequestParam(required = false) String spreadsheetId,
             @RequestParam String range,
@@ -76,6 +83,8 @@ public class GoogleApiController {
      * @return the ID of the created spreadsheet
      */
     @PostMapping("/sheets/create")
+    @Operation(summary = "Tạo Google Sheet mới",
+            description = "Tạo một bảng tính Google Sheets mới với tiêu đề được chỉ định.")
     public ApiResponse<?> createSheet(@RequestParam String title) {
         String spreadsheetId = googleServiceHelper.createSheet(title);
 

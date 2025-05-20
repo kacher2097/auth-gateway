@@ -3,6 +3,8 @@ package com.authenhub.controller;
 import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.bean.crawl.DataCrawlRequest;
 import com.authenhub.service.crawler.HandleCrawlService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/vnexpress")
+@Tag(name = "VnExpress Crawler", description = "API để thu thập và xử lý dữ liệu từ VnExpress")
 public class VnexpressController {
 
     private final HandleCrawlService vnExpressCrawler;
@@ -24,16 +27,22 @@ public class VnexpressController {
     }
 
     @PostMapping("/v2/latest")
+    @Operation(summary = "Lấy tin tức mới nhất",
+            description = "Lấy danh sách các tin tức mới nhất từ VnExpress.")
     public ApiResponse<?> getLatestNewsV2(@RequestBody DataCrawlRequest request) throws Exception {
         return ApiResponse.success(vnExpressCrawler.getData(request));
     }
 
     @PostMapping("/v1/export")
+    @Operation(summary = "Xuất tin tức ra file Excel",
+            description = "Xuất danh sách các tin tức đã thu thập ra file Excel.")
     public CompletableFuture<Object> exportNews(@RequestBody DataCrawlRequest wpPublishPostBean) throws IOException {
         return vnExpressCrawler.exportExcel(wpPublishPostBean);
     }
 
     @PostMapping("/v1/publish")
+    @Operation(summary = "Đăng tin tức lên WordPress",
+            description = "Đăng các tin tức đã thu thập lên trang WordPress.")
     public ResponseEntity<String> publishPost(@RequestBody DataCrawlRequest wpPublishPostBean) throws Exception {
         vnExpressCrawler.importToWp(wpPublishPostBean);
         return null;

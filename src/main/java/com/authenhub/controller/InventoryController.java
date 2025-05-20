@@ -5,6 +5,8 @@ import com.authenhub.dto.inventory.CreateInventoryRequest;
 import com.authenhub.dto.inventory.InventoryDTO;
 import com.authenhub.dto.inventory.UpdateInventoryRequest;
 import com.authenhub.service.InventoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +28,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/inventory")
 @RequiredArgsConstructor
+@Tag(name = "Inventory", description = "API để quản lý hàng tồn kho")
 public class InventoryController {
 
     private final InventoryService inventoryService;
 
     @GetMapping
+    @Operation(summary = "Lấy danh sách tất cả hàng tồn kho",
+            description = "Trả về danh sách tất cả các mặt hàng trong kho.")
     public ApiResponse<List<InventoryDTO>> getAllInventory() {
         log.info("REST request to get all inventory items");
         List<InventoryDTO> inventory = inventoryService.getAllInventory();
@@ -38,6 +43,8 @@ public class InventoryController {
     }
 
     @PostMapping("/list")
+    @Operation(summary = "Lấy danh sách tất cả hàng tồn kho (POST)",
+            description = "Trả về danh sách tất cả các mặt hàng trong kho sử dụng phương thức POST.")
     public ApiResponse<List<InventoryDTO>> getAllInventoryPost() {
         log.info("REST request to get all inventory items (POST)");
         List<InventoryDTO> inventory = inventoryService.getAllInventory();
@@ -45,6 +52,8 @@ public class InventoryController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Lấy hàng tồn kho theo ID",
+            description = "Trả về thông tin chi tiết của một mặt hàng dựa trên ID.")
     public ApiResponse<InventoryDTO> getInventoryById(@PathVariable Long id) {
         log.info("REST request to get inventory item with id: {}", id);
         InventoryDTO inventory = inventoryService.getInventoryById(id);
@@ -52,6 +61,8 @@ public class InventoryController {
     }
 
     @PostMapping("/{id}")
+    @Operation(summary = "Lấy hàng tồn kho theo ID (POST)",
+            description = "Trả về thông tin chi tiết của một mặt hàng dựa trên ID sử dụng phương thức POST.")
     public ApiResponse<InventoryDTO> getInventoryByIdPost(@PathVariable Long id) {
         log.info("REST request to get inventory item with id: {} (POST)", id);
         InventoryDTO inventory = inventoryService.getInventoryById(id);
@@ -59,6 +70,8 @@ public class InventoryController {
     }
 
     @GetMapping("/sku/{sku}")
+    @Operation(summary = "Lấy hàng tồn kho theo SKU",
+            description = "Trả về thông tin chi tiết của một mặt hàng dựa trên mã SKU.")
     public ApiResponse<InventoryDTO> getInventoryBySku(@PathVariable String sku) {
         log.info("REST request to get inventory item with SKU: {}", sku);
         InventoryDTO inventory = inventoryService.getInventoryBySku(sku);
@@ -66,6 +79,8 @@ public class InventoryController {
     }
 
     @PostMapping("/sku/{sku}")
+    @Operation(summary = "Lấy hàng tồn kho theo SKU (POST)",
+            description = "Trả về thông tin chi tiết của một mặt hàng dựa trên mã SKU sử dụng phương thức POST.")
     public ApiResponse<InventoryDTO> getInventoryBySkuPost(@PathVariable String sku) {
         log.info("REST request to get inventory item with SKU: {} (POST)", sku);
         InventoryDTO inventory = inventoryService.getInventoryBySku(sku);
@@ -73,6 +88,8 @@ public class InventoryController {
     }
 
     @PostMapping
+    @Operation(summary = "Tạo mặt hàng mới",
+            description = "Tạo một mặt hàng mới trong kho.")
     public ApiResponse<InventoryDTO> createInventory(
             @Valid @RequestBody CreateInventoryRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -82,6 +99,8 @@ public class InventoryController {
     }
 
     @PutMapping("/{sku}")
+    @Operation(summary = "Cập nhật mặt hàng",
+            description = "Cập nhật thông tin của một mặt hàng dựa trên mã SKU.")
     public ApiResponse<InventoryDTO> updateInventory(
             @PathVariable String sku,
             @Valid @RequestBody UpdateInventoryRequest request,
@@ -92,6 +111,8 @@ public class InventoryController {
     }
 
     @PostMapping("/update/{sku}")
+    @Operation(summary = "Cập nhật mặt hàng (POST)",
+            description = "Cập nhật thông tin của một mặt hàng dựa trên mã SKU sử dụng phương thức POST.")
     public ApiResponse<InventoryDTO> updateInventoryPost(
             @PathVariable String sku,
             @Valid @RequestBody UpdateInventoryRequest request,
@@ -102,6 +123,8 @@ public class InventoryController {
     }
 
     @DeleteMapping("/{sku}")
+    @Operation(summary = "Xóa mặt hàng",
+            description = "Xóa một mặt hàng dựa trên mã SKU.")
     public ApiResponse<Void> deleteInventory(@PathVariable String sku) {
         log.info("REST request to delete inventory item with SKU: {}", sku);
         inventoryService.deleteInventory(sku);
@@ -109,6 +132,8 @@ public class InventoryController {
     }
 
     @PostMapping("/delete/{sku}")
+    @Operation(summary = "Xóa mặt hàng (POST)",
+            description = "Xóa một mặt hàng dựa trên mã SKU sử dụng phương thức POST.")
     public ApiResponse<Void> deleteInventoryPost(@PathVariable String sku) {
         log.info("REST request to delete inventory item with SKU: {} (POST)", sku);
         inventoryService.deleteInventory(sku);
@@ -116,6 +141,8 @@ public class InventoryController {
     }
 
     @GetMapping("/low-stock")
+    @Operation(summary = "Lấy danh sách hàng sắp hết",
+            description = "Trả về danh sách các mặt hàng có số lượng thấp hơn ngưỡng cảnh báo.")
     public ApiResponse<List<InventoryDTO>> getLowStockItems() {
         log.info("REST request to get low stock inventory items");
         List<InventoryDTO> inventory = inventoryService.getLowStockItems();
@@ -123,6 +150,8 @@ public class InventoryController {
     }
 
     @PostMapping("/low-stock")
+    @Operation(summary = "Lấy danh sách hàng sắp hết (POST)",
+            description = "Trả về danh sách các mặt hàng có số lượng thấp hơn ngưỡng cảnh báo sử dụng phương thức POST.")
     public ApiResponse<List<InventoryDTO>> getLowStockItemsPost() {
         log.info("REST request to get low stock inventory items (POST)");
         List<InventoryDTO> inventory = inventoryService.getLowStockItems();
@@ -130,6 +159,8 @@ public class InventoryController {
     }
 
     @GetMapping("/out-of-stock")
+    @Operation(summary = "Lấy danh sách hàng đã hết",
+            description = "Trả về danh sách các mặt hàng đã hết hàng.")
     public ApiResponse<List<InventoryDTO>> getOutOfStockItems() {
         log.info("REST request to get out of stock inventory items");
         List<InventoryDTO> inventory = inventoryService.getOutOfStockItems();
@@ -137,6 +168,8 @@ public class InventoryController {
     }
 
     @PostMapping("/out-of-stock")
+    @Operation(summary = "Lấy danh sách hàng đã hết (POST)",
+            description = "Trả về danh sách các mặt hàng đã hết hàng sử dụng phương thức POST.")
     public ApiResponse<List<InventoryDTO>> getOutOfStockItemsPost() {
         log.info("REST request to get out of stock inventory items (POST)");
         List<InventoryDTO> inventory = inventoryService.getOutOfStockItems();
@@ -144,6 +177,8 @@ public class InventoryController {
     }
 
     @PatchMapping("/{sku}/quantity/{change}")
+    @Operation(summary = "Cập nhật số lượng hàng",
+            description = "Cập nhật số lượng của một mặt hàng dựa trên mã SKU.")
     public ApiResponse<InventoryDTO> updateInventoryQuantity(
             @PathVariable String sku,
             @PathVariable Integer change,
@@ -154,6 +189,8 @@ public class InventoryController {
     }
 
     @PostMapping("/{sku}/quantity")
+    @Operation(summary = "Cập nhật số lượng hàng (POST)",
+            description = "Cập nhật số lượng của một mặt hàng dựa trên mã SKU sử dụng phương thức POST.")
     public ApiResponse<InventoryDTO> updateInventoryQuantityPost(
             @PathVariable String sku,
             @RequestParam Integer change,

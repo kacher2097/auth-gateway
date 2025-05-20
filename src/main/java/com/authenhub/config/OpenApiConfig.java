@@ -12,10 +12,13 @@ import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.servers.ServerVariable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Cấu hình OpenAPI (Swagger) cho ứng dụng
@@ -38,8 +41,15 @@ import java.util.Map;
         ),
         servers = {
                 @Server(
-                        url = "http://localhost:8080",
-                        description = "Local Development Server"
+                        url = "http://localhost:{port}",
+                        description = "Local Development Server",
+                        variables = {
+                                @io.swagger.v3.oas.annotations.servers.ServerVariable(
+                                        name = "port",
+                                        defaultValue = "8118",
+                                        description = "Server port"
+                                )
+                        }
                 ),
                 @Server(
                         url = "https://api.authenhub.com",
@@ -60,6 +70,9 @@ import java.util.Map;
 )
 public class OpenApiConfig {
 
+    @Value("${server.port:8118}")
+    private String serverPort;
+
     /**
      * Cấu hình bổ sung cho OpenAPI
      *
@@ -71,7 +84,18 @@ public class OpenApiConfig {
                 .description("Mật khẩu đã được mã hóa")
                 .example("********");
 
+        // Create a server with the dynamic port
+        io.swagger.v3.oas.models.servers.Server localServer = new io.swagger.v3.oas.models.servers.Server()
+                .url("http://localhost:" + serverPort)
+                .description("Local Development Server");
+
+        // Create a production server
+        io.swagger.v3.oas.models.servers.Server prodServer = new io.swagger.v3.oas.models.servers.Server()
+                .url("https://api.authenhub.com")
+                .description("Production Server");
+
         return new OpenAPI()
+                .servers(List.of(localServer, prodServer))
                 .components(new Components()
                         .addSchemas("Password", passwordSchema)
                         .addSecuritySchemes("bearer-key",

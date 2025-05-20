@@ -4,6 +4,8 @@ import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.bean.tool.videodownloader.VideoDownloadRequest;
 import com.authenhub.bean.tool.videodownloader.VideoDownloadResponse;
 import com.authenhub.service.interfaces.IVideoDownloaderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -25,6 +27,7 @@ import java.nio.file.Paths;
 @RestController
 @RequestMapping("/api/v1/tools/video-downloader")
 @RequiredArgsConstructor
+@Tag(name = "Video Downloader", description = "API để tải video từ YouTube, TikTok và các nền tảng khác")
 public class VideoDownloaderController {
 
     private final IVideoDownloaderService videoDownloaderService;
@@ -36,6 +39,8 @@ public class VideoDownloaderController {
      * @return The video download response
      */
     @PostMapping
+    @Operation(summary = "Tải video từ YouTube hoặc TikTok",
+            description = "Tải video từ URL của YouTube hoặc TikTok với các tùy chọn về chất lượng và định dạng.")
     public ApiResponse<VideoDownloadResponse> downloadVideo(@Valid @RequestBody VideoDownloadRequest request) {
         log.info("Received request to download video: {}", request.getUrl());
         VideoDownloadResponse response = videoDownloaderService.downloadVideo(request);
@@ -49,6 +54,8 @@ public class VideoDownloaderController {
      * @return The video download response
      */
     @PostMapping("/youtube")
+    @Operation(summary = "Tải video từ YouTube",
+            description = "Tải video từ URL của YouTube với các tùy chọn về chất lượng và định dạng.")
     public ApiResponse<VideoDownloadResponse> downloadYouTubeVideo(@Valid @RequestBody VideoDownloadRequest request) {
         log.info("Received request to download YouTube video: {}", request.getUrl());
         VideoDownloadResponse response = videoDownloaderService.downloadYouTubeVideo(request);
@@ -62,6 +69,8 @@ public class VideoDownloaderController {
      * @return The video download response
      */
     @PostMapping("/tiktok")
+    @Operation(summary = "Tải video từ TikTok",
+            description = "Tải video từ URL của TikTok với các tùy chọn về chất lượng và định dạng.")
     public ApiResponse<VideoDownloadResponse> downloadTikTokVideo(@Valid @RequestBody VideoDownloadRequest request) {
         log.info("Received request to download TikTok video: {}", request.getUrl());
         VideoDownloadResponse response = videoDownloaderService.downloadTikTokVideo(request);
@@ -76,6 +85,8 @@ public class VideoDownloaderController {
      * @return The video file as a resource
      */
     @GetMapping("/download/{folderId}/{fileName}")
+    @Operation(summary = "Tải file video đã lưu trữ",
+            description = "Tải file video đã được lưu trữ trên máy chủ dựa trên ID thư mục và tên file.")
     public ResponseEntity<Resource> downloadFile(@PathVariable String folderId, @PathVariable String fileName) {
         log.info("Received request to download file: {}/{}", folderId, fileName);
 

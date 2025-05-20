@@ -16,13 +16,6 @@ public interface PasswordManagerService {
     ApiResponse<?> searchPassword(PwManagerSearchReq request);
 
     /**
-     * Get all password entries
-     *
-     * @return API response with all password entries
-     */
-    ApiResponse<List<PasswordResponse>> getAllPasswords();
-
-    /**
      * Get a password entry by ID
      *
      * @param id password entry ID
