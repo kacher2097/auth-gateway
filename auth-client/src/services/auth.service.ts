@@ -1,4 +1,4 @@
-import api from './api'
+import apiWrapper from './apiWrapper'
 import { handleApiError } from '@/utils/errorHandler'
 
 export interface RegisterRequest {
@@ -41,24 +41,35 @@ export interface ResetPasswordRequest {
 }
 
 export interface UserInfo {
-  id: string
+  id: number
   username: string
   email: string
   fullName: string
   avatar?: string
-  role: 'ADMIN' | 'USER'
+  role: string
+}
+
+export interface UserInfoResponse extends UserInfo {
+  roleId: number
+  permissions: string[]
+}
+
+export interface DataToken {
+  token: string
+  refreshToken?: string
+  user: UserInfo
 }
 
 export interface AuthResponse {
   token: string
+  refreshToken?: string
   user: UserInfo
 }
 
 class AuthService {
   async register(data: RegisterRequest): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/auth/register', data)
-      return response.data
+      return await apiWrapper.post<AuthResponse>('/auth/register', data)
     } catch (error) {
       throw handleApiError(error)
     }
@@ -66,8 +77,7 @@ class AuthService {
 
   async login(data: LoginRequest): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/auth/login', data)
-      return response.data
+      return await apiWrapper.post<AuthResponse>('/auth/login', data)
     } catch (error) {
       throw handleApiError(error)
     }
@@ -75,8 +85,7 @@ class AuthService {
 
   async socialLogin(data: SocialLoginRequest): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/auth/social-login', data)
-      return response.data
+      return await apiWrapper.post<AuthResponse>('/auth/social-login', data)
     } catch (error) {
       throw handleApiError(error)
     }
@@ -84,21 +93,31 @@ class AuthService {
 
   async oauthCallback(data: OAuthCodeRequest): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/auth/oauth2/callback', data)
-      return response.data
+      return await apiWrapper.post<AuthResponse>('/auth/oauth2/callback', data)
     } catch (error) {
       throw handleApiError(error)
     }
   }
 
-  async getCurrentUser(token: string): Promise<UserInfo> {
+  async getCurrentUser(token: string): Promise<UserInfo | UserInfoResponse> {
     try {
-      const response = await api.get<UserInfo>('/auth/me', {
+      return await apiWrapper.get<UserInfo | UserInfoResponse>('/auth/me', {
         headers: {
           Authorization: `Bearer ${token}`
         }
       })
-      return response.data
+    } catch (error) {
+      throw handleApiError(error)
+    }
+  }
+
+  async refreshToken(refreshToken: string): Promise<AuthResponse> {
+    try {
+      return await apiWrapper.post<AuthResponse>('/auth/refresh-token', null, {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`
+        }
+      })
     } catch (error) {
       throw handleApiError(error)
     }
@@ -106,7 +125,7 @@ class AuthService {
 
   async changePassword(token: string, data: ChangePasswordRequest): Promise<void> {
     try {
-      await api.post('/auth/change-password', data, {
+      await apiWrapper.post<void>('/auth/change-password', data, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -118,7 +137,7 @@ class AuthService {
 
   async forgotPassword(data: ForgotPasswordRequest): Promise<void> {
     try {
-      await api.post('/auth/forgot-password', data)
+      await apiWrapper.post<void>('/auth/forgot-password', data)
     } catch (error) {
       throw handleApiError(error)
     }
@@ -126,7 +145,7 @@ class AuthService {
 
   async resetPassword(data: ResetPasswordRequest): Promise<void> {
     try {
-      await api.post('/auth/reset-password', data)
+      await apiWrapper.post<void>('/auth/reset-password', data)
     } catch (error) {
       throw handleApiError(error)
     }

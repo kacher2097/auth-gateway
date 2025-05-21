@@ -1,6 +1,5 @@
 package com.authenhub.config.security;
 
-import com.authenhub.security.CustomPermissionEvaluator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

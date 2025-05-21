@@ -11,11 +11,6 @@ public class AccessTrackingPublisher {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    public void publishEvent(AccessTrackingEvent event) {
-        // Publish the event
-        applicationEventPublisher.publishEvent(event);
-    }
-
     public void publishEvent(AccessLogDTO accessLogDTO) {
         applicationEventPublisher.publishEvent(
                 new AccessTrackingEvent(this, accessLogDTO));

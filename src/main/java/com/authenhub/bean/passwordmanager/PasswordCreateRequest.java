@@ -14,17 +14,20 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Yêu cầu tạo mật khẩu mới")
 public class PasswordCreateRequest {
     @NotBlank(message = "Site URL is required")
-    @Schema(description = "URL của trang web", example = "https://example.com", required = true)
+    @Schema(description = "URL của trang web", example = "https://example.com")
     private String siteUrl;
 
     @NotBlank(message = "Username is required")
-    @Schema(description = "Tên đăng nhập hoặc email dùng để đăng nhập vào trang web", example = "user@example.com", required = true)
+    @Schema(description = "Tên đăng nhập hoặc email dùng để đăng nhập vào trang web")
     private String username;
 
     @NotBlank(message = "Password is required")
-    @Schema(description = "Mật khẩu cần lưu trữ (sẽ được mã hóa trước khi lưu trữ)", example = "StrongP@ssw0rd", required = true)
+    @Schema(description = "Mật khẩu cần lưu trữ (sẽ được mã hóa trước khi lưu trữ)")
     private String password;
 
     @Schema(description = "URL của biểu tượng trang web", example = "https://example.com/favicon.ico")
     private String iconUrl;
+
+    @Schema(description = "Nhà cung cấp dịch vụ")
+    private String provider;
 }

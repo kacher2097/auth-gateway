@@ -61,27 +61,53 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/admin',
-    name: 'admin-dashboard',
-    component: AdminDashboard,
-    meta: { title: 'Admin Dashboard', requiresAuth: true, requiresAdmin: true }
+    component: () => import('@/views/admin/DashboardWrapper.vue'),
+    meta: {
+      title: 'Admin Dashboard',
+      requiresAuth: true
+      // No permissions required - all authenticated users can access
+    },
+    children: [
+      {
+        path: '',
+        name: 'admin-dashboard',
+        component: AdminDashboard,
+        meta: {
+          title: 'Admin Dashboard',
+          requiresAuth: true
+        }
+      }
+    ]
   },
   {
     path: '/admin/overview',
     name: 'admin-overview',
     component: AdminDashboard,
-    meta: { title: 'Dashboard Overview', requiresAuth: true, requiresAdmin: true }
+    meta: {
+      title: 'Dashboard Overview',
+      requiresAuth: true,
+      permissions: ['admin:dashboard', 'admin:view', 'admin:all']
+    }
   },
   {
     path: '/admin/statistics',
     name: 'admin-statistics',
     component: AdminDashboard,
-    meta: { title: 'Dashboard Statistics', requiresAuth: true, requiresAdmin: true }
+    meta: {
+      title: 'Dashboard Statistics',
+      requiresAuth: true,
+      permissions: ['admin:statistics', 'admin:view', 'admin:all']
+    }
   },
   {
     path: '/admin/users',
     name: 'admin-users',
     component: UserManagement,
-    meta: { title: 'User Management', requiresAuth: true, requiresAdmin: true }
+    meta: {
+      title: 'User Management',
+      requiresAuth: true,
+      permissions: ['user:manage', 'user:read', 'admin:all']
+    }
   },
   {
     path: '/admin/users/list',
@@ -216,18 +242,40 @@ router.beforeEach(async (to, from, next) => {
   // Handle protected routes
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
+    return
   }
-  // Handle admin-only routes
-  else if (to.meta.requiresAdmin && !authStore.isAdmin) {
+
+  // Handle permission-based routes
+  if (to.meta.permissions) {
+    // Skip permission check for the main admin dashboard
+    if (to.name === 'admin-dashboard') {
+      // Allow access to the main admin dashboard for all authenticated users
+    } else {
+      const requiredPermissions = to.meta.permissions as string[]
+
+      // Check if user has any of the required permissions
+      if (!authStore.hasAnyPermission(requiredPermissions)) {
+        // If user doesn't have permission, redirect to home
+        next({ name: 'home' })
+        return
+      }
+    }
+  }
+
+  // Handle admin-only routes (legacy support)
+  if (to.meta.requiresAdmin && !authStore.isAdmin) {
     next({ name: 'home' })
+    return
   }
+
   // Handle guest-only routes (like login/register)
-  else if (to.meta.guest && authStore.isAuthenticated) {
+  if (to.meta.guest && authStore.isAuthenticated) {
     next({ name: 'home' })
+    return
   }
-  else {
-    next()
-  }
+
+  // If all checks pass, proceed to the route
+  next()
 })
 
 export default router

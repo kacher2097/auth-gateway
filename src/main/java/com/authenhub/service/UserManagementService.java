@@ -3,7 +3,7 @@ package com.authenhub.service;
 import com.authenhub.bean.UserUpdateRequest;
 import com.authenhub.entity.User;
 import com.authenhub.repository.jpa.UserJpaRepository;
-import com.authenhub.security.UserSecurity;
+import com.authenhub.config.security.UserSecurity;
 import com.authenhub.service.interfaces.IUserManagementService;
 import com.authenhub.utils.TimestampUtils;
 import lombok.RequiredArgsConstructor;

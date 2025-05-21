@@ -1,7 +1,7 @@
 package com.authenhub.config.security;
 
-import com.authenhub.filter.AuthenticationEntryPointCustom;
-import com.authenhub.filter.JwtAuthenticationFilter;
+import com.authenhub.config.filter.AuthenticationEntryPointCustom;
+import com.authenhub.config.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,11 +57,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         requests -> requests
                                 .requestMatchers("/auth/**").permitAll()
-                                .requestMatchers("/admin/**").permitAll()
-                                .requestMatchers("/api/**").permitAll()
-                                .requestMatchers("/api/proxies/active").permitAll()
-                                .requestMatchers("/api/proxies").authenticated()
-                                .requestMatchers("/api/proxies/**").authenticated()
+                                .requestMatchers("/admin/**").authenticated()
+                                .requestMatchers("/api/**").authenticated()
                                 // Swagger UI v3 (OpenAPI)
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()
@@ -82,11 +79,6 @@ public class SecurityConfig {
                             response.sendError(HttpStatus.UNAUTHORIZED.value(), "Đăng nhập thất bại");
                         })
                 )
-//                .oauth2ResourceServer(oauth2 -> oauth2
-//                        .jwt(jwt -> jwt
-//                                .jwtAuthenticationConverter(new JwtAuthenticationConverter())
-//                        )
-//                )
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
                         .xssProtection(HeadersConfigurer.XXssConfig::disable)

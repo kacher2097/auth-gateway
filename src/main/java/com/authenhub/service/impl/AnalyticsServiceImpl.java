@@ -10,9 +10,12 @@ import com.authenhub.bean.statistic.StatisticSearchRequest;
 import com.authenhub.entity.mongo.AccessLog;
 import com.authenhub.repository.AccessLogRepository;
 import com.authenhub.repository.jpa.UserJpaRepository;
-import com.authenhub.service.AccessLogService;
 import com.authenhub.service.UserService;
 import com.authenhub.service.interfaces.IAnalyticsService;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -29,11 +32,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -42,7 +40,6 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
     private final UserService userService;
     private final MongoTemplate mongoTemplate;
     private final UserJpaRepository userRepository;
-    private final AccessLogService accessLogService;
     private final AccessLogRepository accessLogRepository;
 
     @Override
@@ -98,7 +95,7 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
     }
 
     @Override
-    public ApiResponse<?> getAccessStatsInternal(AccessStatsRequest request) {
+    public StatisticGetResponse getAccessStatsInternal(AccessStatsRequest request) {
 
         Timestamp start = request.getStartDate();
         Timestamp end = request.getEndDate();
@@ -125,24 +122,43 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
 
         StatisticGetResponse response = StatisticGetResponse.builder()
                 .totalVisits(totalCount)
-//                .dailyVisits(getDailyVisits(start, end))
                 .totalLogins(countLoginsByStatus(start, end, 200))
                 .browserStats(getBrowserStats(start, end))
                 .deviceStats(getDeviceTypeStats(start, end))
                 .topEndpoints(getTopEndpoints(start, end))
                 .topUsers(getTopUsers(start, end))
                 .build();
-        return ApiResponse.success(response);
+        log.info("Get response success: ");
+        return response;
     }
 
     @Override
     public ApiResponse<?> getTrafficDataInternal(StatisticSearchRequest request) {
-        return null;
+        // Parse dates or use defaults
+        Timestamp startDate = request.getStartDate();
+        Timestamp endDate = request.getEndDate();
+
+        // Get traffic data from access logs
+        AccessStatsRequest searchRequest = AccessStatsRequest.builder()
+                .endDate(endDate)
+                .startDate(startDate)
+                .build();
+        StatisticGetResponse accessStats = getAccessStatsInternal(searchRequest);
+
+        // Extract daily visits as traffic data
+        Long dailyVisits = accessStats.getDailyVisits();
+        return ApiResponse.success(dailyVisits);
     }
 
     @Override
     public ApiResponse<?> getUserActivityDataInternal(StatisticSearchRequest request) {
-        return null;
+        AccessStatsRequest searchRequest = AccessStatsRequest.builder()
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .build();
+        StatisticGetResponse stats = getAccessStatsInternal(searchRequest);
+        Long dailyVisits = stats.getDailyVisits();
+        return ApiResponse.success(dailyVisits);
     }
 
     @Override
@@ -187,8 +203,8 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
     /**
      * Đếm số lượng đăng nhập theo trạng thái
      *
-     * @param start ngày bắt đầu
-     * @param end ngày kết thúc
+     * @param start      ngày bắt đầu
+     * @param end        ngày kết thúc
      * @param statusCode mã trạng thái (null để đếm tất cả)
      * @return số lượng đăng nhập
      */
@@ -227,7 +243,7 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
      * Lấy thống kê theo trình duyệt
      *
      * @param start ngày bắt đầu
-     * @param end ngày kết thúc
+     * @param end   ngày kết thúc
      * @return danh sách thống kê theo trình duyệt
      */
     private List<StatisticItem> getBrowserStats(Timestamp start, Timestamp end) {
@@ -264,7 +280,7 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
      * Lấy thống kê theo loại thiết bị
      *
      * @param start ngày bắt đầu
-     * @param end ngày kết thúc
+     * @param end   ngày kết thúc
      * @return danh sách thống kê theo loại thiết bị
      */
     private List<StatisticItem> getDeviceTypeStats(Timestamp start, Timestamp end) {
@@ -301,7 +317,7 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
      * Lấy danh sách endpoint phổ biến nhất
      *
      * @param start ngày bắt đầu
-     * @param end ngày kết thúc
+     * @param end   ngày kết thúc
      * @return danh sách endpoint phổ biến nhất
      */
     private List<StatisticItem> getTopEndpoints(Timestamp start, Timestamp end) {
@@ -351,7 +367,7 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
      * Lấy danh sách người dùng hoạt động nhiều nhất
      *
      * @param start ngày bắt đầu
-     * @param end ngày kết thúc
+     * @param end   ngày kết thúc
      * @return danh sách người dùng hoạt động nhiều nhất
      */
     private List<StatisticItem> getTopUsers(Timestamp start, Timestamp end) {

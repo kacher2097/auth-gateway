@@ -23,13 +23,6 @@ public class UserService implements IUserService {
     private final UserJpaRepository userRepository;
     private final DatabaseSwitcherConfig databaseConfig;
 
-    /**
-     * Count users created between two dates
-     *
-     * @param start the start date
-     * @param end the end date
-     * @return the count of users
-     */
     @Override
     public long countUsersByCreatedAtBetween(Timestamp start, Timestamp end) {
         if (databaseConfig.isMongoActive()) {
@@ -62,13 +55,6 @@ public class UserService implements IUserService {
         }
     }
 
-    /**
-     * Find users created between two dates
-     *
-     * @param start the start date
-     * @param end the end date
-     * @return the list of users
-     */
     @Override
     public List<User> findUsersByCreatedAtBetween(Timestamp start, Timestamp end) {
         return userRepository.findByCreatedAtBetween(start, end);

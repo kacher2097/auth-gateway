@@ -1,4 +1,4 @@
-package com.authenhub.facebook.config;
+package com.authenhub.config.fb;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

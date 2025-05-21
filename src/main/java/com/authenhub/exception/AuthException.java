@@ -13,8 +13,4 @@ public class AuthException extends RuntimeException {
         this.status = status;
         this.errorCode = errorCode;
     }
-
-    public AuthException(String message, HttpStatus status) {
-        this(message, status, "AUTH_ERROR");
-    }
 }

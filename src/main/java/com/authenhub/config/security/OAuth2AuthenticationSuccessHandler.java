@@ -1,8 +1,7 @@
 package com.authenhub.config.security;
 
-import com.authenhub.constant.JwtConstant;
 import com.authenhub.entity.User;
-import com.authenhub.filter.JwtService;
+import com.authenhub.config.filter.JwtService;
 import com.authenhub.repository.jpa.UserJpaRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,8 +15,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j

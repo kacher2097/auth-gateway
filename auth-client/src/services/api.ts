@@ -30,11 +30,29 @@ api.interceptors.request.use(
 // Add response interceptor to handle token expiration
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
+  async (error) => {
+    const originalRequest = error.config
+
+    // If the error is 401 (Unauthorized) and we haven't tried to refresh the token yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+
       const authStore = useAuthStore()
-      authStore.logout()
+
+      // Try to refresh the token
+      const refreshSuccess = await authStore.refreshAccessToken()
+
+      if (refreshSuccess) {
+        // Update the Authorization header with the new token
+        originalRequest.headers.Authorization = `Bearer ${authStore.token}`
+        // Retry the original request
+        return api(originalRequest)
+      } else {
+        // If refresh failed, logout and redirect to login page
+        authStore.logout()
+      }
     }
+
     return Promise.reject(error)
   }
 )

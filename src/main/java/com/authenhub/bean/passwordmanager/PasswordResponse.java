@@ -16,28 +16,24 @@ public class PasswordResponse {
     private Long id;
     private String siteUrl;
     private String username;
-    private String password; // Decrypted password (only included when explicitly requested)
+    private String password;
     private String iconUrl;
+    private String provider;
     private Timestamp createdAt;
     private Timestamp updatedAt;
-    
-    /**
-     * Create a PasswordResponse from a PasswordManage entity without the decrypted password
-     */
+
     public static PasswordResponse fromEntity(PasswordManage entity) {
         return PasswordResponse.builder()
                 .id(entity.getId())
                 .siteUrl(entity.getSiteUrl())
                 .username(entity.getUsername())
                 .iconUrl(entity.getIconUrl())
+                .provider(entity.getProvider())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
-    
-    /**
-     * Create a PasswordResponse from a PasswordManage entity with the decrypted password
-     */
+
     public static PasswordResponse fromEntityWithPassword(PasswordManage entity, String decryptedPassword) {
         return PasswordResponse.builder()
                 .id(entity.getId())
@@ -45,6 +41,7 @@ public class PasswordResponse {
                 .username(entity.getUsername())
                 .password(decryptedPassword)
                 .iconUrl(entity.getIconUrl())
+                .provider(entity.getProvider())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();

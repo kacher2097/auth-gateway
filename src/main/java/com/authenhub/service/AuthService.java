@@ -17,12 +17,8 @@ import com.authenhub.entity.Role;
 import com.authenhub.entity.RolePermission;
 import com.authenhub.entity.User;
 import com.authenhub.entity.mongo.PasswordResetToken;
-import com.authenhub.exception.EmailNotFoundException;
 import com.authenhub.exception.ErrorApiException;
-import com.authenhub.exception.InvalidPasswordException;
-import com.authenhub.exception.InvalidTokenException;
-import com.authenhub.exception.PasswordMismatchException;
-import com.authenhub.filter.JwtService;
+import com.authenhub.config.filter.JwtService;
 import com.authenhub.repository.adapter.PasswordResetTokenRepositoryAdapter;
 import com.authenhub.repository.jpa.PermissionJpaRepository;
 import com.authenhub.repository.jpa.RoleJpaRepository;
@@ -248,7 +244,7 @@ public class AuthService implements IAuthService {
     @Override
     public void forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(EmailNotFoundException::new);
+                .orElseThrow(() -> new ErrorApiException("123", "User with email not found"));
 
         // Delete any existing tokens for this user
 //        tokenRepository.deleteByUserId(user.getId());
@@ -275,15 +271,15 @@ public class AuthService implements IAuthService {
     public void resetPassword(ResetPasswordRequest request) {
         // Validate passwords match
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new PasswordMismatchException();
+            throw new ErrorApiException("123", "Passwords do not match");
         }
 
         PasswordResetToken resetToken = tokenRepository.findByToken(request.getToken())
-                .orElseThrow(InvalidTokenException::new);
+                .orElseThrow(() -> new ErrorApiException("123", "Invalid token"));
 
         // Validate token
         if (resetToken.isExpired() || resetToken.isUsed()) {
-            throw new InvalidTokenException();
+            throw new ErrorApiException("123", "Token is invalid");
         }
 
         // Find user
@@ -304,7 +300,7 @@ public class AuthService implements IAuthService {
     public void changePassword(ChangePasswordRequest request) {
         // Validate passwords match
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new PasswordMismatchException();
+            throw new ErrorApiException("123", "Passwords do not match");
         }
 
         // Get user
@@ -313,7 +309,7 @@ public class AuthService implements IAuthService {
 
         // Verify current password
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new InvalidPasswordException();
+            throw new ErrorApiException("123", "Invalid current password");
         }
 
         // Update password

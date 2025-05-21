@@ -1,4 +1,4 @@
-package com.authenhub.filter;
+package com.authenhub.config.filter;
 
 import com.authenhub.bean.common.ApiResponse;
 import com.authenhub.constant.enums.ApiResponseCode;
@@ -25,7 +25,7 @@ public class AuthenticationEntryPointCustom implements AuthenticationEntryPoint 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         log.error("Authentication error: {}", authException.getMessage());
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter writer = response.getWriter();
         writer.println(objectMapper.writeValueAsString(ApiResponse.error(ApiResponseCode.FORBIDDEN)));

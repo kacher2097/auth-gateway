@@ -1,6 +1,7 @@
 package com.authenhub.service.impl;
 
 import com.authenhub.bean.common.ApiResponse;
+import com.authenhub.bean.common.PagedResponse;
 import com.authenhub.bean.passwordmanager.CheckPasswordStrengthRequest;
 import com.authenhub.bean.passwordmanager.CheckPasswordStrengthResponse;
 import com.authenhub.bean.passwordmanager.ExportPasswordsResponse;
@@ -25,6 +26,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -49,25 +54,50 @@ public class PasswordManagerServiceImpl implements PasswordManagerService {
     public ApiResponse<?> searchPassword(PwManagerSearchReq request) {
         log.info("Searching password with request {}", request);
 
-        List<PasswordManage> results;
+        // Set default values for pagination if not provided
+        int page = request.getPage() != null ? request.getPage() : 0;
+        int size = request.getSize() != null ? request.getSize() : 10;
 
-        // Use the specification-based search if any filter criteria are provided
-        if (StringUtils.isNotBlank(request.getKeyword()) ||
-                StringUtils.isNotBlank(request.getProvider()) ||
-                StringUtils.isNotBlank(request.getUsername())) {
+        // Validate and set default values for sorting
+        String sortBy = validateSortField(request.getSortBy());
+        Sort.Direction direction = "ASC".equalsIgnoreCase(request.getSortDirection()) ?
+                Sort.Direction.ASC : Sort.Direction.DESC;
 
-            Specification<PasswordManage> spec = buildSpecification(request);
-            results = passwordManageRepository.findAll(spec);
-        } else {
-            // Get all passwords if no filters are provided
-            results = passwordManageRepository.findAll();
-        }
+        // Create pageable object with sorting
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        List<PasswordResponse> responses = results.stream()
+        // Create specification for filtering
+        Specification<PasswordManage> spec = buildSpecification(request);
+
+        // Execute query with pagination
+        Page<PasswordManage> passwordPage = passwordManageRepository.findAll(spec, pageable);
+
+        // Map entities to DTOs
+        List<PasswordResponse> responses = passwordPage.getContent().stream()
                 .map(PasswordResponse::fromEntity)
                 .collect(Collectors.toList());
 
-        return ApiResponse.success(responses);
+        // Create paged response
+        PagedResponse<PasswordResponse> pagedResponse = PagedResponse.of(
+                responses,
+                passwordPage.getNumber(),
+                passwordPage.getSize(),
+                passwordPage.getTotalElements()
+        );
+
+        return ApiResponse.success(pagedResponse);
+    }
+
+    private String validateSortField(String sortBy) {
+        if (sortBy == null) {
+            return "createdAt";
+        }
+
+        // List of allowed sort fields
+        List<String> allowedFields = Arrays.asList(
+                "id", "siteUrl", "username", "createdAt", "updatedAt");
+
+        return allowedFields.contains(sortBy) ? sortBy : "createdAt";
     }
 
     @Override
@@ -112,6 +142,7 @@ public class PasswordManagerServiceImpl implements PasswordManagerService {
         // Create a new password entry
         PasswordManage passwordManage = PasswordManage.builder()
                 .siteUrl(request.getSiteUrl())
+                .provider(request.getProvider())
                 .username(request.getUsername())
                 .encryptedPassword(encryptedPassword)
                 .iconUrl(request.getIconUrl())
@@ -160,13 +191,9 @@ public class PasswordManagerServiceImpl implements PasswordManagerService {
         }
 
         passwordManage.setUpdatedAt(TimestampUtils.now());
-
-        // Save the updated password entry
         passwordManage = passwordManageRepository.save(passwordManage);
 
-        // Return the response without the decrypted password
         PasswordResponse response = PasswordResponse.fromEntity(passwordManage);
-
         return ApiResponse.success(response);
     }
 

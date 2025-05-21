@@ -1,4 +1,4 @@
-package com.authenhub.filter;
+package com.authenhub.config.filter;
 
 import com.authenhub.entity.User;
 import com.authenhub.exception.ErrorApiException;
@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @Component
 public class JwtService {
+
     @Value("${jwt.secret}")
     private String secretKey;
 
@@ -42,10 +43,6 @@ public class JwtService {
     public String extractUsername(String token) {
         log.debug("Extracting username from token: {}", token);
         return extractClaim(token, Claims::getSubject);
-    }
-
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -99,10 +96,6 @@ public class JwtService {
             log.error("Error extracting claims from token: {}", e.getMessage());
             throw e;
         }
-    }
-
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
     }
 
     public String createToken(User user) {

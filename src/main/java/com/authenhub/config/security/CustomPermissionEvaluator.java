@@ -1,4 +1,4 @@
-package com.authenhub.security;
+package com.authenhub.config.security;
 
 import com.authenhub.entity.User;
 import com.authenhub.service.UserRoleService;

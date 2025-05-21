@@ -22,8 +22,8 @@ import lombok.NoArgsConstructor;
 public class PasswordManage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-    @SequenceGenerator(name = "user_seq", sequenceName = "user_sequence", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "password_manage_seq")
+    @SequenceGenerator(name = "password_manage_seq", sequenceName = "password_manage_sequence", allocationSize = 1)
     @Column(name = "id", unique = true)
     private Long id;
 
@@ -44,4 +44,7 @@ public class PasswordManage {
 
     @Column(name = "updated_at")
     private Timestamp updatedAt;
+
+    @Column(name = "provider")
+    private String provider;
 }

@@ -1,4 +1,4 @@
-package com.authenhub.facebook.config;
+package com.authenhub.config.fb;
 
 import lombok.extern.slf4j.Slf4j;
 

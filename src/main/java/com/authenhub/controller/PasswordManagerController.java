@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,9 +43,8 @@ public class PasswordManagerController {
     public ApiResponse<PasswordResponse> getPasswordById(
             @Parameter(description = "ID của mật khẩu cần lấy", required = true)
             @RequestParam Long id,
-            @Parameter(description = "Có bao gồm mật khẩu đã giải mã trong kết quả hay không", required = false)
+            @Parameter(description = "Có bao gồm mật khẩu đã giải mã trong kết quả hay không")
             @RequestParam(defaultValue = "false") boolean includePassword) {
-        log.info("Getting password by ID: {}, includePassword: {}", id, includePassword);
         return passwordManagerService.getPasswordById(id, includePassword);
     }
 
@@ -121,9 +119,9 @@ public class PasswordManagerController {
     @Operation(summary = "Xuất mật khẩu",
             description = "Xuất danh sách mật khẩu theo định dạng CSV hoặc JSON. Có thể chọn bao gồm hoặc không bao gồm mật khẩu đã giải mã trong kết quả xuất.")
     public ApiResponse<ExportPasswordsResponse> exportPasswords(
-            @Parameter(description = "Định dạng xuất (CSV hoặc JSON)", required = false)
+            @Parameter(description = "Định dạng xuất (CSV hoặc JSON)")
             @RequestParam(defaultValue = "JSON") String format,
-            @Parameter(description = "Có bao gồm mật khẩu đã giải mã trong kết quả xuất hay không", required = false)
+            @Parameter(description = "Có bao gồm mật khẩu đã giải mã trong kết quả xuất hay không")
             @RequestParam(defaultValue = "false") boolean includePasswords) {
         log.info("Exporting passwords in format: {}, includePasswords: {}", format, includePasswords);
         return passwordManagerService.exportPasswords(format, includePasswords);

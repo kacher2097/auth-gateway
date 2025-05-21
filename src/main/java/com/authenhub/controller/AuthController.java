@@ -3,7 +3,7 @@ package com.authenhub.controller;
 import com.authenhub.bean.*;
 import com.authenhub.bean.auth.AuthRequest;
 import com.authenhub.bean.common.ApiResponse;
-import com.authenhub.filter.JwtService;
+import com.authenhub.config.filter.JwtService;
 import com.authenhub.service.interfaces.IAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,9 +11,6 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.auth.InvalidCredentialsException;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")

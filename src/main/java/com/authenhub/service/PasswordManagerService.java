@@ -8,10 +8,10 @@ import java.util.List;
 
 public interface PasswordManagerService {
     /**
-     * Search for password entries based on criteria
+     * Search for password entries based on criteria with pagination
      *
-     * @param request search criteria
-     * @return API response with search results
+     * @param request search criteria with pagination parameters
+     * @return API response with paginated search results
      */
     ApiResponse<?> searchPassword(PwManagerSearchReq request);
 
