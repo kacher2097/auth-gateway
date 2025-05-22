@@ -11,7 +11,5 @@ public interface IAnalyticsService {
     StatisticGetResponse getAccessStatsInternal(AccessStatsRequest request);
     ApiResponse<?> getTrafficDataInternal(StatisticSearchRequest request);
     ApiResponse<?> getUserActivityDataInternal(StatisticSearchRequest request);
-    ApiResponse<?> getTopEndpointsInternal(StatisticSearchRequest request);
-    ApiResponse<?> getTopUsersInternal(StatisticSearchRequest request);
     ApiResponse<?> getLoginActivityInternal(StatisticSearchRequest request);
 }

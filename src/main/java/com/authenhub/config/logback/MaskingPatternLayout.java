@@ -7,17 +7,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MaskingPatternLayout extends PatternLayout {
 
     private Pattern multilinePattern;
-    private List<String> maskPatterns = new ArrayList<>();
+    private final List<String> maskPatterns = new ArrayList<>();
 
     public void addMaskPattern(String maskPattern) {
         maskPatterns.add(maskPattern);
-        multilinePattern = Pattern.compile(maskPatterns.stream().collect(Collectors.joining("|")), Pattern.MULTILINE);
+        multilinePattern = Pattern.compile(String.join("|", maskPatterns), Pattern.MULTILINE);
     }
 
     @Override

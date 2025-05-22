@@ -1,5 +1,6 @@
 package com.authenhub.config.fb;
 
+import java.util.Collections;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,10 +15,12 @@ import java.time.Duration;
 @EnableRetry
 public class FacebookRestTemplateConfig {
     
-    private final FacebookApiProperties apiProperties;
+    private final FacebookConfig apiProperties;
+    private final LoggingRequestInterceptor loggingRequestInterceptor;
     
-    public FacebookRestTemplateConfig(FacebookApiProperties apiProperties) {
+    public FacebookRestTemplateConfig(FacebookConfig apiProperties, LoggingRequestInterceptor loggingRequestInterceptor) {
         this.apiProperties = apiProperties;
+        this.loggingRequestInterceptor = loggingRequestInterceptor;
     }
     
     @Bean(name = "facebookRestTemplate")
@@ -26,6 +29,7 @@ public class FacebookRestTemplateConfig {
                 .requestFactory(this::clientHttpRequestFactory)
                 .setConnectTimeout(Duration.ofMillis(apiProperties.getConnectTimeout()))
                 .setReadTimeout(Duration.ofMillis(apiProperties.getReadTimeout()))
+                .interceptors(Collections.singletonList(loggingRequestInterceptor))
                 .build();
     }
     

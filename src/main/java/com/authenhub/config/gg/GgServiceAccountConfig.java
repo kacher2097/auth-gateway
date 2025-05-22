@@ -11,14 +11,6 @@ import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.auth.oauth2.UserCredentials;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.io.ClassPathResource;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +21,12 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.ClassPathResource;
 
 /**
  * Google Service Account configuration for accessing Google APIs without user interaction.
@@ -41,12 +39,6 @@ public class GgServiceAccountConfig {
 
     private final GoogleConfig googleConfig;
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-
-    @Value("${google.service-account.key-file:${google.credentials}}")
-    private String serviceAccountKeyFilePath;
-
-    @Value("${google.service-account.user-email:}")
-    private String serviceAccountUserEmail;
 
     /**
      * List of all scopes needed for the application
@@ -70,7 +62,7 @@ public class GgServiceAccountConfig {
             byte[] fileContent = null;
 
             // First try: Direct file path
-            File file = new File(serviceAccountKeyFilePath);
+            File file = new File(googleConfig.getServiceAccountKeyFile());
             if (file.exists() && file.canRead()) {
                 log.info("Loading service account key from file: {}", file.getAbsolutePath());
                 fileContent = Files.readAllBytes(file.toPath());
@@ -79,9 +71,9 @@ public class GgServiceAccountConfig {
             // Second try: Class path resource
             if (fileContent == null) {
                 try {
-                    ClassPathResource resource = new ClassPathResource(serviceAccountKeyFilePath);
+                    ClassPathResource resource = new ClassPathResource(googleConfig.getServiceAccountKeyFile());
                     if (resource.exists()) {
-                        log.info("Loading service account key from classpath: {}", serviceAccountKeyFilePath);
+                        log.info("Loading service account key from classpath: {}", resource.getFile().getAbsolutePath());
                         fileContent = Files.readAllBytes(resource.getFile().toPath());
                     }
                 } catch (Exception e) {
@@ -92,7 +84,7 @@ public class GgServiceAccountConfig {
             // Third try: Relative to working directory
             if (fileContent == null) {
                 Path workingDir = Paths.get(System.getProperty("user.dir"));
-                Path filePath = workingDir.resolve(serviceAccountKeyFilePath);
+                Path filePath = workingDir.resolve(googleConfig.getServiceAccountKeyFile());
                 if (Files.exists(filePath) && Files.isReadable(filePath)) {
                     log.info("Loading service account key from working directory: {}", filePath);
                     fileContent = Files.readAllBytes(filePath);
@@ -112,7 +104,7 @@ public class GgServiceAccountConfig {
 
             // If we get here and still don't have content, we couldn't find the file
             if (fileContent == null) {
-                throw new IOException("Could not find service account key file at: " + serviceAccountKeyFilePath);
+                throw new IOException("Could not find service account key file at: " + googleConfig.getServiceAccountKeyFile());
             }
 
             // Return a ByteArrayInputStream that can be reset
@@ -129,7 +121,7 @@ public class GgServiceAccountConfig {
      */
     private boolean hasValidClientCredentials() {
         return googleConfig.getClientId() != null && !googleConfig.getClientId().isEmpty() &&
-               googleConfig.getClientSecret() != null && !googleConfig.getClientSecret().isEmpty();
+                googleConfig.getClientSecret() != null && !googleConfig.getClientSecret().isEmpty();
     }
 
     @Bean
@@ -221,13 +213,4 @@ public class GgServiceAccountConfig {
                 .setApplicationName("Google Sheet Integration with Spring Boot")
                 .build();
     }
-
-    /**
-     * Creates a Drive service with auto-refreshing credentials
-     *
-     * @return Drive service
-     * @throws IOException if credential file cannot be read
-     * @throws GeneralSecurityException if there's a security issue
-     */
-    // Drive and Gmail services are not included as requested
 }

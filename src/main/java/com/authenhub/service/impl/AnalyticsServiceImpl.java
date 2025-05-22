@@ -12,6 +12,7 @@ import com.authenhub.repository.AccessLogRepository;
 import com.authenhub.repository.jpa.UserJpaRepository;
 import com.authenhub.service.UserService;
 import com.authenhub.service.interfaces.IAnalyticsService;
+import com.authenhub.utils.MongoQueryUtils;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,6 @@ import org.bson.Document;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.LimitOperation;
@@ -162,16 +162,6 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
     }
 
     @Override
-    public ApiResponse<?> getTopEndpointsInternal(StatisticSearchRequest request) {
-        return null;
-    }
-
-    @Override
-    public ApiResponse<?> getTopUsersInternal(StatisticSearchRequest request) {
-        return null;
-    }
-
-    @Override
     public ApiResponse<?> getLoginActivityInternal(StatisticSearchRequest request) {
         // Parse dates or use defaults
         Timestamp startDate = request.getStartDate();
@@ -199,95 +189,55 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
         return ApiResponse.success(loginActivityBeans);
     }
 
+    private Criteria buildConditionLoginByStatus(Timestamp start, Timestamp end, Integer statusCode) {
+        Criteria dateRangeCriteria = MongoQueryUtils.dateRange("timestamp", start, end);
+        Criteria endpointCriteria = MongoQueryUtils.hasValue("endpoint", "/auth/login");
+        Criteria statusCodeCriteria = MongoQueryUtils.hasValue("statusCode", statusCode);
+        return MongoQueryUtils.and(dateRangeCriteria, endpointCriteria, statusCodeCriteria);
+    }
 
-    /**
-     * Đếm số lượng đăng nhập theo trạng thái
-     *
-     * @param start      ngày bắt đầu
-     * @param end        ngày kết thúc
-     * @param statusCode mã trạng thái (null để đếm tất cả)
-     * @return số lượng đăng nhập
-     */
     private long countLoginsByStatus(Timestamp start, Timestamp end, Integer statusCode) {
-        // Tạo điều kiện thời gian
-        MatchOperation matchTime = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-
-        // Tạo điều kiện endpoint
-        MatchOperation matchEndpoint = Aggregation.match(Criteria.where("endpoint").is("/auth/login"));
-
-        // Danh sách các thao tác
-        List<AggregationOperation> operations = new ArrayList<>();
-        operations.add(matchTime);
-        operations.add(matchEndpoint);
-
-        // Thêm điều kiện mã trạng thái nếu có
-        if (statusCode != null) {
-            operations.add(Aggregation.match(Criteria.where("statusCode").is(statusCode)));
-        }
-
-        // Thêm thao tác đếm
-        operations.add(Aggregation.count().as("count"));
-
-        // Tạo aggregation
-        Aggregation aggregation = Aggregation.newAggregation(operations);
-
-        // Thực thi aggregation
+        Criteria criteria = buildConditionLoginByStatus(start, end, statusCode);
+        MatchOperation matchOperation = Aggregation.match(criteria);
+        Aggregation aggregation = Aggregation.newAggregation(matchOperation, Aggregation.count().as("count"));
         AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "access_logs", Document.class);
-
-        // Lấy kết quả
         Document result = results.getUniqueMappedResult();
         return result != null ? ((Number) result.get("count")).longValue() : 0;
     }
 
-    /**
-     * Lấy thống kê theo trình duyệt
-     *
-     * @param start ngày bắt đầu
-     * @param end   ngày kết thúc
-     * @return danh sách thống kê theo trình duyệt
-     */
-    private List<StatisticItem> getBrowserStats(Timestamp start, Timestamp end) {
-        // Tạo điều kiện thời gian
-        MatchOperation matchTime = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
+    private MatchOperation buildMatchOperationTime(Timestamp start, Timestamp end) {
+        Criteria dateRangeCriteria = MongoQueryUtils.dateRange("timestamp", start, end);
+        return Aggregation.match(dateRangeCriteria);
+    }
 
-        // Nhóm theo trình duyệt và đếm
+    private List<StatisticItem> getBrowserStats(Timestamp start, Timestamp end) {
+        MatchOperation matchTime = buildMatchOperationTime(start, end);
         GroupOperation groupByBrowser = Aggregation.group("browser")
                 .count().as("count");
 
-        // Sắp xếp theo số lượng giảm dần
         SortOperation sortByCount = Aggregation.sort(Sort.Direction.DESC, "count");
-
-        // Tạo aggregation
         Aggregation aggregation = Aggregation.newAggregation(
                 matchTime,
                 groupByBrowser,
                 sortByCount
         );
 
-        // Thực thi aggregation
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "access_logs", Document.class);
+        AggregationResults<StatisticItem> results = mongoTemplate.aggregate(aggregation, "access_logs", StatisticItem.class);
 
-        // Chuyển đổi kết quả thành danh sách StatisticItem
+        // Đảm bảo rằng mỗi item có name được đặt đúng
         return results.getMappedResults().stream()
-                .map(doc -> StatisticItem.builder()
-                        .name(doc.get("_id") != null ? doc.get("_id").toString() : "Unknown")
-                        .count(((Number) doc.get("count")).longValue())
-                        .build())
+                .peek(item -> {
+                    // Đặt tên hiển thị bằng ID nếu name là null
+                    if (item.getName() == null) {
+                        item.setName(item.getId());
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Lấy thống kê theo loại thiết bị
-     *
-     * @param start ngày bắt đầu
-     * @param end   ngày kết thúc
-     * @return danh sách thống kê theo loại thiết bị
-     */
     private List<StatisticItem> getDeviceTypeStats(Timestamp start, Timestamp end) {
-        // Tạo điều kiện thời gian
-        MatchOperation matchTime = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-
-        // Nhóm theo loại thiết bị và đếm
+        MatchOperation matchTime = buildMatchOperationTime(start, end);
+        // Nhóm theo loại thiết bị
         GroupOperation groupByDeviceType = Aggregation.group("deviceType")
                 .count().as("count");
 
@@ -302,40 +252,26 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
         );
 
         // Thực thi aggregation
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "access_logs", Document.class);
-
-        // Chuyển đổi kết quả thành danh sách StatisticItem
+        AggregationResults<StatisticItem> results = mongoTemplate.aggregate(aggregation, "access_logs", StatisticItem.class);
         return results.getMappedResults().stream()
-                .map(doc -> StatisticItem.builder()
-                        .name(doc.get("_id") != null ? doc.get("_id").toString() : "Unknown")
-                        .count(((Number) doc.get("count")).longValue())
-                        .build())
-                .collect(Collectors.toList());
+                .peek(item -> {
+                    // Đặt tên hiển thị bằng ID nếu name là null
+                    if (item.getName() == null) {
+                        item.setName(item.getId());
+                    }
+                }).toList();
     }
 
-    /**
-     * Lấy danh sách endpoint phổ biến nhất
-     *
-     * @param start ngày bắt đầu
-     * @param end   ngày kết thúc
-     * @return danh sách endpoint phổ biến nhất
-     */
     private List<StatisticItem> getTopEndpoints(Timestamp start, Timestamp end) {
-        // Tạo điều kiện thời gian
-        MatchOperation matchTime = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
-
+        MatchOperation matchTime = buildMatchOperationTime(start, end);
         // Nhóm theo endpoint và đếm, tính thời gian phản hồi trung bình
         GroupOperation groupByEndpoint = Aggregation.group("endpoint")
                 .count().as("count")
                 .avg("responseTimeMs").as("avgResponseTime");
 
-        // Sắp xếp theo số lượng giảm dần
         SortOperation sortByCount = Aggregation.sort(Sort.Direction.DESC, "count");
 
-        // Giới hạn số lượng kết quả
-        LimitOperation limitResults = Aggregation.limit(10);
-
-        // Tạo aggregation
+        LimitOperation limitResults = Aggregation.limit(15);
         Aggregation aggregation = Aggregation.newAggregation(
                 matchTime,
                 groupByEndpoint,
@@ -343,43 +279,29 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
                 limitResults
         );
 
-        // Thực thi aggregation
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "access_logs", Document.class);
+        AggregationResults<StatisticItem> results = mongoTemplate.aggregate(aggregation, "access_logs", StatisticItem.class);
 
-        // Chuyển đổi kết quả thành danh sách StatisticItem
+        // Đảm bảo rằng mỗi item có name được đặt đúng
         return results.getMappedResults().stream()
-                .map(doc -> {
-                    Double avgResponseTime = null;
-                    if (doc.get("avgResponseTime") != null) {
-                        avgResponseTime = ((Number) doc.get("avgResponseTime")).doubleValue();
+                .peek(item -> {
+                    // Đặt tên hiển thị bằng ID nếu name là null
+                    if (item.getName() == null) {
+                        item.setName(item.getId());
                     }
-
-                    return StatisticItem.builder()
-                            .name(doc.get("_id") != null ? doc.get("_id").toString() : "Unknown")
-                            .count(((Number) doc.get("count")).longValue())
-                            .avgResponseTime(avgResponseTime)
-                            .build();
-                })
-                .collect(Collectors.toList());
+                }).toList();
     }
 
-    /**
-     * Lấy danh sách người dùng hoạt động nhiều nhất
-     *
-     * @param start ngày bắt đầu
-     * @param end   ngày kết thúc
-     * @return danh sách người dùng hoạt động nhiều nhất
-     */
     private List<StatisticItem> getTopUsers(Timestamp start, Timestamp end) {
         // Tạo điều kiện thời gian
-        MatchOperation matchTime = Aggregation.match(Criteria.where("timestamp").gte(start).lte(end));
+        MatchOperation matchTime = buildMatchOperationTime(start, end);
 
         // Nhóm theo userId và đếm, lấy username
-        GroupOperation groupByUser = Aggregation.group("userId")
+        GroupOperation groupByUser = Aggregation
+                .group("userId")
                 .count().as("count")
-                .first("username").as("username");
+                .first("username").as("username")
+                .avg("responseTimeMs").as("avgResponseTime");
 
-        // Sắp xếp theo số lượng giảm dần
         SortOperation sortByCount = Aggregation.sort(Sort.Direction.DESC, "count");
 
         // Giới hạn số lượng kết quả
@@ -394,15 +316,14 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
         );
 
         // Thực thi aggregation
-        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "access_logs", Document.class);
-
-        // Chuyển đổi kết quả thành danh sách StatisticItem
+        AggregationResults<StatisticItem> results = mongoTemplate.aggregate(aggregation, "access_logs", StatisticItem.class);
         return results.getMappedResults().stream()
-                .map(doc -> StatisticItem.builder()
-                        .name(doc.get("username") != null ? doc.get("username").toString() :
-                                (doc.get("_id") != null ? doc.get("_id").toString() : "Unknown"))
-                        .count(((Number) doc.get("count")).longValue())
-                        .build())
-                .collect(Collectors.toList());
+                .peek(item -> {
+                    // Đặt tên hiển thị bằng ID nếu name là null
+                    if (item.getName() == null) {
+                        item.setName(item.getUsername());
+                    }
+                })
+                .toList();
     }
 }

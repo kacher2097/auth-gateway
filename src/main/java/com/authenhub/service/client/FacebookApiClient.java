@@ -1,6 +1,6 @@
 package com.authenhub.service.client;
 
-import com.authenhub.config.fb.FacebookApiProperties;
+import com.authenhub.config.fb.FacebookConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -21,7 +21,7 @@ import java.util.Map;
 @Slf4j
 public class FacebookApiClient {
     private final RestTemplate restTemplate;
-    private final FacebookApiProperties properties;
+    private final FacebookConfig properties;
     
     /**
      * Gửi request GET đến Facebook Graph API

@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuthenticationProviderCustom implements AuthenticationProvider {
 
-    private final UserJpaRepository userRepository;
-
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         User user = (User) authentication.getPrincipal();

@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StatisticItem {
+    private String username;
+    private String id;
     private String name;
     private Long count;
     private Double avgResponseTime;

@@ -33,48 +33,48 @@ public class GoogleApiController {
      * @param range the range to read (e.g., "Sheet1!A1:D10")
      * @return the values read from the sheet
      */
-    @GetMapping("/sheets/read")
-    @Operation(summary = "Đọc dữ liệu từ Google Sheet",
-            description = "Đọc dữ liệu từ một bảng tính Google Sheets trong một phạm vi cụ thể.")
-    public ApiResponse<?> readSheet(
-            @RequestParam(required = false) String spreadsheetId,
-            @RequestParam String range) {
-
-        // Use the configured spreadsheet ID if none is provided
-        String sheetId = spreadsheetId != null ? spreadsheetId : googleConfig.getSpreadsheetIdNew();
-
-        List<List<Object>> data = googleServiceHelper.readSheet(sheetId, range);
-        return ApiResponse.success(data);
-    }
-
-    /**
-     * Write data to a Google Sheet
-     *
-     * @param spreadsheetId the ID of the spreadsheet (optional)
-     * @param range the range to write to (e.g., "Sheet1!A1")
-     * @param values the values to write
-     * @return number of updated cells
-     */
-    @PostMapping("/sheets/write")
-    @Operation(summary = "Ghi dữ liệu vào Google Sheet",
-            description = "Ghi dữ liệu vào một bảng tính Google Sheets trong một phạm vi cụ thể.")
-    public ApiResponse<?> writeToSheet(
-            @RequestParam(required = false) String spreadsheetId,
-            @RequestParam String range,
-            @RequestBody List<List<Object>> values) {
-
-        // Use the configured spreadsheet ID if none is provided
-        String sheetId = spreadsheetId != null ? spreadsheetId : googleConfig.getSpreadsheetIdNew();
-
-        int updatedCells = googleServiceHelper.writeToSheet(sheetId, range, values);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("updatedCells", updatedCells);
-        response.put("spreadsheetId", sheetId);
-        response.put("range", range);
-
-        return ApiResponse.success(response);
-    }
+//    @GetMapping("/sheets/read")
+//    @Operation(summary = "Đọc dữ liệu từ Google Sheet",
+//            description = "Đọc dữ liệu từ một bảng tính Google Sheets trong một phạm vi cụ thể.")
+//    public ApiResponse<?> readSheet(
+//            @RequestParam(required = false) String spreadsheetId,
+//            @RequestParam String range) {
+//
+//        // Use the configured spreadsheet ID if none is provided
+//        String sheetId = spreadsheetId != null ? spreadsheetId : googleConfig.get();
+//
+//        List<List<Object>> data = googleServiceHelper.readSheet(sheetId, range);
+//        return ApiResponse.success(data);
+//    }
+//
+//    /**
+//     * Write data to a Google Sheet
+//     *
+//     * @param spreadsheetId the ID of the spreadsheet (optional)
+//     * @param range the range to write to (e.g., "Sheet1!A1")
+//     * @param values the values to write
+//     * @return number of updated cells
+//     */
+//    @PostMapping("/sheets/write")
+//    @Operation(summary = "Ghi dữ liệu vào Google Sheet",
+//            description = "Ghi dữ liệu vào một bảng tính Google Sheets trong một phạm vi cụ thể.")
+//    public ApiResponse<?> writeToSheet(
+//            @RequestParam(required = false) String spreadsheetId,
+//            @RequestParam String range,
+//            @RequestBody List<List<Object>> values) {
+//
+//        // Use the configured spreadsheet ID if none is provided
+//        String sheetId = spreadsheetId != null ? spreadsheetId : googleConfig.getSpreadsheetIdNew();
+//
+//        int updatedCells = googleServiceHelper.writeToSheet(sheetId, range, values);
+//
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("updatedCells", updatedCells);
+//        response.put("spreadsheetId", sheetId);
+//        response.put("range", range);
+//
+//        return ApiResponse.success(response);
+//    }
 
     /**
      * Create a new Google Sheet

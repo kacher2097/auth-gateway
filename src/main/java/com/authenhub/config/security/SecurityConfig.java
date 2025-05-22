@@ -1,10 +1,11 @@
 package com.authenhub.config.security;
 
+import com.authenhub.config.fb.FacebookConfig;
 import com.authenhub.config.filter.AuthenticationEntryPointCustom;
 import com.authenhub.config.filter.JwtAuthenticationFilter;
+import com.authenhub.config.gg.GoogleConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -34,21 +35,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final GoogleConfig googleConfig;
+    private final FacebookConfig facebookConfig;
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler;
     private final AuthenticationEntryPointCustom authenticationEntryPoint;
-
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
-    private String googleClientId;
-
-    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
-    private String googleClientSecret;
-
-    @Value("${spring.security.oauth2.client.registration.facebook.client-id}")
-    private String facebookClientId;
-
-    @Value("${spring.security.oauth2.client.registration.facebook.client-secret}")
-    private String facebookClientSecret;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -107,8 +98,8 @@ public class SecurityConfig {
 
     private ClientRegistration googleClientRegistration() {
         return ClientRegistration.withRegistrationId("google")
-                .clientId(googleClientId)
-                .clientSecret(googleClientSecret)
+                .clientId(googleConfig.getClientId())
+                .clientSecret(googleConfig.getClientSecret())
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
@@ -124,8 +115,8 @@ public class SecurityConfig {
 
     private ClientRegistration facebookClientRegistration() {
         return ClientRegistration.withRegistrationId("facebook")
-                .clientId(facebookClientId)
-                .clientSecret(facebookClientSecret)
+                .clientId(facebookConfig.getClientId())
+                .clientSecret(facebookConfig.getClientSecret())
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")

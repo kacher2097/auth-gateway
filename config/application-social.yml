@@ -1,134 +1,45 @@
 # ===================================================================
 # SOCIAL MEDIA AND OAUTH CONFIGURATION
 # ===================================================================
+spring:
+  config:
+    activate:
+      on-profile: dev
 
-# Google common configuration
 google:
-  token: tokens
   credentials: ${workdir:.}/config/google-credentials.json
+  token: tokens
+  spreadsheet: { id: null }
+  clientId: 871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com
+  clientSecret: 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
+  redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+  user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
   service-account:
     # Path to service account key file (JSON)
     key-file: ${GOOGLE_SERVICE_ACCOUNT_KEY_FILE:${workdir:.}/config/google-service-account.json}
     # Email to impersonate (for Gmail API)
     user-email: ${GOOGLE_SERVICE_ACCOUNT_USER_EMAIL:thanhtuan6897@gmail.com}
+  scope: openid,profile,email
 
 # WordPress common configuration
 wordpress:
   username: crawlbot
-
-# Facebook API common configuration
-facebook:
-  api:
-    api-base-url: https://graph.facebook.com/v12.0
-    max-retries: 3
-  oauth:
-    authorization-base-url: https://www.facebook.com/v12.0/dialog/oauth
-    token-base-url: https://graph.facebook.com/v12.0/oauth/access_token
-    default-scope: email,public_profile,pages_show_list,pages_read_engagement,pages_manage_posts,pages_manage_engagement
-
-# OAuth2 common configuration
-spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope:
-              - openid
-              - profile
-              - email
-            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-          facebook:
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope:
-              - public_profile
-              - email
-              - pages_show_list
-              - pages_read_engagement
-              - pages_manage_posts
-              - pages_manage_engagement
-              - pages_read_insights
-              - pages_manage_comments
-            user-info-uri: https://graph.facebook.com/me
-
----
-spring:
-  config:
-    activate:
-      on-profile: dev
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            clientSecret: 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
-            clientId: 871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com
-          facebook:
-            client-id: 663214539587597
-            client-secret: 7721bb1cfe1c8118e39aa0a95fe87379
-
-# Google configuration for development
-google:
-  spreadsheet: {id: null}
-  spreadsheetId: 1WnyoczJEvV99NMnAcNG16eO8MlIhgoWqEHwadGIMBp8
-  clientSecret: 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
-  clientId: 871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com
-  service-account:
-    # For development, you can use OAuth2 credentials file as a fallback
-    key-file: ${workdir:.}/config/google-credentials.json
-
-# WordPress configuration for development
-wordpress:
   url: 'http://localhost:8068/blog'
   password: eD7ZW#^Q&h2*gAlrbi@%&7v%
 
-# Facebook API configuration for development
+# Facebook API common configuration
 facebook:
-  api:
-    connect-timeout: 10000
-    read-timeout: 10000
-  oauth:
-    client-id: 663214539587597
-    client-secret: 7721bb1cfe1c8118e39aa0a95fe87379
-
----
-spring:
-  config:
-    activate:
-      on-profile: staging
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            clientSecret: ${GOOGLE_CLIENT_SECRET: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}
-            clientId: ${GOOGLE_CLIENT_ID:871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com}
-          facebook:
-            client-id: ${FACEBOOK_CLIENT_ID:663214539587597}
-            client-secret: ${FACEBOOK_CLIENT_SECRET:7721bb1cfe1c8118e39aa0a95fe87379}
-
-# Google configuration for staging
-google:
-  spreadsheetId: ${GOOGLE_SPREADSHEET_ID:1WnyoczJEvV99NMnAcNG16eO8MlIhgoWqEHwadGIMBp8}
-  clientSecret: ${GOOGLE_CLIENT_SECRET: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}
-  clientId: ${GOOGLE_CLIENT_ID:871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com}
-
-# WordPress configuration for staging
-wordpress:
-  url: ${WORDPRESS_URL:http://staging.example.com/blog}
-  password: ${WORDPRESS_PASSWORD:eD7ZW#^Q&h2*gAlrbi@%&7v%}
-
-# Facebook API configuration for staging
-facebook:
-  api:
-    connect-timeout: 20000
-    read-timeout: 20000
-  oauth:
-    client-id: ${FACEBOOK_CLIENT_ID:663214539587597}
-    client-secret: ${FACEBOOK_CLIENT_SECRET:7721bb1cfe1c8118e39aa0a95fe87379}
-
+  client-id: 663214539587597
+  client-secret: 7721bb1cfe1c8118e39aa0a95fe87379
+  redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+  scope: public_profile,email,pages_show_list,pages_read_engagement,pages_manage_posts,pages_manage_engagement,pages_read_insights,pages_manage_comments
+  user-info-uri: https://graph.facebook.com/me
+  authorization-base-url: https://www.facebook.com/v12.0/dialog/oauth
+  token-base-url: https://graph.facebook.com/v12.0/oauth/access_token
+  api-base-url: https://graph.facebook.com/v12.0
+  max-retries: 3
+  connect-timeout: 30000
+  read-timeout: 30000
 ---
 spring:
   config:

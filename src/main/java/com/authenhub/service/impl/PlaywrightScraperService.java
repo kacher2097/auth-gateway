@@ -5,6 +5,7 @@ import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.options.Geolocation;
 import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.Proxy;
 import jakarta.annotation.PreDestroy;
@@ -93,20 +94,32 @@ public class PlaywrightScraperService {
                 BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions()
                         .setHeadless(headless)
                         .setArgs(Arrays.asList(
+                                // Disable automation flags to avoid detection
+                                "--disable-blink-features=AutomationControlled",
+                                // Standard performance options
                                 "--disable-gpu",
                                 "--disable-dev-shm-usage",
                                 "--disable-setuid-sandbox",
                                 "--no-sandbox",
                                 "--disable-accelerated-2d-canvas",
+                                // Disable browser features that might reveal automation
                                 "--disable-notifications",
                                 "--disable-extensions",
                                 "--disable-infobars",
+                                // Security and performance settings
                                 "--disable-web-security",
-                                "--disable-features=site-per-process",
+                                "--disable-features=IsolateOrigins,site-per-process",
                                 "--disable-popup-blocking",
+                                // Window size for more realistic browsing
+                                "--window-size=1920,1080",
+                                // Disable automation-specific features
+                                "--disable-automation",
+                                // Set language for Vietnamese sites
+                                "--lang=vi-VN,vi",
+                                // User agent that matches a real browser
                                 "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
                         ))
-                        .setTimeout(120000); // Increase timeout to 2 minutes
+                        .setTimeout(180000); // Increase timeout to 3 minutes for slower connections
 
                 // Add proxy if enabled
                 if (proxyEnabled && !proxyHost.isEmpty() && proxyPort > 0) {
@@ -117,6 +130,10 @@ public class PlaywrightScraperService {
                     }
                     launchOptions.setProxy(proxy);
                 }
+
+                // Use persistent context for better anti-bot evasion
+                String userDataDir = "./browser-data";
+                log.info("Using persistent browser data directory: {}", userDataDir);
 
                 this.browser = playwright.chromium().launch(launchOptions);
                 log.info("Playwright browser initialized successfully");
@@ -140,22 +157,38 @@ public class PlaywrightScraperService {
                     initializeBrowser();
                 }
 
+                // Get a realistic user agent for Vietnamese users
+                String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36";
+                if (userAgentRotationEnabled) {
+                    userAgent = getRandomUserAgent();
+                }
+                log.info("Using user agent: {}", userAgent);
+
                 Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
                         .setJavaScriptEnabled(true)
-                        .setUserAgent(getRandomUserAgent())
+                        .setUserAgent(userAgent)
                         .setViewportSize(1920, 1080)
                         .setDeviceScaleFactor(1.0)
                         .setHasTouch(false)
                         .setIsMobile(false)
-                        .setLocale("en-US")
+                        // Use Vietnamese locale for better compatibility with Vietnamese sites
+                        .setLocale("vi-VN")
                         .setTimezoneId("Asia/Ho_Chi_Minh")
                         .setBypassCSP(true) // Bypass Content Security Policy
                         .setIgnoreHTTPSErrors(true); // Ignore HTTPS errors
 
+                // Set geolocation to Vietnam for better compatibility
+                Map<String, Object> geolocation = new HashMap<>();
+                Geolocation geo = new Geolocation(10.8231, 106.6297);
+                geolocation.put("latitude", 10.8231); // Ho Chi Minh City coordinates
+                geolocation.put("longitude", 106.6297);
+                geolocation.put("accuracy", 100);
+                contextOptions.setGeolocation(geo);
+
                 // Set additional headers to mimic a real browser
                 Map<String, String> extraHeaders = new HashMap<>();
-                extraHeaders.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
-                extraHeaders.put("Accept-Language", "en-US,en;q=0.9");
+                extraHeaders.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
+                extraHeaders.put("Accept-Language", "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7");
                 extraHeaders.put("Accept-Encoding", "gzip, deflate, br");
                 extraHeaders.put("Connection", "keep-alive");
                 extraHeaders.put("Upgrade-Insecure-Requests", "1");
@@ -164,11 +197,42 @@ public class PlaywrightScraperService {
                 extraHeaders.put("Sec-Fetch-Site", "none");
                 extraHeaders.put("Sec-Fetch-User", "?1");
                 extraHeaders.put("Cache-Control", "max-age=0");
+                extraHeaders.put("sec-ch-ua", "\"Google Chrome\";v=\"133\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"133\"");
+                extraHeaders.put("sec-ch-ua-mobile", "?0");
+                extraHeaders.put("sec-ch-ua-platform", "\"Windows\"");
 
                 contextOptions.setExtraHTTPHeaders(extraHeaders);
 
-                log.info("Creating new browser context");
-                return browser.newContext(contextOptions);
+                log.info("Creating new browser context with enhanced anti-bot settings");
+                BrowserContext context = browser.newContext(contextOptions);
+
+                // Add scripts to modify browser fingerprinting to avoid bot detection
+                context.addInitScript("Object.defineProperty(navigator, 'webdriver', { get: () => false });");
+                context.addInitScript("window.navigator.chrome = { runtime: {} };");
+                context.addInitScript("Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });");
+                context.addInitScript("Object.defineProperty(navigator, 'languages', { get: () => ['vi-VN', 'vi', 'en-US', 'en'] });");
+
+                // Add more advanced evasion techniques
+                context.addInitScript(
+                    "const originalQuery = window.navigator.permissions.query;" +
+                    "window.navigator.permissions.query = (parameters) => (" +
+                    "  parameters.name === 'notifications' ?" +
+                    "  Promise.resolve({ state: Notification.permission }) :" +
+                    "  originalQuery(parameters)" +
+                    ");"
+                );
+
+                // Mask WebGL fingerprinting
+                context.addInitScript(
+                    "const getParameter = WebGLRenderingContext.prototype.getParameter;" +
+                    "WebGLRenderingContext.prototype.getParameter = function(parameter) {" +
+                    "  if (parameter === 37445) { return 'Intel Inc.'; }" +
+                    "  if (parameter === 37446) { return 'Intel Iris OpenGL Engine'; }" +
+                    "  return getParameter.apply(this, arguments);" +
+                    "};"
+                );
+
+                return context;
             } catch (Exception e) {
                 log.error("Error creating browser context: {}", e.getMessage(), e);
                 // Try to reinitialize everything
@@ -238,16 +302,56 @@ public class PlaywrightScraperService {
             addRandomDelays(page);
 
             try {
-                // Navigate to the URL with timeout
+                // Add a cookie consent handler before navigation
+                page.route("**/*", route -> {
+                    if (route.request().url().contains("consent") ||
+                        route.request().url().contains("cookie") ||
+                        route.request().url().contains("gdpr")) {
+                        log.info("Detected potential cookie/consent request: {}", route.request().url());
+                    }
+                    route.resume();
+                });
+
+                // Navigate to the URL with increased timeout
                 log.info("Navigating to URL with timeout: {}", url);
-                page.navigate(url, new Page.NavigateOptions().setTimeout(60000));
+                page.navigate(url, new Page.NavigateOptions().setTimeout(120000));
 
                 // Wait for the page to load with multiple states
                 log.info("Waiting for page load state: DOMCONTENTLOADED");
-                page.waitForLoadState(LoadState.DOMCONTENTLOADED, new Page.WaitForLoadStateOptions().setTimeout(60000));
+                page.waitForLoadState(LoadState.DOMCONTENTLOADED, new Page.WaitForLoadStateOptions().setTimeout(120000));
+
+                // Take a screenshot after initial load for debugging
+                String initialScreenshotPath = "initial-load-" + System.currentTimeMillis() + ".png";
+                page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(initialScreenshotPath)).setFullPage(true));
+                log.info("Initial page load screenshot saved to {}", initialScreenshotPath);
+
+                // Check if page has any content
+                boolean hasContent = (boolean) page.evaluate("() => document.body.innerText.length > 0");
+                if (!hasContent) {
+                    log.warn("Page appears to be blank after initial load");
+
+                    // Try to bypass potential JavaScript challenge
+                    log.info("Attempting to bypass JavaScript challenge...");
+                    page.evaluate("() => { window.scrollTo(0, document.body.scrollHeight / 2); }");
+                    page.waitForTimeout(3000);
+
+                    // Try to click any "Continue" or "I'm not a robot" buttons
+                    for (String selector : Arrays.asList(
+                            "button", "input[type=submit]", "a.button", ".btn", "[type=button]")) {
+                        try {
+                            if (page.isVisible(selector)) {
+                                log.info("Found and clicking element: {}", selector);
+                                page.click(selector);
+                                page.waitForTimeout(5000);
+                            }
+                        } catch (Exception e) {
+                            log.debug("No clickable element found for selector: {}", selector);
+                        }
+                    }
+                }
 
                 log.info("Waiting for page load state: NETWORKIDLE");
-                page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions().setTimeout(60000));
+                page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions().setTimeout(120000));
 
                 // Try to detect and handle Cloudflare or other protection
                 if (isProtectionDetected(page)) {
@@ -258,6 +362,14 @@ public class PlaywrightScraperService {
                 // Add random scrolling to mimic human behavior
                 log.info("Simulating human behavior");
                 simulateHumanBehavior(page);
+
+                // Wait a bit after scrolling
+                page.waitForTimeout(2000);
+
+                // Take another screenshot after scrolling
+                String afterScrollScreenshotPath = "after-scroll-" + System.currentTimeMillis() + ".png";
+                page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(afterScrollScreenshotPath)).setFullPage(true));
+                log.info("After scrolling screenshot saved to {}", afterScrollScreenshotPath);
 
                 // Try alternative selectors if the main ones don't work
                 log.info("Checking for alternative selectors");
@@ -418,24 +530,54 @@ public class PlaywrightScraperService {
     }
 
     /**
-     * Check if the page has protection mechanisms like Cloudflare
+     * Check if the page has protection mechanisms like Cloudflare or Shopee's anti-bot
      * @param page Playwright page
      * @return True if protection is detected
      */
     private boolean isProtectionDetected(Page page) {
         try {
+            // Get page content for analysis
+            String content = page.content();
+
+            // Take a screenshot for debugging protection detection
+            String protectionCheckScreenshot = "protection-check-" + System.currentTimeMillis() + ".png";
+            page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(protectionCheckScreenshot)).setFullPage(true));
+
             // Check for Cloudflare protection
-            boolean hasCloudflare = page.content().contains("cloudflare") ||
-                                   page.content().contains("DDoS protection") ||
-                                   page.content().contains("security check");
+            boolean hasCloudflare = content.contains("cloudflare") ||
+                                   content.contains("DDoS protection") ||
+                                   content.contains("security check") ||
+                                   content.contains("checking your browser");
 
             // Check for CAPTCHA
-            boolean hasCaptcha = page.content().contains("captcha") ||
-                               page.content().contains("CAPTCHA") ||
-                               page.content().contains("robot") ||
-                               page.content().contains("human verification");
+            boolean hasCaptcha = content.contains("captcha") ||
+                               content.contains("CAPTCHA") ||
+                               content.contains("robot") ||
+                               content.contains("human verification") ||
+                               content.contains("verify you are human");
 
-            return hasCloudflare || hasCaptcha;
+            // Check for Shopee specific protection
+            boolean hasShopeeProtection = content.contains("shopee-captcha") ||
+                                        content.contains("_gcaptcha") ||
+                                        content.contains("security verification") ||
+                                        content.contains("xác minh") ||
+                                        content.contains("xác thực") ||
+                                        content.contains("kiểm tra bảo mật");
+
+            // Check for blank page (potential JavaScript challenge)
+            boolean isBlankPage = (boolean) page.evaluate("() => document.body.innerText.trim().length < 50");
+
+            // Check for specific Shopee elements that should be present
+            boolean missingShopeeElements = !(boolean) page.evaluate(
+                "() => !!document.querySelector('.shopee-search-item-result__item, .col-xs-2-4, [data-sqe=\"item\"]')");
+
+            if (hasCloudflare || hasCaptcha || hasShopeeProtection || (isBlankPage && missingShopeeElements)) {
+                log.info("Protection detected: Cloudflare={}, CAPTCHA={}, Shopee={}, BlankPage={}, MissingElements={}",
+                    hasCloudflare, hasCaptcha, hasShopeeProtection, isBlankPage, missingShopeeElements);
+                return true;
+            }
+
+            return false;
         } catch (Exception e) {
             log.warn("Error checking for protection: {}", e.getMessage());
             return false;
@@ -443,14 +585,26 @@ public class PlaywrightScraperService {
     }
 
     /**
-     * Handle protection mechanisms like Cloudflare
+     * Handle protection mechanisms like Cloudflare or Shopee's anti-bot
      * @param page Playwright page
      */
     private void handleProtection(Page page) {
         try {
+            // Take a screenshot before handling protection
+            String beforeProtectionScreenshot = "before-protection-" + System.currentTimeMillis() + ".png";
+            page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(beforeProtectionScreenshot)).setFullPage(true));
+            log.info("Protection screenshot saved to {}", beforeProtectionScreenshot);
+
             // Wait for protection to clear (usually takes some time)
             log.info("Waiting for protection to clear...");
-            page.waitForTimeout(10000); // Wait 10 seconds
+            page.waitForTimeout(15000); // Wait 15 seconds
+
+            // Try to bypass JavaScript challenges by scrolling
+            log.info("Attempting to scroll to bypass JavaScript challenges");
+            page.evaluate("() => { window.scrollTo(0, 100); }");
+            page.waitForTimeout(2000);
+            page.evaluate("() => { window.scrollTo(0, 300); }");
+            page.waitForTimeout(2000);
 
             // Try to find and click on any "I'm a human" or "Continue" buttons
             for (String selector : Arrays.asList(
@@ -458,7 +612,12 @@ public class PlaywrightScraperService {
                     "input[type=submit]",
                     "a.button",
                     "#challenge-running",
-                    "#challenge-form")) {
+                    "#challenge-form",
+                    ".shopee-captcha",
+                    ".btn-captcha",
+                    "button:not([disabled])",
+                    "[type=button]:not([disabled])",
+                    ".btn:not([disabled])")) {
                 try {
                     if (page.isVisible(selector)) {
                         log.info("Found protection element: {}", selector);
@@ -470,8 +629,35 @@ public class PlaywrightScraperService {
                 }
             }
 
+            // Try to handle Shopee specific challenges
+            try {
+                // Check for slider captcha
+                if (page.isVisible(".shopee-captcha__slider")) {
+                    log.info("Detected Shopee slider captcha, attempting to solve");
+                    // Simulate slider drag (this is a basic implementation)
+                    page.mouse().move(
+                            (Double) page.evaluate("() => document.querySelector('.shopee-captcha__slider').getBoundingClientRect().x + 10"),
+                            (Double) page.evaluate("() => document.querySelector('.shopee-captcha__slider').getBoundingClientRect().y + 10")
+                    );
+                    page.mouse().down();
+                    page.waitForTimeout(500);
+
+
+                    page.waitForTimeout(500);
+                    page.mouse().up();
+                    page.waitForTimeout(3000);
+                }
+            } catch (Exception e) {
+                log.debug("Error handling Shopee slider: {}", e.getMessage());
+            }
+
             // Wait for navigation to complete after handling protection
             page.waitForLoadState(LoadState.NETWORKIDLE, new Page.WaitForLoadStateOptions().setTimeout(30000));
+
+            // Take a screenshot after handling protection
+            String afterProtectionScreenshot = "after-protection-" + System.currentTimeMillis() + ".png";
+            page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(afterProtectionScreenshot)).setFullPage(true));
+            log.info("After protection handling screenshot saved to {}", afterProtectionScreenshot);
         } catch (Exception e) {
             log.warn("Error handling protection: {}", e.getMessage());
         }
@@ -484,27 +670,97 @@ public class PlaywrightScraperService {
     private void tryAlternativeSelectors(Page page) {
         // List of possible product item selectors for Shopee
         List<String> shopeeSelectors = Arrays.asList(
+                // Standard Shopee selectors
                 ".shopee-search-item-result__item",
                 ".col-xs-2-4",
                 "[data-sqe='item']",
                 ".shopee-search-item-result__items .shopee-search-item-result__item",
-                ".row .col-xs-2-4"
+                ".row .col-xs-2-4",
+                // New alternative selectors for Shopee
+                ".shopee-search-result-view [data-sqe]",
+                ".shopee-search-item-result__items > div",
+                ".shopee-search-item-result__item a",
+                ".shopee-search-result-view a[href*='/product/']",
+                // Generic selectors that might work
+                "div[role='listitem']",
+                "div[data-testid='item']",
+                "a[href*='/product/']",
+                // Fallback to any link that might be a product
+                "a[href]:not([href='#'])"
         );
 
-        // Try each selector
-        for (String selector : shopeeSelectors) {
-            try {
-                log.info("Trying selector: {}", selector);
-                boolean hasElements = page.querySelector(selector) != null;
-                if (hasElements) {
-                    log.info("Found elements with selector: {}", selector);
-                    // If found elements, no need to try other selectors
-                    break;
-                }
-            } catch (Exception e) {
-                log.debug("Error with selector {}: {}", selector, e.getMessage());
-            }
-        }
+//        // Try each selector with a longer timeout
+//        for (String selector : shopeeSelectors) {
+//            try {
+//                log.info("Trying selector: {}", selector);
+//
+//                // Try to wait for the selector with a timeout
+//                try {
+//                    page.waitForSelector(selector, new Page.WaitForSelectorOptions().setTimeout(10000));
+//                    log.info("Successfully waited for selector: {}", selector);
+//                } catch (Exception e) {
+//                    log.debug("Timeout waiting for selector {}: {}", selector, e.getMessage());
+//                }
+//
+//                // Check if elements exist
+//                boolean hasElements = page.querySelector(selector) != null;
+//                if (hasElements) {
+//                    log.info("Found elements with selector: {}", selector);
+//
+//                    // Count elements
+//                    int count = (int) page.evaluate("selector => document.querySelectorAll(selector).length", selector);
+//                    log.info("Found {} elements with selector: {}", count, selector);
+//
+//                    // Take a screenshot highlighting the elements
+//                    try {
+//                        // Add a red border to the elements for debugging
+//                        page.evaluate("selector => { " +
+//                            "const elements = document.querySelectorAll(selector); " +
+//                            "for (const el of elements) { " +
+//                            "  el.style.border = '2px solid red'; " +
+//                            "} " +
+//                        "}", selector);
+//
+//                        String selectorScreenshotPath = "selector-" + selector.replaceAll("[^a-zA-Z0-9]", "-") + "-" + System.currentTimeMillis() + ".png";
+//                        page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(selectorScreenshotPath)).setFullPage(true));
+//                        log.info("Selector screenshot saved to {}", selectorScreenshotPath);
+//
+//                        // Remove the border
+//                        page.evaluate("selector => { " +
+//                            "const elements = document.querySelectorAll(selector); " +
+//                            "for (const el of elements) { " +
+//                            "  el.style.border = ''; " +
+//                            "} " +
+//                        "}", selector);
+//                    } catch (Exception e) {
+//                        log.debug("Error taking selector screenshot: {}", e.getMessage());
+//                    }
+//
+//                    // If found elements, no need to try other selectors
+//                    break;
+//                }
+//            } catch (Exception e) {
+//                log.debug("Error with selector {}: {}", selector, e.getMessage());
+//            }
+//        }
+//
+//        // If no selectors worked, try to analyze the page structure
+//        try {
+//            log.info("Analyzing page structure to find product elements");
+//            String pageStructure = (String) page.evaluate("() => {{" +
+//                "const links = Array.from(document.querySelectorAll('a[href]'));" +
+//                "return links.filter(a => a.href.includes('/product/') || a.href.includes('/-i.')).map(a => a.href).join('\\n');" +
+//            "}}");
+//
+//            if (!pageStructure.isEmpty()) {
+//                log.info("Found potential product links through page analysis: {}",
+//                    pageStructure.split("\\n").length);
+//            } else {
+//                log.warn("No product links found through page analysis");
+//            }
+//        } catch (Exception e) {
+//            log.debug("Error analyzing page structure: {}", e.getMessage());
+//        }
     }
 
     /**

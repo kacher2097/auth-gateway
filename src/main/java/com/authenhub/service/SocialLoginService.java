@@ -3,11 +3,11 @@ package com.authenhub.service;
 import com.authenhub.bean.auth.social.AuthSocialRequest;
 import com.authenhub.bean.auth.social.SocialUserInfo;
 import com.authenhub.bean.auth.social.TokenResponse;
+import com.authenhub.config.fb.FacebookConfig;
+import com.authenhub.config.gg.GoogleConfig;
 import com.authenhub.exception.ErrorApiException;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,35 +15,17 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 public class SocialLoginService {
+
+    private final GoogleConfig googleConfig;
     private final RestTemplate restTemplate;
-
-    @Value("${spring.security.oauth2.client.registration.google.user-info-uri:https://www.googleapis.com/oauth2/v3/userinfo}")
-    private String googleUserInfoUrl;
-
-    @Value("${spring.security.oauth2.client.registration.facebook.user-info-uri:https://graph.facebook.com/me}")
-    private String facebookUserInfoUrl;
-
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
-    private String googleClientId;
-
-    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
-    private String googleClientSecret;
-
-    @Value("${spring.security.oauth2.client.registration.facebook.client-id}")
-    private String facebookClientId;
-
-    @Value("${spring.security.oauth2.client.registration.facebook.client-secret}")
-    private String facebookClientSecret;
+    private final FacebookConfig facebookConfig;
 
     public SocialUserInfo getUserInfo(String accessToken, String provider) {
-        switch (provider.toUpperCase()) {
-            case "GOOGLE":
-                return getGoogleUserInfo(accessToken);
-            case "FACEBOOK":
-                return getFacebookUserInfo(accessToken);
-            default:
-                throw new ErrorApiException("456", "Provider không hợp lệ");
-        }
+        return switch (provider.toUpperCase()) {
+            case "GOOGLE" -> getGoogleUserInfo(accessToken);
+            case "FACEBOOK" -> getFacebookUserInfo(accessToken);
+            default -> throw new ErrorApiException("456", "Provider không hợp lệ");
+        };
     }
 
     public SocialUserInfo exchangeCodeForUserInfo(String code, String provider, String redirectUri) {
@@ -61,12 +43,12 @@ public class SocialLoginService {
 
         if ("GOOGLE".equalsIgnoreCase(provider)) {
             tokenUrl = "https://oauth2.googleapis.com/token";
-            clientId = googleClientId;
-            clientSecret = googleClientSecret;
+            clientId = googleConfig.getClientId();
+            clientSecret = googleConfig.getClientSecret();
         } else if ("FACEBOOK".equalsIgnoreCase(provider)) {
             tokenUrl = "https://graph.facebook.com/v12.0/oauth/access_token";
-            clientId = facebookClientId;
-            clientSecret = facebookClientSecret;
+            clientId = facebookConfig.getClientId();
+            clientSecret = facebookConfig.getClientSecret();
         } else {
             throw new RuntimeException("Provider không hợp lệ");
         }
@@ -84,9 +66,9 @@ public class SocialLoginService {
             // This is a simplified example - in a real app, you'd use proper OAuth2 libraries
             // or Spring Security OAuth2 support
             TokenResponse response = restTemplate.postForObject(
-                tokenUrl,
+                    tokenUrl,
                     authSocialRequest,
-                TokenResponse.class
+                    TokenResponse.class
             );
 
             if (response != null && response.getAccessToken() != null) {
@@ -102,7 +84,7 @@ public class SocialLoginService {
     private SocialUserInfo getGoogleUserInfo(String accessToken) {
         try {
             var response = restTemplate.getForObject(
-                    googleUserInfoUrl + "?access_token=" + accessToken, SocialUserInfo.class
+                    googleConfig.getGoogleUserInfoUrl() + "?access_token=" + accessToken, SocialUserInfo.class
             );
             log.info("Google user info: {}", response);
             return response;
@@ -114,7 +96,7 @@ public class SocialLoginService {
     private SocialUserInfo getFacebookUserInfo(String accessToken) {
         try {
             var response = restTemplate.getForObject(
-                    facebookUserInfoUrl + "?fields=id,name,email,picture&access_token=" + accessToken,
+                    facebookConfig.getUserInfoUri() + "?fields=id,name,email,picture&access_token=" + accessToken,
                     SocialUserInfo.class
             );
 

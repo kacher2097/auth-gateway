@@ -38,3 +38,47 @@ spring:
       fail-on-unknown-properties: false
     mapper:
       accept-case-insensitive-properties: true
+  ai:
+    ollama:
+      chat:
+        options:
+          model: llama3.1
+    groq:
+      base-url: https://api.groq.com/openai
+      api-key: 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
+      chat:
+        model: deepseek-r1-distill-llama-70b
+        temperature: 0.7
+        max-tokens: 4000
+        top-p: 0.9
+        presence-penalty: 0.0
+        frequency-penalty: 0.0
+        stop-sequences: [ ]
+
+# Disable OpenAI auto-configuration
+spring.autoconfigure.exclude: [org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration]
+
+logging:
+  config: 'file:${workdir:.}/config/logback.xml'
+
+password:
+  encryption:
+    secret: ${PASSWORD_ENCRYPTION_SECRET:YourStrongSecretKeyHere}
+    salt: ${PASSWORD_ENCRYPTION_SALT:YourStrongSaltValueHere}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+    doc-expansion: none
+    disable-swagger-default-url: true
+    display-request-duration: true
+  show-actuator: false
+  packages-to-scan: com.authenhub.controller
+  paths-to-match: /**
+  port: 8118

@@ -15,15 +15,13 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +30,10 @@ import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -43,12 +45,27 @@ public class GgSheetConfig {
     private static final String TOKENS_FILE_PATH = "tokens.json";
     private static final File DATA_STORE_DIR = new File("tokens");
 
-//    private Sheets getSheetService() throws IOException, GeneralSecurityException {
+//    @Bean
+//    public Sheets getSheetService() throws IOException, GeneralSecurityException {
 //        String credentialsPath = googleConfig.getCredential();
-//        GoogleCredential credential = GoogleCredential.fromStream(new FileInputStream(credentialsPath))
-//                .createScoped(Collections.singletonList("https://www.googleapis.com/auth/spreadsheets"));
-//        return new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(), credential)
-//                .setApplicationName("Your App")
+//        // Use scopes from GoogleConfig if available, otherwise use SheetsScopes.SPREADSHEETS
+//        List<String> scopes = googleConfig.getScopes() != null && !googleConfig.getScopes().isEmpty()
+//                ? googleConfig.getScopes()
+//                : Collections.singletonList(SheetsScopes.SPREADSHEETS);
+//
+//        // Create GoogleCredentials with the appropriate scopes
+//        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialsPath))
+//                .createScoped(scopes);
+//
+//        // Create an HttpRequestInitializer from the GoogleCredentials
+//        HttpCredentialsAdapter requestInitializer = new HttpCredentialsAdapter(credentials);
+//
+//        // Build and return the Sheets service
+//        return new Sheets.Builder(
+//                GoogleNetHttpTransport.newTrustedTransport(),
+//                JSON_FACTORY,
+//                requestInitializer)
+//                .setApplicationName("Authen Hub")
 //                .build();
 //    }
 
@@ -214,12 +231,5 @@ public class GgSheetConfig {
         }
     }
 
-//    @Bean
-//    public Sheets getSheetsService() throws IOException, GeneralSecurityException {
-//        Credential credential = getCredentials();
-//        return new Sheets.Builder(GoogleNetHttpTransport.newTrustedTransport(),
-//                JSON_FACTORY, credential)
-//                .setApplicationName("Google sheet Integration with spring boot")
-//                .build();
-//    }
+    // Replaced with getSheetService() method above
 }
