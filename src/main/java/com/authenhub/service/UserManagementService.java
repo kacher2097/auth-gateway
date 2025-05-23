@@ -19,7 +19,6 @@ public class UserManagementService implements IUserManagementService {
     private final UserContext userContext;
     private final UserSecurity userSecurity;
     private final UserJpaRepository userRepository;
-    private final UserActivityService userActivityService;
 
     @Override
     public User updateUser(Long userId, UserUpdateRequest request) {
@@ -52,12 +51,8 @@ public class UserManagementService implements IUserManagementService {
         }
 
         user.setUpdatedAt(TimestampUtils.now());
-        User updatedUser = userRepository.save(user);
 
-        // Log the activity
-        userActivityService.logActivity("Updated user profile for user ID: " + userId);
-
-        return updatedUser;
+        return userRepository.save(user);
     }
 
     @Override
@@ -76,14 +71,10 @@ public class UserManagementService implements IUserManagementService {
             throw new IllegalStateException("You cannot deactivate your own account");
         }
 
-        log.debug("Setting active status to {} for user: {}", active, userId);
         user.setActive(active);
         user.setUpdatedAt(TimestampUtils.now());
         User updatedUser = userRepository.save(user);
-
-        // Log the activity
-        userActivityService.logActivity("Set active status to " + active + " for user ID: " + userId);
-
+        log.info("Updated user active status to {} for user: {}", active, userId);
         return updatedUser;
     }
 
@@ -107,10 +98,7 @@ public class UserManagementService implements IUserManagementService {
         user.setRole(role);
         user.setUpdatedAt(TimestampUtils.now());
         User updatedUser = userRepository.save(user);
-
-        // Log the activity
-        userActivityService.logActivity("Set role to " + role + " for user ID: " + userId);
-
+        log.info("Updated user role to {} for user: {}", role, userId);
         return updatedUser;
     }
 

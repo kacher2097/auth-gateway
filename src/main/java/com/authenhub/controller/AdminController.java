@@ -39,14 +39,14 @@ public class AdminController {
     @GetMapping("/users")
     @Operation(summary = "Lấy danh sách tất cả người dùng",
             description = "Trả về danh sách tất cả người dùng trong hệ thống.")
-    public com.authenhub.bean.common.ApiResponse<?> getAllUsers() {
+    public ApiResponse<?> getAllUsers() {
         return getUsersList(null, null, null);
     }
 
     @PostMapping("/users")
     @Operation(summary = "Lấy danh sách người dùng với bộ lọc",
             description = "Trả về danh sách người dùng với các tùy chọn lọc, phân trang và tìm kiếm.")
-    public com.authenhub.bean.common.ApiResponse<?> getUsersPost(@RequestBody(required = false) Map<String, Object> params) {
+    public ApiResponse<?> getUsersPost(@RequestBody(required = false) Map<String, Object> params) {
         Integer page = params != null && params.containsKey("page") ? Integer.valueOf(params.get("page").toString()) : null;
         Integer limit = params != null && params.containsKey("limit") ? Integer.valueOf(params.get("limit").toString()) : null;
         String search = params != null && params.containsKey("search") ? params.get("search").toString() : null;
@@ -54,7 +54,7 @@ public class AdminController {
         return getUsersList(page, limit, search);
     }
 
-    private com.authenhub.bean.common.ApiResponse<?> getUsersList(Integer page, Integer limit, String search) {
+    private ApiResponse<?> getUsersList(Integer page, Integer limit, String search) {
         List<User> users = userRepository.findAll();
         List<UserSearchResponse> response = new ArrayList<>();
         for (User user : users) {

@@ -64,13 +64,6 @@ public class UserManagementController {
     @Operation(summary = "Lấy thông tin người dùng theo ID",
             description = "Lấy thông tin của người dùng dựa trên ID. Chỉ admin mới có quyền truy cập.")
     public ApiResponse<?> getUserById(@PathVariable String userId) {
-        // Check if user is authenticated
-        if (!userContext.isAuthenticated()) {
-            return ApiResponse.error(ApiResponseCode.FORBIDDEN, "User not authenticated");
-        }
-
-        // Only admins or the user themselves can view user details
-        User currentUser = userContext.getCurrentUser();
         if (!userContext.isAdmin()) {
             return ApiResponse.error(ApiResponseCode.FORBIDDEN, "You don't have permission to view this user");
         }
@@ -100,6 +93,8 @@ public class UserManagementController {
     }
 
     @PutMapping("/{userId}/active")
+    @Operation(summary = "Kích hoạt tài khoản người dùng",
+            description = "Kích hoạt tài khoản của người dùng dựa trên ID.")
     public ApiResponse<?> setUserActiveStatus(@PathVariable Long userId, @RequestParam boolean active) {
         try {
             User updatedUser = userManagementService.setUserActiveStatus(userId, active);
