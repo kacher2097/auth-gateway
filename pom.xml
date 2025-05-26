@@ -514,10 +514,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.11.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>${java.version}</release>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -565,7 +564,8 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <classifier>exec</classifier> <!-- Chỉ tạo JAR chạy được -->
+                    <mainClass>com.authenhub.AuthGatewayApplication</mainClass>
+                    <classifier>exec</classifier>
                     <layers>
                         <enabled>true</enabled>
                     </layers>
@@ -575,13 +575,6 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>com.authenhub.AuthGatewayApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

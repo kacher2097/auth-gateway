@@ -50,10 +50,13 @@ public class GoogleApiHelper {
         return updatedSpreadsheet;
     }
 
-    public void exportExcelToGoogle(String excelFileName) {
+    public String exportExcelToGoogle(String excelFileName) {
         try {
+            log.info("Starting export Excel to Google Sheets for file: {}", excelFileName);
             Path filePath = Path.of(excelFileName);
             List<List<Object>> worksheetData = new ArrayList<>();
+
+            // Read Excel file data
             try (InputStream is = new FileInputStream(filePath.toFile());
                  ReadableWorkbook workbook = new ReadableWorkbook(is)) {
 
@@ -77,11 +80,28 @@ public class GoogleApiHelper {
                     rowData.add(listImg);
                     worksheetData.add(rowData);
                 });
+                log.info("Successfully read {} rows from Excel file", worksheetData.size());
+            } catch (Exception e) {
+                log.error("Error reading Excel file: {}", e.getMessage(), e);
+                throw new RuntimeException("Failed to read Excel file: " + e.getMessage(), e);
             }
 
-            // Tạo hoặc sử dụng Spreadsheet ID có sẵn
-            Spreadsheet spreadsheet = createSpreadsheet(sheetService, filePath.getFileName().toString());
-            String spreadsheetId = spreadsheet.getSpreadsheetId();
+            // Create or use existing Spreadsheet with proper error handling
+            Spreadsheet spreadsheet;
+            String spreadsheetId;
+            try {
+                log.info("Creating Google Spreadsheet...");
+                spreadsheet = createSpreadsheet(sheetService, filePath.getFileName().toString());
+                spreadsheetId = spreadsheet.getSpreadsheetId();
+                log.info("Successfully created spreadsheet with ID: {}", spreadsheetId);
+            } catch (Exception e) {
+                log.error("Failed to create Google Spreadsheet: {}", e.getMessage(), e);
+                if (e.getMessage().contains("UserCredentials instance cannot refresh")) {
+                    throw new RuntimeException("Google authentication failed: No refresh token available. Please reconfigure Google credentials with proper OAuth2 flow or use service account.", e);
+                } else {
+                    throw new RuntimeException("Failed to create Google Spreadsheet: " + e.getMessage(), e);
+                }
+            }
 
             // Lấy sheetId từ spreadsheet
             int sheetId;
@@ -127,8 +147,20 @@ public class GoogleApiHelper {
                 }
             }
             log.info("Dữ liệu đã được đẩy lên Google Sheets thành công!");
+            return url;
         } catch (Exception e) {
             log.error("Write excel to gg sheet have exception ", e);
+
+            // Provide more specific error messages
+            if (e.getMessage().contains("UserCredentials instance cannot refresh")) {
+                throw new RuntimeException("Google authentication failed: No refresh token available. Please reconfigure Google credentials with proper OAuth2 flow or use service account.", e);
+            } else if (e.getMessage().contains("invalid_grant")) {
+                throw new RuntimeException("Google authentication failed: Token has expired or been revoked. Please re-authenticate.", e);
+            } else if (e.getMessage().contains("403")) {
+                throw new RuntimeException("Google Sheets API access denied. Please check your credentials and API permissions.", e);
+            } else {
+                throw new RuntimeException("Failed to export to Google Sheets: " + e.getMessage(), e);
+            }
         }
     }
 

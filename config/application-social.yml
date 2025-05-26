@@ -16,7 +16,7 @@ google:
   user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
   service-account:
     # Path to service account key file (JSON)
-    key-file: ${GOOGLE_SERVICE_ACCOUNT_KEY_FILE:${workdir:.}/config/google-service-account.json}
+    key-file: ${GOOGLE_SERVICE_ACCOUNT_KEY_FILE:${workdir:.}/config/google-credentials.json}
     # Email to impersonate (for Gmail API)
     user-email: ${GOOGLE_SERVICE_ACCOUNT_USER_EMAIL:thanhtuan6897@gmail.com}
   scope: openid,profile,email

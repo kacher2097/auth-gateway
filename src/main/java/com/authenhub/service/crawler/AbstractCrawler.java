@@ -86,8 +86,33 @@ public abstract class AbstractCrawler implements HandleCrawlService {
         return Objects.nonNull(element) ? element.attr(attribute) : StringUtils.EMPTY;
     }
 
-    protected void writeGGSheets(String filePath) {
-        googleApiHelper.exportExcelToGoogle(filePath);
+    protected String writeGGSheets(String filePath) {
+        try {
+            log.info("Attempting to export Excel file to Google Sheets: {}", filePath);
+            String googleSheetsUrl = googleApiHelper.exportExcelToGoogle(filePath);
+            log.info("Successfully exported to Google Sheets: {}", googleSheetsUrl);
+            return googleSheetsUrl;
+        } catch (Exception e) {
+            log.error("Failed to export to Google Sheets: {}", e.getMessage(), e);
+
+            // Provide specific error messages based on the exception type
+            if (e.getMessage().contains("UserCredentials instance cannot refresh")) {
+                log.error("Google authentication error: No refresh token available. Please reconfigure Google credentials.");
+                throw new RuntimeException("Google Sheets export failed: Authentication error - No refresh token available. Please reconfigure Google credentials with proper OAuth2 flow or use service account.", e);
+            } else if (e.getMessage().contains("invalid_grant")) {
+                log.error("Google authentication error: Token has expired or been revoked.");
+                throw new RuntimeException("Google Sheets export failed: Token has expired or been revoked. Please re-authenticate.", e);
+            } else if (e.getMessage().contains("403")) {
+                log.error("Google Sheets API access denied.");
+                throw new RuntimeException("Google Sheets export failed: API access denied. Please check your credentials and API permissions.", e);
+            } else if (e.getMessage().contains("No valid Google credentials available")) {
+                log.error("Google credentials not configured properly.");
+                throw new RuntimeException("Google Sheets export failed: No valid Google credentials available. Please configure service account key file or client ID/secret.", e);
+            } else {
+                log.error("Unexpected error during Google Sheets export.");
+                throw new RuntimeException("Google Sheets export failed: " + e.getMessage(), e);
+            }
+        }
     }
 
     protected WpMediaResponse uploadImage(String imageUrl) {
@@ -227,11 +252,10 @@ public abstract class AbstractCrawler implements HandleCrawlService {
     }
 
 
-    protected ResponseEntity<FileSystemResource> processFileResponse(String filePath, DataCrawlRequest wpPublishPostBean) throws IOException {
+    protected ResponseEntity<?> processFileResponse(String filePath, DataCrawlRequest wpPublishPostBean) throws IOException {
         FileSystemResource file = new FileSystemResource(filePath);
         if (Boolean.TRUE.equals(wpPublishPostBean.getIsWriteSheets())) {
-            writeGGSheets(filePath);
-            return null;
+            return ResponseEntity.ok(writeGGSheets(filePath));
         } else {
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=crawl-result-" + wpPublishPostBean.getSource() + ".xlsx");

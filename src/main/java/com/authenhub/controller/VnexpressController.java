@@ -5,15 +5,13 @@ import com.authenhub.bean.crawl.DataCrawlRequest;
 import com.authenhub.service.crawler.HandleCrawlService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/vnexpress")
@@ -36,7 +34,7 @@ public class VnexpressController {
     @PostMapping("/v1/export")
     @Operation(summary = "Xuất tin tức ra file Excel",
             description = "Xuất danh sách các tin tức đã thu thập ra file Excel.")
-    public CompletableFuture<Object> exportNews(@RequestBody DataCrawlRequest wpPublishPostBean) throws IOException {
+    public Object exportNews(@RequestBody DataCrawlRequest wpPublishPostBean) throws IOException {
         return vnExpressCrawler.exportExcel(wpPublishPostBean);
     }
 

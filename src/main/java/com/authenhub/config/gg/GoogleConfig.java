@@ -33,7 +33,7 @@ public class GoogleConfig {
     @Value("${google.redirect-uri:'{baseUrl}/login/oauth2/code/{registrationId}'}")
     private String redirectUri;
 
-    @Value("${google.service-account.key-file:${workdir:.}/config/google-service-account.json}")
+    @Value("${google.service-account.key-file:${workdir:.}/config/google-credentials.json}")
     private String serviceAccountKeyFile;
 
     @Value("${google.service-account.user-email:thanhtuan6897@gmail.com}")

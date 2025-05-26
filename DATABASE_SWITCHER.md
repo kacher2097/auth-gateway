@@ -1,4 +1,4 @@
-# Database Switcher
+-# Database Switcher
 
 This document explains how to use the database switcher feature to switch between MongoDB and PostgreSQL databases.
 

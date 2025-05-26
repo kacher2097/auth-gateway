@@ -205,7 +205,7 @@ public class FreeProxyService implements IFreeProxyService {
 
             // Create HTTP request to a test URL
             HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(new URI("https://api.ipify.org"))
+                    .uri(new URI("https://google.com"))
                     .timeout(java.time.Duration.ofSeconds(10))
                     .GET()
                     .build();

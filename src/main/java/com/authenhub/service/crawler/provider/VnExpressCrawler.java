@@ -48,8 +48,12 @@ public class VnExpressCrawler extends AbstractCrawler {
     @Override
     public List<NewsBean> getData(DataCrawlRequest wpPublishPostBean) throws IOException {
         log.info("Begin crawling VnExpress data with request {}", wpPublishPostBean);
-        Document homepage = fetchDocument(VNEXPRESS_URL);
-        Elements newsElements = extractElements(homepage,"article.item-news.item-news-common");
+        String siteUrl = VNEXPRESS_URL;
+        if (StringUtils.isNotEmpty(wpPublishPostBean.getSiteUrl())) {
+            siteUrl = wpPublishPostBean.getSiteUrl();
+        }
+        Document homepage = fetchDocument(siteUrl);
+        Elements newsElements = extractElements(homepage, "article.item-news.item-news-common");
 
         log.info("Total news found: {}", newsElements.size());
         int limitElement = Objects.nonNull(wpPublishPostBean.getLimit()) ? wpPublishPostBean.getLimit() : Integer.MAX_VALUE;
@@ -73,7 +77,7 @@ public class VnExpressCrawler extends AbstractCrawler {
 
     @Override
     public CompletableFuture<Object> exportExcel(DataCrawlRequest wpPublishPostBean) {
-        log.info("Begin export to excel data crawl");
+        log.info("Begin export to excel data crawl with request {}", jsonMapper.toJson(wpPublishPostBean));
         long startTime = System.currentTimeMillis();
         List<NewsBean> newsBeanList = CACHE_DATA_CRAWL.get(wpPublishPostBean);
 
@@ -124,7 +128,8 @@ public class VnExpressCrawler extends AbstractCrawler {
     private void processPost(NewsBean newsBean, HttpHeaders headers, Map<String, Long> uploadedImagesCache) {
         try {
             String thumbnailUrl = newsBean.getThumbnail();
-            Long thumbnailId = uploadedImagesCache.computeIfAbsent(thumbnailUrl, k -> uploadImage(thumbnailUrl).getId()); // Cache ảnh đã upload
+            Long thumbnailId = uploadedImagesCache.computeIfAbsent(thumbnailUrl,
+                    k -> uploadImage(thumbnailUrl).getId()); // Cache ảnh đã upload
 
             // Chuẩn bị dữ liệu bài viết
             Map<String, Object> postData = new HashMap<>();
@@ -160,10 +165,10 @@ public class VnExpressCrawler extends AbstractCrawler {
 
     private NewsBean parseDocumentElement(Element element) {
         try {
-            Element articleLink = extractElement(element,".title-news a[href]");
+            Element articleLink = extractElement(element, ".title-news a[href]");
             if (articleLink == null) return null;
 
-            String link = extractAttribute(articleLink,"href");
+            String link = extractAttribute(articleLink, "href");
             String title = articleLink.text();
             String description = extractText(element, "p.description");
 
@@ -191,15 +196,15 @@ public class VnExpressCrawler extends AbstractCrawler {
     }
 
     private String extractThumbnail(Element element) {
-        Element img = extractElement(element,"div.thumb-art img[itemprop=contentUrl]");
+        Element img = extractElement(element, "div.thumb-art img[itemprop=contentUrl]");
         if (img != null) {
-            String thumbnail = extractAttribute(img,"data-src");
-            return StringUtils.isEmpty(thumbnail) ? extractAttribute(img,"src") : thumbnail;
+            String thumbnail = extractAttribute(img, "data-src");
+            return StringUtils.isEmpty(thumbnail) ? extractAttribute(img, "src") : thumbnail;
         }
-        Element video = extractElement(element,"div.thumb-art video[itemprop=contentUrl]");
+        Element video = extractElement(element, "div.thumb-art video[itemprop=contentUrl]");
         if (video != null) {
             String poster = video.attr("poster");
-            return StringUtils.isEmpty(poster) ? extractAttribute(video,"src") : poster;
+            return StringUtils.isEmpty(poster) ? extractAttribute(video, "src") : poster;
         }
         return null;
     }

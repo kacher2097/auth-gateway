@@ -28,10 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
 
-/**
- * Google Service Account configuration for accessing Google APIs without user interaction.
- * This implementation uses a service account credential that automatically refreshes tokens.
- */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -39,23 +35,11 @@ public class GgServiceAccountConfig {
 
     private final GoogleConfig googleConfig;
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-
-    /**
-     * List of all scopes needed for the application
-     */
     private static final List<String> SCOPES = Collections.singletonList(
             SheetsScopes.SPREADSHEETS
     );
-
-    // Dummy access token for fallback authentication
     private static final String DUMMY_ACCESS_TOKEN = "ya29.dummy-token-for-fallback-only";
 
-    /**
-     * Attempts to load the service account key file from various locations
-     *
-     * @return InputStream of the key file
-     * @throws IOException if the file cannot be found or read
-     */
     private InputStream getServiceAccountKeyFileStream() throws IOException {
         // Try multiple locations to find the file
         try {
@@ -124,93 +108,100 @@ public class GgServiceAccountConfig {
                 googleConfig.getClientSecret() != null && !googleConfig.getClientSecret().isEmpty();
     }
 
-    @Bean
+//    @Bean
     public GoogleCredentials getGoogleCredentials() {
         try (InputStream keyFileStream = getServiceAccountKeyFileStream()) {
             try {
                 // First try to load as service account credentials
-                log.info("Attempting to load as service account credentials");
-                return ServiceAccountCredentials.fromStream(keyFileStream)
+                log.info("Attempting to load as service account credentials from: {}", googleConfig.getServiceAccountKeyFile());
+                GoogleCredentials serviceAccountCredentials = ServiceAccountCredentials.fromStream(keyFileStream)
                         .createScoped(SCOPES);
+                log.info("Successfully loaded service account credentials");
+                return serviceAccountCredentials;
             } catch (IOException e) {
-                log.info("Not a service account key, trying as OAuth client credentials");
-                // Reset the stream
-                keyFileStream.reset();
+                log.warn("Failed to load as service account credentials: {}", e.getMessage());
 
+                // Reset the stream for next attempt
                 try {
-                    // Try to load as user credentials (OAuth client ID)
-                    return UserCredentials.fromStream(keyFileStream)
-                            .createScoped(SCOPES);
-                } catch (IOException e2) {
-                    log.warn("Could not load credentials from file: {}", e2.getMessage());
-
-                    // Check if we have valid client credentials
-                    if (hasValidClientCredentials()) {
-                        // Fallback to using client ID and secret with dummy token
-                        log.info("Falling back to client ID/secret with dummy token");
-                        return UserCredentials.newBuilder()
-                                .setClientId(googleConfig.getClientId())
-                                .setClientSecret(googleConfig.getClientSecret())
-                                .setAccessToken(AccessToken.newBuilder().setTokenValue(DUMMY_ACCESS_TOKEN).build())
-                                .build()
-                                .createScoped(SCOPES);
-                    } else {
-                        // If no client credentials, try application default
-                        log.info("No client credentials available, trying application default");
-                        try {
-                            return GoogleCredentials.getApplicationDefault().createScoped(SCOPES);
-                        } catch (IOException e3) {
-                            log.warn("Could not get application default credentials: {}", e3.getMessage());
-                            throw e2; // Re-throw the original exception
-                        }
+                    keyFileStream.reset();
+                } catch (IOException resetException) {
+                    log.warn("Could not reset stream, creating new stream");
+                    // If reset fails, create a new stream
+                    try (InputStream newStream = getServiceAccountKeyFileStream()) {
+                        return tryUserCredentials(newStream);
+                    } catch (IOException streamException) {
+                        log.error("Failed to create new stream: {}", streamException.getMessage());
+                        return createFallbackCredentials();
                     }
                 }
+
+                return tryUserCredentials(keyFileStream);
             }
         } catch (IOException e) {
-            log.error("Failed to load Google credentials: {}", e.getMessage());
-
-            // Check if we have valid client credentials for final fallback
-            if (hasValidClientCredentials()) {
-                // Final fallback - create credentials with a dummy access token
-                log.info("Using client ID/secret with dummy access token");
-                try {
-                    // Create credentials with client ID, secret and a dummy access token
-                    // This is just to pass validation - the token will be refreshed before use
-                    return UserCredentials.newBuilder()
-                            .setClientId(googleConfig.getClientId())
-                            .setClientSecret(googleConfig.getClientSecret())
-                            .setAccessToken(AccessToken.newBuilder().setTokenValue(DUMMY_ACCESS_TOKEN).build())
-                            .build()
-                            .createScoped(SCOPES);
-                } catch (Exception ex) {
-                    log.error("Could not create fallback credentials", ex);
-                    throw new RuntimeException("Could not create Google credentials", ex);
-                }
-            } else {
-                // If all else fails and no client credentials, throw exception
-                throw new RuntimeException("No valid Google credentials available. Please configure client ID and secret.");
-            }
+            log.error("Failed to open credential file stream: {}", e.getMessage());
+            return createFallbackCredentials();
         }
     }
 
-    /**
-     * Creates a Sheets service with auto-refreshing credentials
-     *
-     * @return Sheets service
-     * @throws IOException              if credential file cannot be read
-     * @throws GeneralSecurityException if there's a security issue
-     */
-    @Bean
-    @Primary
-    public Sheets getSheetsService() throws IOException, GeneralSecurityException {
-        GoogleCredentials credentials = getGoogleCredentials();
-        HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+    private GoogleCredentials tryUserCredentials(InputStream keyFileStream) {
+        try {
+            log.info("Attempting to load as OAuth client credentials");
+            // Try to load as user credentials (OAuth client ID) but with proper refresh token handling
+            UserCredentials userCredentials = UserCredentials.fromStream(keyFileStream);
 
-        return new Sheets.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                JSON_FACTORY,
-                requestInitializer)
-                .setApplicationName("Google Sheet Integration with Spring Boot")
-                .build();
+            // Check if we have a refresh token
+            if (userCredentials.getRefreshToken() != null) {
+                log.info("Successfully loaded user credentials with refresh token");
+                return userCredentials.createScoped(SCOPES);
+            } else {
+                log.warn("User credentials loaded but no refresh token available");
+                return createFallbackCredentials();
+            }
+        } catch (IOException e2) {
+            log.warn("Could not load user credentials from file: {}", e2.getMessage());
+            return createFallbackCredentials();
+        }
     }
+
+    private GoogleCredentials createFallbackCredentials() {
+        // Check if we have valid client credentials
+        if (hasValidClientCredentials()) {
+            // Fallback to using client ID and secret with dummy token
+            log.info("Creating fallback credentials with client ID/secret");
+            try {
+                // Create credentials with client ID, secret and a dummy access token
+                // This is just to pass validation - the token will be refreshed before use
+                return UserCredentials.newBuilder()
+                        .setClientId(googleConfig.getClientId())
+                        .setClientSecret(googleConfig.getClientSecret())
+                        .setAccessToken(AccessToken.newBuilder().setTokenValue(DUMMY_ACCESS_TOKEN).build())
+                        .build()
+                        .createScoped(SCOPES);
+            } catch (Exception ex) {
+                log.error("Could not create fallback credentials with client ID/secret", ex);
+            }
+        }
+
+        // Try application default credentials as last resort
+        log.info("Trying application default credentials as last resort");
+        try {
+            return GoogleCredentials.getApplicationDefault().createScoped(SCOPES);
+        } catch (IOException e3) {
+            log.error("Could not get application default credentials: {}", e3.getMessage());
+            throw new RuntimeException("No valid Google credentials available. Please configure service account key file or client ID/secret.", e3);
+        }
+    }
+//    @Bean
+//    @Primary
+//    public Sheets getSheetsService() throws IOException, GeneralSecurityException {
+//        GoogleCredentials credentials = getGoogleCredentials();
+//        HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+//
+//        return new Sheets.Builder(
+//                GoogleNetHttpTransport.newTrustedTransport(),
+//                JSON_FACTORY,
+//                requestInitializer)
+//                .setApplicationName("Google Sheet Integration with Spring Boot")
+//                .build();
+//    }
 }
