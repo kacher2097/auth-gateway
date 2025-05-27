@@ -12,7 +12,6 @@ import com.authenhub.bean.auth.UserInfo;
 import com.authenhub.bean.auth.social.SocialUserInfo;
 import com.authenhub.bean.response.UserInfoResponse;
 import com.authenhub.config.application.JsonMapper;
-import com.authenhub.config.security.AuthenticationProviderCustom;
 import com.authenhub.entity.Role;
 import com.authenhub.entity.RolePermission;
 import com.authenhub.entity.User;
@@ -34,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.InvalidCredentialsException;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,8 +51,8 @@ public class AuthService implements IAuthService {
     private final PasswordEncoder passwordEncoder;
     private final RoleJpaRepository roleRepository;
     private final SocialLoginService socialLoginService;
-    private final AuthenticationProviderCustom authenticationManager;
-    private final PermissionJpaRepository permissionJpaRepository;
+    private final AuthenticationProvider authenticationManager;
+//    private final AuthenticationProviderCustom authenticationManager;
     private final RolePermissionRepository rolePermissionRepository;
     private final PasswordResetTokenRepositoryAdapter tokenRepository;
 

@@ -93,17 +93,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         User user = null;
         try {
             if (StringUtils.isEmpty(authHeader) || !authHeader.startsWith("Bearer ")) {
+                log.debug("No valid Authorization header found for path: {}", requestPath);
                 filterChain.doFilter(request, response);
                 return;
             }
 
             jwt = getJwtFromRequest(request);
             if (StringUtils.isEmpty(jwt)) {
+                log.debug("No valid JWT token found for path: {}", requestPath);
                 filterChain.doFilter(request, response);
                 return;
             }
 
             username = jwtService.extractUsername(jwt);
+            log.debug("Extracted username from JWT: {}", username);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 authToken = getAuthorization(jwt);
@@ -111,6 +114,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                     user = (User) authToken.getPrincipal();
+                    log.debug("Authentication successful for user: {}", username);
+                } else {
+                    log.error("Failed to create authentication token for user: {}", username);
                 }
             }
 

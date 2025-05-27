@@ -4,6 +4,7 @@ import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
 import org.slf4j.MDC;
@@ -22,7 +23,7 @@ public class LogFilter extends GenericFilterBean {
             MDC.put("token", NanoIdUtils.randomNanoId());
             filterChain.doFilter(servletRequest, servletResponse);
             long processTime = System.currentTimeMillis() - startTime;
-            String uri = ((jakarta.servlet.http.HttpServletRequest) servletRequest).getRequestURI();
+            String uri = ((HttpServletRequest) servletRequest).getRequestURI();
             String ipClient = servletRequest.getRemoteAddr();
             log.info("Request to [{}] from IP [{}] finish in {}ms", uri, ipClient, processTime);
         } catch (ClientAbortException e) {

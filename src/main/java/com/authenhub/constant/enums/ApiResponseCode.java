@@ -8,6 +8,7 @@ public enum ApiResponseCode implements IApiResponse {
 
     EXCEPTION_CODE("99", "Internal Server Error"),
     FORBIDDEN("13", "Forbidden"),
+    UNAUTHORIZED("13", "Full authentication is required to access this resource"),
     SUCCESS_CODE("00", "Success"),
     ;
     private final String code;

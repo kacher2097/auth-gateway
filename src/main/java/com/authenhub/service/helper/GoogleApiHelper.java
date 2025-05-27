@@ -1,12 +1,22 @@
 package com.authenhub.service.helper;
 
-import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.dhatim.fastexcel.reader.ReadableWorkbook;
-import org.springframework.stereotype.Component;
+//import com.google.api.services.drive.Drive;
+//import com.google.api.services.drive.model.Permission;
 
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.CellFormat;
+import com.google.api.services.sheets.v4.model.DimensionProperties;
+import com.google.api.services.sheets.v4.model.DimensionRange;
+import com.google.api.services.sheets.v4.model.ExtendedValue;
+import com.google.api.services.sheets.v4.model.GridRange;
+import com.google.api.services.sheets.v4.model.Request;
+import com.google.api.services.sheets.v4.model.RowData;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
+import com.google.api.services.sheets.v4.model.SpreadsheetProperties;
+import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
+import com.google.api.services.sheets.v4.model.UpdateDimensionPropertiesRequest;
 import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,6 +25,10 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.dhatim.fastexcel.reader.ReadableWorkbook;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -23,29 +37,19 @@ public class GoogleApiHelper {
 
     private final Sheets sheetService;
 
-    //Create new spreadsheet on Google Sheets and set the name of the default sheet
+    //Create new spreadsheet on Google Sheets (Google automatically creates a default "Sheet1")
     private Spreadsheet createSpreadsheet(Sheets service, String spreadsheetName)
             throws IOException {
-        // Tạo spreadsheet mới chỉ với tiêu đề
+        // Tạo spreadsheet mới với tiêu đề (Google tự động tạo sheet "Sheet1")
         Spreadsheet spreadsheet = new Spreadsheet()
                 .setProperties(new SpreadsheetProperties().setTitle(spreadsheetName));
         Spreadsheet createdSpreadsheet = service.spreadsheets().create(spreadsheet).execute();
         String spreadsheetId = createdSpreadsheet.getSpreadsheetId();
-        log.info("Spreadsheet created with ID: {}", spreadsheetId);
-
-        // Thêm sheet với tên defaultSheetName
-        List<Request> requests = new ArrayList<>();
-        requests.add(new Request()
-                .setAddSheet(new AddSheetRequest()
-                        .setProperties(new SheetProperties()
-                                .setTitle("Sheet1"))));
-        BatchUpdateSpreadsheetRequest batchUpdateRequest = new BatchUpdateSpreadsheetRequest()
-                .setRequests(requests);
-        service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateRequest).execute();
+        log.info("Spreadsheet created with ID: {} (default Sheet1 automatically created)", spreadsheetId);
 
         // Lấy lại thông tin spreadsheet đầy đủ
         Spreadsheet updatedSpreadsheet = service.spreadsheets().get(spreadsheetId).execute();
-        log.info("Sheet '{}' added to spreadsheet ID: {}", "Sheet1", spreadsheetId);
+        log.info("Spreadsheet ready with default sheet: {}", updatedSpreadsheet.getSheets().get(0).getProperties().getTitle());
 
         return updatedSpreadsheet;
     }
@@ -103,22 +107,10 @@ public class GoogleApiHelper {
                 }
             }
 
-            // Lấy sheetId từ spreadsheet
-            int sheetId;
-            if (spreadsheet.getSheets().isEmpty()) {
-                // Nếu không có sheet, tạo sheet mới
-                List<Request> createSheetRequests = new ArrayList<>();
-                createSheetRequests.add(new Request()
-                        .setAddSheet(new AddSheetRequest()
-                                .setProperties(new SheetProperties()
-                                        .setTitle("Sheet1"))));
-                sheetService.spreadsheets().batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
-                        .setRequests(createSheetRequests)).execute();
-
-                // Lấy lại thông tin spreadsheet sau khi tạo sheet
-                spreadsheet = sheetService.spreadsheets().get(spreadsheetId).execute();
-            }
-            sheetId = spreadsheet.getSheets().get(0).getProperties().getSheetId();
+            // Lấy sheetId từ spreadsheet (Google đã tự động tạo sheet mặc định)
+            int sheetId = spreadsheet.getSheets().get(0).getProperties().getSheetId();
+            String sheetName = spreadsheet.getSheets().get(0).getProperties().getTitle();
+            log.info("Using existing sheet: {} (ID: {})", sheetName, sheetId);
             //Đặt độ rộng cột (pixel)
             int[] columnWidths = {60, 150, 200, 150, 150, 500, 150};
 

@@ -7,7 +7,7 @@ spring:
       on-profile: dev
 
 google:
-  credentials: ${workdir:.}/config/google-credentials.json
+  credentials: ${workdir:.}/config/credential.json
   token: tokens
   spreadsheet: { id: null }
   clientId: 871802193268-io62a9nofs3sk04i1s7beplaoqhvv16h.apps.googleusercontent.com
@@ -16,10 +16,10 @@ google:
   user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
   service-account:
     # Path to service account key file (JSON)
-    key-file: ${GOOGLE_SERVICE_ACCOUNT_KEY_FILE:${workdir:.}/config/google-credentials.json}
+    key-file: ${GOOGLE_SERVICE_ACCOUNT_KEY_FILE:${workdir:.}/config/credential.json}
     # Email to impersonate (for Gmail API)
     user-email: ${GOOGLE_SERVICE_ACCOUNT_USER_EMAIL:thanhtuan6897@gmail.com}
-  scope: openid,profile,email
+  scope: https://www.googleapis.com/auth/spreadsheets,https://www.googleapis.com/auth/drive
 
 # WordPress common configuration
 wordpress:

@@ -16,12 +16,6 @@ import java.util.Map;
 public class JsonMapper extends ObjectMapper {
 
     @Override
-    public JsonMapper configure(MapperFeature f, boolean state) {
-        super.configure(f, state);
-        return this;
-    }
-
-    @Override
     public JsonMapper configure(SerializationFeature f, boolean state) {
         super.configure(f, state);
         return this;

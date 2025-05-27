@@ -7,6 +7,10 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
+import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -32,23 +36,15 @@ public class GgSheetConfig {
     @Bean
     public GoogleCredentials googleCredentials() throws IOException {
         String credentialsPath = googleConfig.getCredential();
-        String absolutePath = Paths.get(credentialsPath).toAbsolutePath().toString();
+        Path absolutePath = FileSystems.getDefault().getPath(credentialsPath).toAbsolutePath();
+        String contentFile = Files.readString(absolutePath);
+        log.info("Loading Google content file: {}", contentFile);
+//        String absolutePath = Paths.get(credentialsPath).toAbsolutePath().toString();
 
         log.info("Loading Google credentials from: {}", absolutePath);
+        File file = absolutePath.toFile();
 
-        // Check if file exists before attempting to load
-        if (!Paths.get(absolutePath).toFile().exists()) {
-            String errorMessage = String.format(
-                "Google credentials file not found at: %s. " +
-                "Please ensure the file exists and contains valid service account credentials. " +
-                "You can download this file from Google Cloud Console > IAM & Admin > Service Accounts.",
-                absolutePath
-            );
-            log.error(errorMessage);
-            throw new IOException(errorMessage);
-        }
-
-        try (FileInputStream in = new FileInputStream(absolutePath)) {
+        try (FileInputStream in = new FileInputStream(file)) {
             List<String> scopes = googleConfig.getScopes() != null && !googleConfig.getScopes().isEmpty()
                     ? googleConfig.getScopes()
                     : Collections.singletonList(SheetsScopes.SPREADSHEETS);
