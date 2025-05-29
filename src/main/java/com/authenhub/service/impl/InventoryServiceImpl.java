@@ -32,7 +32,7 @@ public class InventoryServiceImpl implements InventoryService {
         log.info("Fetching all inventory items");
         return inventoryRepository.findAll().stream()
                 .map(this::mapToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

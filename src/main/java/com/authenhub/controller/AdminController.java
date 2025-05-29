@@ -74,7 +74,7 @@ public class AdminController {
             response.add(userSearchResponse);
         }
         log.info("Get all users successfully total {} users", response.size());
-        return com.authenhub.bean.common.ApiResponse.success(response);
+        return ApiResponse.success(response);
     }
 
     @GetMapping("/users/{id}")
